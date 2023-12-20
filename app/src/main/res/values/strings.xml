@@ -7,5 +7,8 @@
 
     <string name="component_error_dialog_title">Error!</string>
     <string name="component_error_dialog_neutral_button_caption">OK</string>
+    <string name="fragment_initial_header_title_text"><![CDATA[Move & Draw]]></string>
+    <string name="fragment_initial_header_description_text">Create your own space.</string>
+    <string name="fragment_initial_button_start_caption">Start</string>
 
 </resources>
