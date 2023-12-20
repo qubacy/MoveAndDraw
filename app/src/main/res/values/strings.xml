@@ -1,3 +1,11 @@
 <resources>
+    <!--  General:  -->
+
     <string name="app_name">MoveAndDraw</string>
+
+    <!--  Components:  -->
+
+    <string name="component_error_dialog_title">Error!</string>
+    <string name="component_error_dialog_neutral_button_caption">OK</string>
+
 </resources>
