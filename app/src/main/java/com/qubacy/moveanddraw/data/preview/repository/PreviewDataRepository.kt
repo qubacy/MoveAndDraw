@@ -9,10 +9,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class PreviewDataRepository @Inject constructor(
+open class PreviewDataRepository @Inject constructor(
     private val mLocalPreviewDataSource: LocalPreviewDataSource
 ) : DataRepository() {
-    fun getExamplePreviews(): LiveData<List<Uri>> {
+    open fun getExamplePreviews(): LiveData<List<Uri>> {
         val result = MutableLiveData<List<Uri>>()
 
         mCoroutineScope.launch(mCoroutineDispatcher) {

@@ -16,14 +16,14 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 @HiltViewModel
-class InitialViewModel @Inject constructor(
+open class InitialViewModel @Inject constructor(
     private val mPreviewDataRepository: PreviewDataRepository
 ) : ViewModel() {
     init {
         mPreviewDataRepository.setCoroutineScope(viewModelScope)
     }
 
-    fun getExampleDrawingPreviews(): LiveData<List<Uri>> {
+    open fun getExampleDrawingPreviews(): LiveData<List<Uri>> {
         return mPreviewDataRepository.getExamplePreviews()
     }
 }

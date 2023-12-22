@@ -7,7 +7,7 @@ import com.qubacy.moveanddraw._common.util.resourceUri
 import com.qubacy.moveanddraw.data._common.repository._common.source.DataSource
 import javax.inject.Inject
 
-class LocalPreviewDataSource @Inject constructor(
+open class LocalPreviewDataSource @Inject constructor(
     private val mContext: Context
 ) : DataSource {
     companion object {
@@ -21,7 +21,7 @@ class LocalPreviewDataSource @Inject constructor(
         )
     }
 
-    fun getExamplePreviews(): List<Uri> {
+    open fun getExamplePreviews(): List<Uri> {
         return EXAMPLE_PREVIEW_RESOURCE_ID_LIST.map { mContext.resourceUri(it) }
     }
 }
