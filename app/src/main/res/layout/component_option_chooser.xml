@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <com.qubacy.moveanddraw.ui.application.activity.screen.initial.component.chooser.view.OptionChooserComponent
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:background="?attr/scrimBackground"
+        android:clickable="true"
+        android:focusable="true"
+        app:componentOptionChooserOptionTitles="@{@stringArray/component_option_chooser_options_titles}"
+        app:componentOptionChooserOptionPreviewPercent="0.2"
+        app:componentOptionChooserActivationPercent="0.6">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/component_option_chooser_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:textAppearance="?attr/textAppearanceHeadlineMedium"
+            android:textColor="?attr/colorOnSurfaceInverse"
+            android:text="@string/component_option_chooser_header_text"/>
+
+        <com.qubacy.moveanddraw.ui.application.activity.screen.common.component.button.draggable.view.DraggableButton
+            android:id="@+id/component_option_chooser_swipe_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/component_option_chooser_header"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            style="@style/Widget.Material3.Button.IconButton"
+            app:icon="@drawable/ic_swipe"
+            app:iconTint="?attr/colorOnSurfaceInverse"/>
+
+    </com.qubacy.moveanddraw.ui.application.activity.screen.initial.component.chooser.view.OptionChooserComponent>
+</layout>

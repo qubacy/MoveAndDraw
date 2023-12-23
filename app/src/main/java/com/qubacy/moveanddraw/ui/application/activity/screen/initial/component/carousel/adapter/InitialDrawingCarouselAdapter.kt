@@ -22,7 +22,6 @@ class InitialDrawingCarouselAdapter(
             override fun areContentsTheSame(oldItem: Uri, newItem: Uri): Boolean {
                 return oldItem == newItem
             }
-
         }
     }
 

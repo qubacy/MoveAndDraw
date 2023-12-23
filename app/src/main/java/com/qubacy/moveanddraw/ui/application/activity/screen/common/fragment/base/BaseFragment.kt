@@ -1,4 +1,4 @@
-package com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment.base
+package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.base
 
 import android.content.Context
 import android.content.pm.PackageManager
@@ -10,7 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.qubacy.moveanddraw._common.error.Error
-import com.qubacy.moveanddraw.ui.application.activity.screen._common.component.dialog.error.ErrorDialog
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.component.dialog.error.ErrorDialog
 
 abstract class BaseFragment : Fragment() {
     private lateinit var mPermissionRequestLauncher: ActivityResultLauncher<Array<String>>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="componentOptionChooserOptionTitles" format="reference" />
+    <attr name="componentOptionChooserOptionPreviewPercent" format="float" />
+    <attr name="componentOptionChooserActivationPercent" format="float" />
+</resources>

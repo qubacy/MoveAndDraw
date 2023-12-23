@@ -1,4 +1,4 @@
-package com.qubacy.moveanddraw.ui.application.activity.screen._common.component.dialog.error
+package com.qubacy.moveanddraw.ui.application.activity.screen.common.component.dialog.error
 
 import android.content.Context
 import androidx.appcompat.app.AlertDialog

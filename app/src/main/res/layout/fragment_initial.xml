@@ -1,60 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:padding="@dimen/default_screen_padding">
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/fragment_initial_guideline_horizontal_80"
+<layout>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.8"/>
+        android:layout_height="match_parent"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/fragment_initial_header_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@id/fragment_initial_header_description"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:textAppearance="?attr/textAppearanceDisplayMedium"
-        android:fontFamily="@font/jura_semibold"
-        android:text="@string/fragment_initial_header_title_text"/>
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/fragment_initial_guideline_horizontal_80"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.8"/>
 
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/fragment_initial_header_description"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@id/fragment_initial_drawing_carousel"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="@dimen/default_component_margin"
-        android:textAppearance="?attr/textAppearanceHeadlineMedium"
-        android:fontFamily="@font/jura"
-        android:text="@string/fragment_initial_header_description_text"/>
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/fragment_initial_header_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@id/fragment_initial_header_description"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:textAppearance="?attr/textAppearanceDisplayMedium"
+            android:fontFamily="@font/jura_semibold"
+            android:text="@string/fragment_initial_header_title_text"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/fragment_initial_drawing_carousel"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintHeight_percent="0.5"
-        app:layout_constraintBottom_toTopOf="@id/fragment_initial_guideline_horizontal_80"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        tools:listitem="@layout/component_drawing_carousel_item"/>
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/fragment_initial_header_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@id/fragment_initial_drawing_carousel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginBottom="@dimen/default_component_margin"
+            android:textAppearance="?attr/textAppearanceHeadlineMedium"
+            android:fontFamily="@font/jura"
+            android:text="@string/fragment_initial_header_description_text"/>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/fragment_initial_button_start"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/fragment_initial_drawing_carousel"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="@dimen/default_component_margin"
-        android:text="@string/fragment_initial_button_start_caption"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/fragment_initial_drawing_carousel"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintHeight_percent="0.5"
+            app:layout_constraintBottom_toTopOf="@id/fragment_initial_guideline_horizontal_80"
+            android:layout_marginStart="@dimen/default_screen_padding"
+            android:layout_marginEnd="@dimen/default_screen_padding"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            tools:listitem="@layout/component_drawing_carousel_item"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/fragment_initial_button_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/fragment_initial_drawing_carousel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="@dimen/default_component_margin"
+            android:text="@string/fragment_initial_button_start_caption"/>
+
+        <include
+            android:id="@+id/fragment_initial_option_chooser"
+            layout="@layout/component_option_chooser"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

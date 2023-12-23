@@ -7,6 +7,14 @@
 
     <string name="component_error_dialog_title">Error!</string>
     <string name="component_error_dialog_neutral_button_caption">OK</string>
+    <string name="component_option_chooser_header_text">Choose by swiping</string>
+    <string-array name="component_option_chooser_options_titles">
+        <item>Go drawing</item>
+        <item>Go viewing</item>
+    </string-array>
+
+    <!-- Fragments: -->
+
     <string name="fragment_initial_header_title_text"><![CDATA[Move & Draw]]></string>
     <string name="fragment_initial_header_description_text">Create your own space.</string>
     <string name="fragment_initial_button_start_caption">Start</string>
