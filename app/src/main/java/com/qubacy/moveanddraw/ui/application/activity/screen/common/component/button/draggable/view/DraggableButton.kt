@@ -2,6 +2,7 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.common.component.b
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
@@ -36,6 +37,8 @@ class DraggableButton(
     }
 
     override fun onTouch(v: View, event: MotionEvent?): Boolean {
+        Log.d(TAG, "onTouch(): x = $x")
+
         when (event!!.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 mDX = v.translationX - event.rawX
