@@ -1,42 +1,24 @@
 package com.qubacy.moveanddraw.data.preview.repository
 
 import android.net.Uri
-import com.qubacy.moveanddraw._common.util.livedata.getOrAwaitValue
 import com.qubacy.moveanddraw._common.util.mock.UriMockUtil
-import com.qubacy.moveanddraw._common.util.rule.MainCoroutineRule
 import com.qubacy.moveanddraw.data.preview.repository.source.local.LocalPreviewDataSource
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito
 
 class PreviewDataRepositoryTest {
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @get:Rule
-    val mainCoroutineRule = MainCoroutineRule(Dispatchers.IO)
-
     private lateinit var mPreviewDataRepository: PreviewDataRepository
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     private fun initRepository(
-        previewUris: List<Uri>,
-        coroutineScope: CoroutineScope = GlobalScope,
-        coroutineDispatcher: CoroutineDispatcher = mainCoroutineRule.coroutineDispatcher
+        previewUris: List<Uri>
     ) {
         val localPreviewDataSourceMock = Mockito.mock(LocalPreviewDataSource::class.java)
 
         Mockito.`when`(localPreviewDataSourceMock.getExamplePreviews()).thenReturn(previewUris)
 
-        mPreviewDataRepository = PreviewDataRepository(localPreviewDataSourceMock).apply {
-            setCoroutineScope(coroutineScope)
-            setCoroutineDispatcher(coroutineDispatcher)
-        }
+        mPreviewDataRepository = PreviewDataRepository(localPreviewDataSourceMock)
     }
 
     @Before
@@ -44,15 +26,14 @@ class PreviewDataRepositoryTest {
 
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun getExamplePreviewsTest(): Unit = mainCoroutineRule.run {
+    fun getExamplePreviewsTest() {
         val previewUris = listOf(UriMockUtil.getMockedUri())
 
-        initRepository(previewUris, this)
+        initRepository(previewUris)
 
-        val resultLiveData = mPreviewDataRepository.getExamplePreviews()
+        val gottenPreviewUris = mPreviewDataRepository.getExamplePreviews()
 
-        Assert.assertEquals(previewUris, resultLiveData.getOrAwaitValue())
+        Assert.assertEquals(previewUris, gottenPreviewUris)
     }
 }

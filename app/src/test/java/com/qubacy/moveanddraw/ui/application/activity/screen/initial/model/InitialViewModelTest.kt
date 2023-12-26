@@ -1,26 +1,53 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.initial.model
 
 import android.net.Uri
-import androidx.lifecycle.MutableLiveData
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import com.qubacy.moveanddraw._common.util.livedata.getOrAwaitValue
 import com.qubacy.moveanddraw._common.util.mock.UriMockUtil
-import com.qubacy.moveanddraw.data.preview.repository.PreviewDataRepository
+import com.qubacy.moveanddraw._common.util.rule.MainCoroutineRule
+import com.qubacy.moveanddraw.domain._common.usecase.result._common.Result
+import com.qubacy.moveanddraw.domain.initial.InitialUseCase
+import com.qubacy.moveanddraw.domain.initial.result.GetExamplePreviewsResult
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito
 
 class InitialViewModelTest {
+    @get:Rule
+    val instantTaskExecutorRule = InstantTaskExecutorRule()
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @get:Rule
+    val mainCoroutineRule = MainCoroutineRule(Dispatchers.IO)
+
+    private lateinit var mResultFlow: MutableStateFlow<Result?>
+
     private lateinit var mInitialViewModel: InitialViewModel
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun initViewModel(
         previewUris: List<Uri> = listOf()
     ) {
-        val previewDataRepositoryMock = Mockito.mock(PreviewDataRepository::class.java)
+        mResultFlow = MutableStateFlow(null)
 
-        Mockito.`when`(previewDataRepositoryMock.getExamplePreviews())
-            .thenReturn(MutableLiveData(previewUris))
+        val initialUseCaseMock = Mockito.mock(InitialUseCase::class.java)
 
-        mInitialViewModel = InitialViewModel(previewDataRepositoryMock)
+        Mockito.`when`(initialUseCaseMock.resultFlow)
+            .thenReturn(mResultFlow)
+        Mockito.`when`(initialUseCaseMock.getExamplePreviews())
+            .thenAnswer {
+                mainCoroutineRule.launch {
+                    mResultFlow.emit(GetExamplePreviewsResult(previewUris))
+                }
+            }
+
+        mInitialViewModel = InitialViewModel(initialUseCaseMock)
     }
 
     @Before
@@ -28,14 +55,17 @@ class InitialViewModelTest {
 
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun getExampleDrawingPreviewsTest() {
+    fun getExampleDrawingPreviewsTest() = mainCoroutineRule.run {
         val exampleDrawingPreviewUris = listOf(UriMockUtil.getMockedUri())
 
         initViewModel(exampleDrawingPreviewUris)
 
-        val gottenPreviewUrisLiveData = mInitialViewModel.getExampleDrawingPreviews()
+        mInitialViewModel.getExampleDrawingPreviews()
 
-        Assert.assertEquals(exampleDrawingPreviewUris, gottenPreviewUrisLiveData.value)
+        val uiState = mInitialViewModel.uiState.getOrAwaitValue()!!
+
+        Assert.assertEquals(exampleDrawingPreviewUris, uiState.previewUris)
     }
 }
