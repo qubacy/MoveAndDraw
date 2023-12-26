@@ -1,13 +1,14 @@
-package com.qubacy.moveanddraw.data.error.model
+package com.qubacy.moveanddraw.data.error.repository.source.local.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.qubacy.moveanddraw._common.error.Error
 
 @Entity(
-    tableName = DataError.TABLE_NAME
+    tableName = ErrorEntity.TABLE_NAME
 )
-data class DataError(
+data class ErrorEntity(
     @PrimaryKey(autoGenerate = false)
     @ColumnInfo(name = ID_PROP_NAME) val id: Long,
     val message: String,
@@ -23,4 +24,8 @@ data class DataError(
 
         const val IS_CRITICAL_DEFAULT_VALUE = "0"
     }
+}
+
+fun ErrorEntity.toError(): Error {
+    return Error(id, message, isCritical)
 }

@@ -6,7 +6,7 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._co
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 
 class InitialUiState(
-    val previewUris: List<Uri>,
+    val previewUris: List<Uri> = listOf(),
     pendingUiOperations: TakeQueue<UiOperation> = TakeQueue()
 ) : UiState(pendingUiOperations) {
 

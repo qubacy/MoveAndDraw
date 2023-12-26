@@ -5,8 +5,6 @@ import androidx.room.Room
 import com.qubacy.moveanddraw.data._common.repository._common.source.local.database.Database
 
 object TestDatabase {
-    const val DATABASE_NAME = "mad_test_db"
-
     private var mDB: Database? = null
 
     fun getDatabase(context: Context): Database {
@@ -14,8 +12,9 @@ object TestDatabase {
             mDB = Room.databaseBuilder(
                 context,
                 Database::class.java,
-                DATABASE_NAME
-            ).fallbackToDestructiveMigration().build()
+                Database.DATABASE_NAME
+            ).createFromAsset(Database.DATABASE_NAME)
+                .fallbackToDestructiveMigration().build()
         }
 
         return mDB as Database

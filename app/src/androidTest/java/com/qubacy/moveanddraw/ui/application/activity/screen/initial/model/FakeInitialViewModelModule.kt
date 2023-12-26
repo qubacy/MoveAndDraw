@@ -23,7 +23,7 @@ object FakeInitialViewModelModule {
     fun provideInitialUseCase(
         context: Context
     ): InitialUseCase {
-        val db = TestDatabase.getDatabase(InstrumentationRegistry.getInstrumentation().context)
+        val db = TestDatabase.getDatabase(InstrumentationRegistry.getInstrumentation().targetContext)
 
         val errorDataRepository = ErrorDataRepository(db.errorDao())
         val previewDataRepository = PreviewDataRepository(LocalPreviewDataSource(context))

@@ -7,20 +7,16 @@ import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
 class MoveAndDrawApplication : Application() {
-    companion object {
-        const val DATABASE_NAME = "mad_db"
-    }
-
-    lateinit var mDB: Database
+    private lateinit var mDB: Database
     val db get() = mDB
 
     override fun onCreate() {
         super.onCreate()
 
         mDB = Room.databaseBuilder(
-            this,
-            Database::class.java,
-            DATABASE_NAME
-        ).fallbackToDestructiveMigration().build()
+            this, Database::class.java, Database.DATABASE_NAME)
+            .fallbackToDestructiveMigration()
+            .createFromAsset(Database.DATABASE_NAME)
+            .build()
     }
 }

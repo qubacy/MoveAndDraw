@@ -36,8 +36,8 @@ open class InitialViewModel @Inject constructor(
 
     override fun getUiStateWithUiOperation(uiOperation: UiOperation): InitialUiState {
         return InitialUiState(
-            uiState.value!!.previewUris,
-            TakeQueue(uiState.value!!.pendingOperations, uiOperation)
+            uiState.value?.previewUris ?: listOf(),
+            TakeQueue(uiOperation)
         )
     }
 

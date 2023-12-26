@@ -10,9 +10,9 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw._common.error.Error
-import com.qubacy.moveanddraw._common.util.struct.takequeue.TakeQueue
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.component.dialog.error.ErrorDialog
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.BaseViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.UiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
@@ -59,7 +59,7 @@ abstract class BaseFragment<
         while (true) {
             val uiOperation = uiState.pendingOperations.take() ?: break
 
-            when (uiOperation) {
+            when (uiOperation::class) {
                 ShowErrorUiOperation::class ->
                     processShowErrorUiOperation(uiOperation as ShowErrorUiOperation)
                 else -> processUiOperation(uiOperation)
@@ -75,16 +75,20 @@ abstract class BaseFragment<
     protected open fun processUiOperation(uiOperation: UiOperation) = Unit
 
     open fun onErrorOccurred(error: Error, callback: (() -> Unit)? = null) {
-        ErrorDialog.Builder(
-            error.message,
-            requireContext()
-        ) { }
-            .setOnDismissListener {
-                handleError(error)
-                callback?.invoke()
+        val onDismiss = Runnable {
+            handleError(error)
+            callback?.invoke()
+        }
 
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.component_error_dialog_title)
+            .setMessage(error.message)
+            .setNeutralButton(R.string.component_error_dialog_neutral_button_caption) { _, _ ->
+                onDismiss.run()
             }
-            .create()
+            .setOnDismissListener {
+                onDismiss.run()
+            }
             .show()
     }
 
