@@ -1,4 +1,4 @@
-package com.qubacy.moveanddraw._common.util
+package com.qubacy.moveanddraw._common.util.context
 
 import android.content.ContentResolver
 import android.content.Context

@@ -1,10 +1,10 @@
-package com.qubacy.moveanddraw.data.preview.repository.source
+package com.qubacy.moveanddraw.data.preview.repository.source.local
 
 import android.content.Context
 import android.net.Uri
 import com.qubacy.moveanddraw.R
-import com.qubacy.moveanddraw._common.util.resourceUri
-import com.qubacy.moveanddraw.data._common.repository._common.source.DataSource
+import com.qubacy.moveanddraw._common.util.context.resourceUri
+import com.qubacy.moveanddraw.data._common.repository._common.source._common.DataSource
 import javax.inject.Inject
 
 open class LocalPreviewDataSource @Inject constructor(

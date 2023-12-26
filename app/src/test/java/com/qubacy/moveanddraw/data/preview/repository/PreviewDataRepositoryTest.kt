@@ -1,11 +1,10 @@
 package com.qubacy.moveanddraw.data.preview.repository
 
 import android.net.Uri
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.qubacy.moveanddraw._common.util.livedata.getOrAwaitValue
 import com.qubacy.moveanddraw._common.util.mock.UriMockUtil
 import com.qubacy.moveanddraw._common.util.rule.MainCoroutineRule
-import com.qubacy.moveanddraw.data.preview.repository.source.LocalPreviewDataSource
+import com.qubacy.moveanddraw.data.preview.repository.source.local.LocalPreviewDataSource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -2,7 +2,7 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.initial.model
 
 import android.content.Context
 import com.qubacy.moveanddraw.data.preview.repository.PreviewDataRepository
-import com.qubacy.moveanddraw.data.preview.repository.source.LocalPreviewDataSource
+import com.qubacy.moveanddraw.data.preview.repository.source.local.LocalPreviewDataSource
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.android.components.ViewModelComponent

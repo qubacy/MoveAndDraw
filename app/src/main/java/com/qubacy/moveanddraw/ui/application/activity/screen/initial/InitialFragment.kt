@@ -10,22 +10,26 @@ import androidx.fragment.app.viewModels
 import com.google.android.material.carousel.CarouselLayoutManager
 import com.google.android.material.carousel.HeroCarouselStrategy
 import com.qubacy.moveanddraw.databinding.FragmentInitialBinding
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.base.BaseFragment
 import com.qubacy.moveanddraw.ui.application.activity.screen.initial.component.carousel.adapter.InitialDrawingCarouselAdapter
 import com.qubacy.moveanddraw.ui.application.activity.screen.initial.component.chooser.view.OptionChooserComponent
 import com.qubacy.moveanddraw.ui.application.activity.screen.initial.component.chooser.view.OptionChooserComponentCallback
 import com.qubacy.moveanddraw.ui.application.activity.screen.initial.model.InitialViewModel
+import com.qubacy.moveanddraw.ui.application.activity.screen.initial.model.state.InitialUiState
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class InitialFragment : BaseFragment(), OptionChooserComponentCallback {
+class InitialFragment(
+
+) : BaseFragment<InitialUiState, InitialViewModel>(), OptionChooserComponentCallback {
     companion object {
         const val TAG = "INITIAL_FRAGMENT"
 
         const val DEFAULT_SCRIM_FADE_DURATION = 400L
     }
 
-    private val mModel: InitialViewModel by viewModels()
+    override val mModel: InitialViewModel by viewModels()
     private lateinit var mBinding: FragmentInitialBinding
 
     private lateinit var mCarouselAdapter: InitialDrawingCarouselAdapter
@@ -71,9 +75,16 @@ class InitialFragment : BaseFragment(), OptionChooserComponentCallback {
         (mBinding.fragmentInitialOptionChooser.root as OptionChooserComponent)
             .setSwipeOptionChosenCallback(this)
 
-        mModel.getExampleDrawingPreviews().observe(viewLifecycleOwner) {
-            mCarouselAdapter.submitList(it)
+        mModel.uiState.observe(viewLifecycleOwner) {
+            if (it == null) return@observe
+
+            processUiState(it)
         }
+        mModel.getExampleDrawingPreviews()
+    }
+
+    override fun setUiElementsState(uiState: InitialUiState) {
+        mCarouselAdapter.submitList(uiState.previewUris)
     }
 
     private fun onStartClicked() {
