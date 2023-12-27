@@ -7,10 +7,13 @@ import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.viewModels
+import androidx.navigation.Navigation
 import com.google.android.material.carousel.CarouselLayoutManager
 import com.google.android.material.carousel.HeroCarouselStrategy
+import com.google.android.material.transition.MaterialSharedAxis
+import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw.databinding.FragmentInitialBinding
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.transition.DefaultSharedAxisTransitionGenerator
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.base.BaseFragment
 import com.qubacy.moveanddraw.ui.application.activity.screen.initial.component.carousel.adapter.InitialDrawingCarouselAdapter
 import com.qubacy.moveanddraw.ui.application.activity.screen.initial.component.chooser.view.OptionChooserComponent
@@ -27,6 +30,8 @@ class InitialFragment(
         const val TAG = "INITIAL_FRAGMENT"
 
         const val DEFAULT_SCRIM_FADE_DURATION = 400L
+
+        const val DEFAULT_EXIT_ANIMATION_DURATION = 300L
     }
 
     override val mModel: InitialViewModel by viewModels()
@@ -38,6 +43,17 @@ class InitialFragment(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        exitTransition = DefaultSharedAxisTransitionGenerator.generate(
+            requireContext(),
+            MaterialSharedAxis.Z,
+            true
+        )
+        reenterTransition = DefaultSharedAxisTransitionGenerator.generate(
+            requireContext(),
+            MaterialSharedAxis.Z,
+            false
+        )
 
         mScrimCallback = object : OnBackPressedCallback(false) {
             override fun handleOnBackPressed() { onBackPressed() }
@@ -132,7 +148,20 @@ class InitialFragment(
 
         // todo: implement a transition..
 
+        when (swipeOption) {
+            OptionChooserComponentCallback.SwipeOption.RIGHT -> { goToViewer() }
+            OptionChooserComponentCallback.SwipeOption.LEFT -> { goToEditor() }
+            else -> throw IllegalStateException()
+        }
+    }
 
+    private fun goToViewer() {
+
+    }
+
+    private fun goToEditor() {
+        Navigation.findNavController(mBinding.root)
+            .navigate(R.id.action_initialFragment_to_calibrationFragment)
     }
 
     override fun onScrimClicked() {

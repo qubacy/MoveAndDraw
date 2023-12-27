@@ -12,10 +12,14 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._co
 import kotlinx.coroutines.flow.map
 
 abstract class BusinessViewModel<UiStateType : UiState>(
-    useCase: UseCase
+    private val mUseCase: UseCase
 ) : BaseViewModel<UiStateType>() {
     override val uiState: LiveData<UiStateType?> =
-        useCase.resultFlow.map { updateUiStateWithResult(it) }.asLiveData()
+        mUseCase.resultFlow.map { updateUiStateWithResult(it) }.asLiveData()
+
+    open fun retrieveError(errorId: Long) {
+        mUseCase.retrieveError(errorId)
+    }
 
     protected fun updateUiStateWithResult(result: Result?): UiStateType? {
         if (result == null) return null

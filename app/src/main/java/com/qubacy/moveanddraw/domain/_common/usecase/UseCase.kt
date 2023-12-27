@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 abstract class UseCase(
     protected val mErrorDataRepository: ErrorDataRepository,
@@ -30,5 +31,11 @@ abstract class UseCase(
         val error = mErrorDataRepository.getError(errorId)
 
         mResultFlow.emit(ErrorResult(error))
+    }
+
+    open fun retrieveError(errorId: Long) {
+        mCoroutineScope.launch(mCoroutineDispatcher) {
+            onErrorCaught(errorId)
+        }
     }
 }

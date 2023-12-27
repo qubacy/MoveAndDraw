@@ -19,4 +19,12 @@
     <string name="fragment_initial_header_description_text">Create your own space.</string>
     <string name="fragment_initial_button_start_caption">Start</string>
 
+    <string name="fragment_calibration_header_text_idle">Calibration</string>
+    <string name="fragment_calibration_description_text_idle">Put your phone on any even surface and press the button.</string>
+    <string name="fragment_calibration_button_start_caption_idle">Start</string>
+
+    <string name="fragment_calibration_header_text_calibrated">You are ready!</string>
+    <string name="fragment_calibration_description_text_calibrated">You are ready to go! Move your phone vertically and horizontally and click a button to make a point.</string>
+    <string name="fragment_calibration_button_start_caption_calibrated">Let\'s go!</string>
+
 </resources>

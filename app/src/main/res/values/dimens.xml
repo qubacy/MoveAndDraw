@@ -2,4 +2,6 @@
 <resources>
     <dimen name="default_screen_padding">16dp</dimen>
     <dimen name="default_component_margin">16dp</dimen>
+
+    <integer name="default_transition_animation_duration">300</integer>
 </resources>
