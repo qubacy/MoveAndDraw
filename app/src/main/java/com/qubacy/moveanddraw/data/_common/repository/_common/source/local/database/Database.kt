@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import com.qubacy.moveanddraw.data.error.repository.source.local.LocalErrorDataSource
 import com.qubacy.moveanddraw.data.error.repository.source.local.model.ErrorEntity
 
-@Database(entities = [ErrorEntity::class], version = 1)
+@Database(entities = [ErrorEntity::class], version = 2)
 abstract class Database : RoomDatabase() {
     companion object {
         const val DATABASE_NAME = "mad_db.db"

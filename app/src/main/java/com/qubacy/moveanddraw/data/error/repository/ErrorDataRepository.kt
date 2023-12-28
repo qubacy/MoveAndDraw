@@ -4,13 +4,16 @@ import com.qubacy.moveanddraw._common.error.Error
 import com.qubacy.moveanddraw.data._common.repository._common.DataRepository
 import com.qubacy.moveanddraw.data.error.repository.source.local.LocalErrorDataSource
 import com.qubacy.moveanddraw.data.error.repository.source.local.model.toError
+import java.util.Locale
 import javax.inject.Inject
 
-class ErrorDataRepository @Inject constructor(
+open class ErrorDataRepository @Inject constructor(
     private val mLocalErrorDataSource: LocalErrorDataSource
 ) : DataRepository() {
-    fun getError(id: Long): Error {
-        return mLocalErrorDataSource.getErrorById(id)?.toError()
+    open fun getError(id: Long): Error {
+        val lang = Locale.getDefault().language
+
+        return mLocalErrorDataSource.getErrorById(id, lang)?.toError()
             ?: throw IllegalStateException()
     }
 }

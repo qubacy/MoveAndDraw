@@ -10,7 +10,7 @@ import com.qubacy.moveanddraw.domain.calibration.CalibrationUseCase
 import com.qubacy.moveanddraw.ui.application.MoveAndDrawApplication
 import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.state.CalibrationUiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model.business.BusinessViewModel
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.accelerometer.model.AccelerometerViewModel
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,22 +25,10 @@ import javax.inject.Inject
 @HiltViewModel
 open class CalibrationViewModel @Inject constructor(
     private val mCalibrationUseCase: CalibrationUseCase
-) : BusinessViewModel<CalibrationUiState>(mCalibrationUseCase) {
+) : AccelerometerViewModel<CalibrationUiState>(mCalibrationUseCase) {
     companion object {
         const val CALIBRATING_DURATION = 5000L
     }
-
-    private val mUiState =  MutableLiveData(CalibrationUiState())
-    override val uiState: LiveData<CalibrationUiState?> = mUiState
-
-    private var mXLastOffset: Float = 0f
-    val xLastOffset get() = mXLastOffset
-
-    private var mYLastOffset: Float = 0f
-    val yLastOffset get() = mYLastOffset
-
-    private var mZLastOffset: Float = 0f
-    val zLastOffset get() = mZLastOffset
 
     fun startCalibration() {
         mUiState.value = CalibrationUiState(CalibrationUiState.State.CALIBRATING)
@@ -55,12 +43,6 @@ open class CalibrationViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.Main) {
             mUiState.value = CalibrationUiState(CalibrationUiState.State.CALIBRATED)
         }
-    }
-
-    fun setLastOffsets(xOffset: Float, yOffset: Float, zOffset: Float) {
-        mXLastOffset = xOffset
-        mYLastOffset = yOffset
-        mZLastOffset = zOffset
     }
 
     override fun getUiStateWithUiOperation(uiOperation: UiOperation): CalibrationUiState {

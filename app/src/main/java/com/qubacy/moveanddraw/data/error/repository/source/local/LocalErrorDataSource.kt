@@ -7,6 +7,10 @@ import com.qubacy.moveanddraw.data.error.repository.source.local.model.ErrorEnti
 
 @Dao
 interface LocalErrorDataSource : DataSource {
-    @Query("SELECT * FROM ${ErrorEntity.TABLE_NAME} WHERE ${ErrorEntity.ID_PROP_NAME} = :id")
-    fun getErrorById(id: Long): ErrorEntity?
+    @Query(
+        "SELECT * " +
+        "FROM ${ErrorEntity.TABLE_NAME} " +
+        "WHERE ${ErrorEntity.ID_PROP_NAME} = :id AND ${ErrorEntity.LANG_PROP_NAME} = :lang"
+    )
+    fun getErrorById(id: Long, lang: String): ErrorEntity?
 }

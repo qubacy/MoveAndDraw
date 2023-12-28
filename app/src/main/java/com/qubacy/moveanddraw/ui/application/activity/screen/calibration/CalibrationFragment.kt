@@ -1,16 +1,9 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.calibration
 
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
-import android.hardware.SensorManager.SENSOR_DELAY_NORMAL
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.viewModels
 import com.google.android.material.transition.MaterialSharedAxis
@@ -19,13 +12,13 @@ import com.qubacy.moveanddraw.databinding.FragmentCalibrationBinding
 import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.CalibrationViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.state.CalibrationUiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.transition.DefaultSharedAxisTransitionGenerator
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.base.BaseFragment
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.accelerometer.AccelerometerFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.lang.IllegalStateException
 
 @AndroidEntryPoint
 class CalibrationFragment
-    : BaseFragment<CalibrationUiState, CalibrationViewModel>(), SensorEventListener {
+    : AccelerometerFragment<CalibrationUiState, CalibrationViewModel>() {
     companion object {
         const val TAG = "CALIBR_FRAGMENT"
     }
@@ -66,6 +59,8 @@ class CalibrationFragment
 
         postponeEnterTransition()
         view.doOnPreDraw { startPostponedEnterTransition() }
+
+        mModel.retrieveError(0)
     }
 
     override fun onDestroy() {
@@ -84,23 +79,6 @@ class CalibrationFragment
 
     private fun startCalibration() {
         mModel.startCalibration()
-    }
-
-    private fun startCalibrationWithSensor() {
-        val sensorManager = getSystemService(requireContext(), SensorManager::class.java)
-                as SensorManager
-        val sensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
-
-        if (sensor == null) return //mModel.retrieveError() // todo: implement;
-
-        sensorManager.registerListener(this, sensor, SENSOR_DELAY_NORMAL)
-    }
-
-    private fun endSensorListening() {
-        val sensorManager = getSystemService(requireContext(), SensorManager::class.java)
-                as SensorManager
-
-        sensorManager.unregisterListener(this)
     }
 
     private fun goToEditor() {
@@ -122,7 +100,7 @@ class CalibrationFragment
         when (uiState.state) {
             CalibrationUiState.State.IDLE -> {}
             CalibrationUiState.State.CALIBRATING -> {
-                startCalibrationWithSensor()
+                startSensorListening()
                 changeProgressIndicatorEnabled(true)
                 changeStartButtonEnabled(false)
             }
@@ -150,17 +128,5 @@ class CalibrationFragment
         mBinding.fragmentCalibrationDescription.setText(descriptionTextResId)
         mBinding.fragmentCalibrationPhoneImage.setImageResource(R.drawable.ic_moving_phone)
         mBinding.fragmentCalibrationButtonStart.setText(startButtonCaptionResId)
-    }
-
-    override fun onSensorChanged(event: SensorEvent?) {
-        Log.d(TAG, "onSensorChanged(): event.x = ${event?.values?.get(0)};" +
-                " event.y = ${event?.values?.get(1)}; " +
-                "event.z = ${event?.values?.get(2)}")
-
-        mModel.setLastOffsets(event!!.values!![0], event.values!![1], event.values!![2])
-    }
-
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        TODO("Not yet implemented")
     }
 }
