@@ -6,15 +6,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.transition.MaterialSharedAxis
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw.databinding.FragmentCalibrationBinding
 import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.CalibrationViewModel
+import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.CalibrationViewModelFactory
 import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.state.CalibrationUiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.transition.DefaultSharedAxisTransitionGenerator
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.accelerometer.AccelerometerFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.lang.IllegalStateException
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class CalibrationFragment
@@ -23,7 +26,12 @@ class CalibrationFragment
         const val TAG = "CALIBR_FRAGMENT"
     }
 
-    override val mModel: CalibrationViewModel by viewModels()
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory//CalibrationViewModelFactory
+
+    override val mModel: CalibrationViewModel by viewModels(
+        factoryProducer = { viewModelFactory }
+    )
 
     private lateinit var mBinding: FragmentCalibrationBinding
 
@@ -59,8 +67,6 @@ class CalibrationFragment
 
         postponeEnterTransition()
         view.doOnPreDraw { startPostponedEnterTransition() }
-
-        mModel.retrieveError(0)
     }
 
     override fun onDestroy() {
@@ -70,6 +76,8 @@ class CalibrationFragment
     }
 
     private fun onStartClicked() {
+        if (mModel.uiState.value == null) return startCalibration()
+
         when (mModel.uiState.value!!.state) {
             CalibrationUiState.State.IDLE -> { startCalibration() }
             CalibrationUiState.State.CALIBRATED -> { goToEditor() }
@@ -108,25 +116,39 @@ class CalibrationFragment
                 endSensorListening()
                 changeProgressIndicatorEnabled(false)
                 changeStartButtonEnabled(true)
-                changeLayoutByIsCalibrated(true)
             }
         }
+
+        changeLayoutByState(uiState.state)
     }
 
-    private fun changeLayoutByIsCalibrated(isCalibrated: Boolean) {
-        val headerTextResId =
-            if (isCalibrated) R.string.fragment_calibration_header_text_calibrated
-            else R.string.fragment_calibration_header_text_idle
-        val descriptionTextResId =
-            if (isCalibrated) R.string.fragment_calibration_description_text_calibrated
-            else R.string.fragment_calibration_description_text_idle
-        val startButtonCaptionResId =
-            if (isCalibrated) R.string.fragment_calibration_button_start_caption_calibrated
-            else R.string.fragment_calibration_button_start_caption_idle
+    private fun changeLayoutByState(state: CalibrationUiState.State) {
+        val headerTextResId = when (state) {
+            CalibrationUiState.State.CALIBRATED ->
+                R.string.fragment_calibration_header_text_calibrated
+            else -> R.string.fragment_calibration_header_text_idle
+        }
+        val descriptionTextResId = when (state) {
+            CalibrationUiState.State.IDLE ->
+                R.string.fragment_calibration_description_text_idle
+            CalibrationUiState.State.CALIBRATING ->
+                R.string.fragment_calibration_description_text_calibrating
+            CalibrationUiState.State.CALIBRATED ->
+                R.string.fragment_calibration_description_text_calibrated
+        }
+        val imageResourceId = when (state) {
+            CalibrationUiState.State.CALIBRATED -> R.drawable.ic_moving_phone
+            else -> R.drawable.ic_phone
+        }
+        val startButtonCaptionResId = when (state) {
+            CalibrationUiState.State.CALIBRATED ->
+                R.string.fragment_calibration_button_start_caption_calibrated
+            else -> R.string.fragment_calibration_button_start_caption_idle
+        }
 
         mBinding.fragmentCalibrationHeader.setText(headerTextResId)
         mBinding.fragmentCalibrationDescription.setText(descriptionTextResId)
-        mBinding.fragmentCalibrationPhoneImage.setImageResource(R.drawable.ic_moving_phone)
+        mBinding.fragmentCalibrationPhoneImage.setImageResource(imageResourceId)
         mBinding.fragmentCalibrationButtonStart.setText(startButtonCaptionResId)
     }
 }

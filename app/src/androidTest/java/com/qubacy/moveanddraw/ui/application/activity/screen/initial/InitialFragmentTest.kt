@@ -1,6 +1,9 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.initial
 
 import android.view.View
+import androidx.navigation.Navigation
+import androidx.navigation.testing.TestNavHostController
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
@@ -18,6 +21,7 @@ import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw._common.util.launcher.launchFragmentInHiltContainer
 import com.qubacy.moveanddraw.ui._common.util.view.action.drag.DragViewAction
 import com.qubacy.moveanddraw.ui._common.util.view.action.drag.DragViewActionUtil
+import com.qubacy.moveanddraw.ui._common.util.view.action.swipe.SwipeViewActionUtil
 import com.qubacy.moveanddraw.ui._common.util.view.action.wait.WaitViewAction
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.component.button.draggable.view.DraggableButton
 import com.qubacy.moveanddraw.ui.application.activity.screen.initial.component.chooser.view.OptionChooserComponent
@@ -27,6 +31,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers
+import org.junit.Assert
 import org.junit.Rule
 import org.junit.runner.RunWith
 
@@ -38,10 +43,16 @@ class InitialFragmentTest {
     var hiltRule = HiltAndroidRule(this)
 
     private lateinit var mFragment: InitialFragment
+    private lateinit var mNavController: TestNavHostController
 
     @Before
     fun setup() {
+        mNavController = TestNavHostController(ApplicationProvider.getApplicationContext())
+
         launchFragmentInHiltContainer<InitialFragment> {
+            mNavController.setGraph(R.navigation.nav_graph)
+            Navigation.setViewNavController(requireView(), mNavController)
+
             mFragment = this as InitialFragment
         }
     }
@@ -185,5 +196,15 @@ class InitialFragmentTest {
         Espresso.onView(withId(R.id.fragment_initial_option_chooser))
             .check(ViewAssertions.matches(
                 ViewMatchers.withEffectiveVisibility(ViewMatchers.Visibility.GONE)))
+    }
+
+    @Test
+    fun choosingDrawingLeadsToTransitionToCalibrationScreenTest() {
+        Espresso.onView(withId(R.id.fragment_initial_button_start))
+            .perform(ViewActions.click())
+        Espresso.onView(withId(R.id.component_option_chooser_swipe_button))
+            .perform(SwipeViewActionUtil.generateSwipeViewAction(0f, 0f))
+
+        Assert.assertEquals(R.id.calibrationFragment, mNavController.currentDestination!!.id)
     }
 }

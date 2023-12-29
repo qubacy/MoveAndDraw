@@ -7,8 +7,6 @@ import com.qubacy.moveanddraw._common.util.rule.MainCoroutineRule
 import com.qubacy.moveanddraw.domain._common.usecase.UseCase
 import com.qubacy.moveanddraw.domain._common.usecase.result._common.Result
 import com.qubacy.moveanddraw.domain._common.usecase.result.error.ErrorResult
-import com.qubacy.moveanddraw.domain.calibration.CalibrationUseCase
-import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.CalibrationViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.UiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation.error.ShowErrorUiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model.business.BusinessViewModel
@@ -17,6 +15,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito
@@ -29,32 +28,36 @@ abstract class BusinessViewModelTest<
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @get:Rule
-    val mainCoroutineRule = MainCoroutineRule(Dispatchers.IO)
+    val mainCoroutineRule = MainCoroutineRule(Dispatchers.Default)
 
     protected lateinit var mResultFlow: MutableStateFlow<Result?>
+    protected lateinit var mUseCaseMock: UseCaseType
     protected lateinit var mViewModel: ViewModelType
 
     protected abstract fun mockUseCase(): UseCaseType
     protected abstract fun createViewModel(useCaseMock: UseCaseType): ViewModelType
+
+    @Before
+    open fun setup() {
+
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     protected open fun initViewModel(
         error: Error? = null
     ) {
         mResultFlow = MutableStateFlow(null)
+        mUseCaseMock = mockUseCase()
 
-        val useCaseMock = mockUseCase()
-
-        Mockito.`when`(useCaseMock.resultFlow)
-            .thenReturn(mResultFlow)
-        Mockito.`when`(useCaseMock.retrieveError(Mockito.anyLong()))
+        Mockito.`when`(mUseCaseMock.resultFlow).thenReturn(mResultFlow)
+        Mockito.`when`(mUseCaseMock.retrieveError(Mockito.anyLong()))
             .thenAnswer {
                 mainCoroutineRule.launch {
                     mResultFlow.emit(ErrorResult(error!!))
                 }
             }
 
-        mViewModel = createViewModel(useCaseMock)
+        mViewModel = createViewModel(mUseCaseMock)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

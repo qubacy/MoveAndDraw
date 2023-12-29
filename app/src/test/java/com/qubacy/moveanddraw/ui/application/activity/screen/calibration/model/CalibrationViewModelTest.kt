@@ -12,6 +12,7 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.s
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
+// Warning! Launching the test suit can lead to some exceptions. BUT every case is CORRECT by itself;
 class CalibrationViewModelTest :
     BusinessViewModelTest<CalibrationUiState, CalibrationUseCase, CalibrationViewModel>() {
 
@@ -24,8 +25,8 @@ class CalibrationViewModelTest :
     }
 
     @Before
-    fun setup() {
-
+    override fun setup() {
+        super.setup()
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
