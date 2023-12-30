@@ -29,6 +29,8 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.initial.model.Initi
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers
 import org.junit.Assert
@@ -185,6 +187,10 @@ class InitialFragmentTest {
             .check(ViewAssertions.matches(
                 ViewMatchers.withEffectiveVisibility(ViewMatchers.Visibility.GONE)))
 
+        runBlocking(Dispatchers.Main) {
+            mNavController.setCurrentDestination(R.id.initialFragment)
+        }
+
         Espresso.onView(withId(R.id.fragment_initial_button_start))
             .perform(ViewActions.click())
 
@@ -206,5 +212,18 @@ class InitialFragmentTest {
             .perform(SwipeViewActionUtil.generateSwipeViewAction(0f, 0f))
 
         Assert.assertEquals(R.id.calibrationFragment, mNavController.currentDestination!!.id)
+    }
+
+    @Test
+    fun choosingViewingLeadsToTransitionToViewerScreenTest() {
+        Espresso.onView(withId(R.id.fragment_initial_button_start))
+            .perform(ViewActions.click())
+
+        val endX = mFragment.requireView().measuredWidth.toFloat()
+
+        Espresso.onView(withId(R.id.component_option_chooser_swipe_button))
+            .perform(SwipeViewActionUtil.generateSwipeViewAction(endX, 0f))
+
+        Assert.assertEquals(R.id.viewerFragment, mNavController.currentDestination!!.id)
     }
 }

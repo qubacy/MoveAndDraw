@@ -4,13 +4,11 @@ import android.content.Context
 import androidx.lifecycle.viewModelScope
 import com.qubacy.moveanddraw._common.util.struct.takequeue.TakeQueue
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
-import com.qubacy.moveanddraw.data.error.repository.source.local.LocalErrorDataSource
 import com.qubacy.moveanddraw.data.preview.repository.PreviewDataRepository
 import com.qubacy.moveanddraw.data.preview.repository.source.local.LocalPreviewDataSource
 import com.qubacy.moveanddraw.domain._common.usecase.result._common.Result
 import com.qubacy.moveanddraw.domain.initial.InitialUseCase
 import com.qubacy.moveanddraw.domain.initial.result.GetExamplePreviewsResult
-import com.qubacy.moveanddraw.ui.application.MoveAndDrawApplication
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model.business.BusinessViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.initial.model.state.InitialUiState
@@ -61,17 +59,12 @@ open class InitialViewModel @Inject constructor(
 object InitialViewModelModule {
     @Provides
     fun provideInitialUseCase(
-        context: Context
+        errorDataRepository: ErrorDataRepository,
+        @ApplicationContext context: Context
     ): InitialUseCase {
-        val errorDataRepository = ErrorDataRepository((context as MoveAndDrawApplication).db.errorDao())
         val previewDataRepository = PreviewDataRepository(LocalPreviewDataSource(context))
 
         return InitialUseCase(errorDataRepository, previewDataRepository)
-    }
-
-    @Provides
-    fun provideContext(@ApplicationContext context: Context): Context {
-        return context
     }
 }
 

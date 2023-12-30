@@ -1,6 +1,5 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model
 
-import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -12,7 +11,6 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.s
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.android.components.ActivityRetainedComponent
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.testing.TestInstallIn
 import org.mockito.Mockito
 
@@ -34,6 +32,7 @@ object FakeCalibrationViewModelFactoryModule {
     }
 
     @Provides
+    @CalibrationViewModelFactoryQualifier
     fun provideCalibrationViewModelFactory(
     ): ViewModelProvider.Factory {
         return FakeCalibrationViewModelFactory()
@@ -41,12 +40,8 @@ object FakeCalibrationViewModelFactoryModule {
 
     @Provides
     fun provideCalibrationUseCase(
-        @ApplicationContext context: Context
+        errorDataRepository: ErrorDataRepository
     ): CalibrationUseCase {
-        val db = TestDatabase.getDatabase(InstrumentationRegistry.getInstrumentation().targetContext)
-
-        val errorDataRepository = ErrorDataRepository(db.errorDao())
-
         return CalibrationUseCase(errorDataRepository)
     }
 }

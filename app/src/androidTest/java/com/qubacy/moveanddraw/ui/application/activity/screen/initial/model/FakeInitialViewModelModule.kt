@@ -21,18 +21,11 @@ import dagger.hilt.testing.TestInstallIn
 object FakeInitialViewModelModule {
     @Provides
     fun provideInitialUseCase(
-        context: Context
+        errorDataRepository: ErrorDataRepository,
+        @ApplicationContext context: Context
     ): InitialUseCase {
-        val db = TestDatabase.getDatabase(InstrumentationRegistry.getInstrumentation().targetContext)
-
-        val errorDataRepository = ErrorDataRepository(db.errorDao())
         val previewDataRepository = PreviewDataRepository(LocalPreviewDataSource(context))
 
         return InitialUseCase(errorDataRepository, previewDataRepository)
-    }
-
-    @Provides
-    fun provideContext(@ApplicationContext context: Context): Context {
-        return context
     }
 }

@@ -11,7 +11,7 @@ import com.google.android.material.transition.MaterialSharedAxis
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw.databinding.FragmentCalibrationBinding
 import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.CalibrationViewModel
-import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.CalibrationViewModelFactory
+import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.CalibrationViewModelFactoryQualifier
 import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.state.CalibrationUiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.transition.DefaultSharedAxisTransitionGenerator
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.accelerometer.AccelerometerFragment
@@ -27,7 +27,8 @@ class CalibrationFragment
     }
 
     @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory//CalibrationViewModelFactory
+    @CalibrationViewModelFactoryQualifier
+    lateinit var viewModelFactory: ViewModelProvider.Factory
 
     override val mModel: CalibrationViewModel by viewModels(
         factoryProducer = { viewModelFactory }
@@ -43,7 +44,7 @@ class CalibrationFragment
             MaterialSharedAxis.Z,
             true
         )
-        DefaultSharedAxisTransitionGenerator.generate(
+        returnTransition = DefaultSharedAxisTransitionGenerator.generate(
             requireContext(),
             MaterialSharedAxis.Z,
             false

@@ -28,5 +28,7 @@
     <string name="fragment_calibration_header_text_calibrated">You are ready!</string>
     <string name="fragment_calibration_description_text_calibrated">You are ready to go! Move your phone vertically and horizontally and click a button to make a point.</string>
     <string name="fragment_calibration_button_start_caption_calibrated">Let\'s go!</string>
+    
+    <string name="fragment_viewer_top_bar_title">Viewer</string>
 
 </resources>

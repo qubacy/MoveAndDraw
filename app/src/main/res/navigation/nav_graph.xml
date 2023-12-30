@@ -11,9 +11,16 @@
         <action
             android:id="@+id/action_initialFragment_to_calibrationFragment"
             app:destination="@id/calibrationFragment" />
+        <action
+            android:id="@+id/action_initialFragment_to_viewerFragment"
+            app:destination="@id/viewerFragment" />
     </fragment>
     <fragment
         android:id="@+id/calibrationFragment"
         android:name="com.qubacy.moveanddraw.ui.application.activity.screen.calibration.CalibrationFragment"
         android:label="CalibrationFragment" />
+    <fragment
+        android:id="@+id/viewerFragment"
+        android:name="com.qubacy.moveanddraw.ui.application.activity.screen.viewer.ViewerFragment"
+        android:label="ViewerFragment" />
 </navigation>

@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.viewModels
-import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.carousel.CarouselLayoutManager
 import com.google.android.material.carousel.HeroCarouselStrategy
 import com.google.android.material.transition.MaterialSharedAxis
@@ -146,8 +146,6 @@ class InitialFragment(
     ) {
         changeScrimEnabled(false, endAction)
 
-        // todo: implement a transition..
-
         when (swipeOption) {
             OptionChooserComponentCallback.SwipeOption.RIGHT -> { goToViewer() }
             OptionChooserComponentCallback.SwipeOption.LEFT -> { goToEditor() }
@@ -156,12 +154,11 @@ class InitialFragment(
     }
 
     private fun goToViewer() {
-
+        findNavController().navigate(R.id.action_initialFragment_to_viewerFragment)
     }
 
     private fun goToEditor() {
-        Navigation.findNavController(mBinding.root)
-            .navigate(R.id.action_initialFragment_to_calibrationFragment)
+        findNavController().navigate(R.id.action_initialFragment_to_calibrationFragment)
     }
 
     override fun onScrimClicked() {

@@ -1,13 +1,11 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.qubacy.moveanddraw._common.util.struct.takequeue.TakeQueue
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
 import com.qubacy.moveanddraw.domain.calibration.CalibrationUseCase
-import com.qubacy.moveanddraw.ui.application.MoveAndDrawApplication
 import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.state.CalibrationUiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.accelerometer.model.AccelerometerViewModel
@@ -16,12 +14,12 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ActivityRetainedComponent
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
 import java.util.Timer
 import javax.inject.Inject
+import javax.inject.Qualifier
 import kotlin.concurrent.schedule
 
 @HiltViewModel
@@ -64,35 +62,24 @@ class CalibrationViewModelFactory(
     }
 }
 
-//@Module
-//@InstallIn(ViewModelComponent::class)
-//object CalibrationViewModelModule {
-//    @Provides
-//    fun provideCalibrationUseCase(
-//        @ApplicationContext context: Context
-//    ): CalibrationUseCase {
-//        val errorDataRepository = ErrorDataRepository((context as MoveAndDrawApplication).db.errorDao())
-//
-//        return CalibrationUseCase(errorDataRepository)
-//    }
-//}
+@Qualifier
+annotation class CalibrationViewModelFactoryQualifier
 
 @Module
 @InstallIn(ActivityRetainedComponent::class)
 object CalibrationViewModelFactoryModule {
     @Provides
+    @CalibrationViewModelFactoryQualifier
     fun provideCalibrationViewModelFactory(
         calibrationUseCase: CalibrationUseCase
-    ): ViewModelProvider.Factory {//CalibrationViewModelFactory {
+    ): ViewModelProvider.Factory {
         return CalibrationViewModelFactory(calibrationUseCase)
     }
 
     @Provides
     fun provideCalibrationUseCase(
-        @ApplicationContext context: Context
+        errorDataRepository: ErrorDataRepository
     ): CalibrationUseCase {
-        val errorDataRepository = ErrorDataRepository((context as MoveAndDrawApplication).db.errorDao())
-
         return CalibrationUseCase(errorDataRepository)
     }
 }
