@@ -7,6 +7,7 @@ import java.io.InputStream
 import java.io.InputStreamReader
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.nio.FloatBuffer
 
 class OBJDrawingParser : DrawingParser {
     companion object {
@@ -16,52 +17,54 @@ class OBJDrawingParser : DrawingParser {
         const val VERTEX_TOKEN = "v"
         const val NORMAL_TOKEN = "vn"
         const val TEXTURE_TOKEN = "vt"
-        const val INDEX_TOKEN = "f"
+        const val FACE_TOKEN = "f"
     }
 
     override fun parseStream(inputStream: InputStream): DataDrawing {
         val reader = BufferedReader(InputStreamReader(inputStream))
 
-        val vertices = ArrayList<Float>()
-        val normals = ArrayList<Float>()
-        val textures = ArrayList<Float>()
-        val indices = ArrayList<Int>()
+        val finalVertices = mutableListOf<Float>()
+        val finalNormals = mutableListOf<Float>()
+        val finalTextures = mutableListOf<Float>()
+        val finalIndices = mutableListOf<Short>()
 
-        readVectors(reader, vertices, normals, textures, indices)
+        readVectors(reader, finalVertices, finalNormals, finalTextures, finalIndices)
 
-        val vertexArray = FloatArray(indices.size * 3)
-        val normalArray = FloatArray(indices.size * 3)
-        val textureArray = FloatArray(indices.size * 2)
+        val vertexBuffer = floatListToFloatBuffer(finalVertices)
+        val normalBuffer = floatListToFloatBuffer(finalNormals)
+        val textureBuffer = floatListToFloatBuffer(finalTextures)
 
-        processVectors(vertices, normals, textures, indices, vertexArray, normalArray, textureArray)
+        return DataDrawing(vertexBuffer, normalBuffer, textureBuffer, finalIndices.size);
+    }
 
-        val vertexBuffer = ByteBuffer.allocateDirect(vertexArray.size * 4)
-            .order(ByteOrder.nativeOrder())
-            .asFloatBuffer()
-            .put(vertexArray)
-        val normalBuffer = ByteBuffer.allocateDirect(normalArray.size * 4)
-            .order(ByteOrder.nativeOrder())
-            .asFloatBuffer()
-            .put(normalArray)
-        val textureBuffer = ByteBuffer.allocateDirect(textureArray.size * 4)
-            .order(ByteOrder.nativeOrder())
-            .asFloatBuffer()
-            .put(textureArray)
+    private fun floatListToFloatBuffer(list: List<Float>): FloatBuffer {
+        val buffer = ByteBuffer.allocateDirect(list.size * Float.SIZE_BYTES).apply {
+            order(ByteOrder.nativeOrder())
+        }
 
-        vertexBuffer.position(0)
-        normalBuffer.position(0)
-        textureBuffer.position(0)
+        val resultBuffer = buffer.asFloatBuffer()
 
-        return DataDrawing(vertexBuffer, normalBuffer, textureBuffer, indices.size);
+        resultBuffer.put(list.toFloatArray())
+        buffer.position(0)
+        resultBuffer.position(0)
+
+        return resultBuffer
     }
 
     private fun readVectors(
         reader: BufferedReader,
-        vertices: ArrayList<Float>,
-        normals: ArrayList<Float>,
-        textures: ArrayList<Float>,
-        indices: ArrayList<Int>
+        finalVertices: MutableList<Float>,
+        finalNormals: MutableList<Float>,
+        finalTextures: MutableList<Float>,
+        finalIndices: MutableList<Short>
     ) {
+        val vertices = ArrayList<Triple<Float, Float, Float>>()
+        val normals = ArrayList<Triple<Float, Float, Float>>()
+        val textures = ArrayList<Pair<Float, Float>>()
+
+        val faceMap = HashMap<Triple<Int, Int?, Int?>, Short>()
+        var nextIndex: Short = 0
+
         var line: String? = null
 
         while (true) {
@@ -69,68 +72,59 @@ class OBJDrawingParser : DrawingParser {
 
             if (line == null) break
 
-            val tokens = line.split(TOKEN_SPLITTER);
+            val tokens = line.split(TOKEN_SPLITTER)
 
             when (tokens[0]) {
                 VERTEX_TOKEN -> {
-                    vertices.add(tokens[1].toFloat())
-                    vertices.add(tokens[2].toFloat())
-                    vertices.add(tokens[3].toFloat())
+                    val vertex = Triple(
+                        tokens[1].toFloat(), tokens[2].toFloat(), tokens[3].toFloat())
 
-                    break
+                    vertices.add(vertex)
                 }
                 NORMAL_TOKEN -> {
-                    normals.add(tokens[1].toFloat())
-                    normals.add(tokens[2].toFloat())
-                    normals.add(tokens[3].toFloat())
+                    val normal = Triple(
+                        tokens[1].toFloat(), tokens[2].toFloat(), tokens[3].toFloat())
 
-                    break
+                    normals.add(normal)
                 }
                 TEXTURE_TOKEN -> {
-                    textures.add(tokens[1].toFloat())
-                    textures.add(tokens[2].toFloat())
+                    val texture = Pair(tokens[1].toFloat(), tokens[2].toFloat())
 
-                    break
+                    textures.add(texture)
                 }
-                INDEX_TOKEN -> {
-                    for (i in 1 until tokens.size) {
-                        val parts = tokens[i].split(PARTS_SPLITTER)
+                FACE_TOKEN -> {
+                    for (i in 1 .. 3) {
+                        val vun = tokens[i].split(PARTS_SPLITTER)
+                        val point =
+                            Triple(vun[0].toInt(), vun[1].toIntOrNull(), vun[2].toIntOrNull())
 
-                        indices.add(parts[0].toInt() - 1);
-                        indices.add(parts[1].toInt() - 1);
-                        indices.add(parts[2].toInt() - 1);
+                        val pointInFaceMap = faceMap[point]
+
+                        if (pointInFaceMap != null) {
+                            finalIndices.add(pointInFaceMap)
+
+                        } else {
+                            faceMap[point] = nextIndex
+
+                            finalVertices.add(vertices[point.first - 1].first)
+                            finalVertices.add(vertices[point.first - 1].second)
+                            finalVertices.add(vertices[point.first - 1].third)
+
+                            if (point.second != null) {
+                                finalTextures.add(textures[point.second!! - 1].first)
+                                finalTextures.add(textures[point.second!! - 1].second)
+                            }
+                            if (point.third != null) {
+                                finalNormals.add(normals[point.third!! - 1].first)
+                                finalNormals.add(normals[point.third!! - 1].second)
+                                finalNormals.add(normals[point.third!! - 1].third)
+                            }
+
+                            finalIndices.add(nextIndex++)
+                        }
                     }
-
-                    break;
                 }
             }
-        }
-    }
-
-    private fun processVectors(
-        vertices: ArrayList<Float>,
-        normals: ArrayList<Float>,
-        textures: ArrayList<Float>,
-        indices: ArrayList<Int>,
-        vertexArray: FloatArray,
-        normalArray: FloatArray,
-        textureArray: FloatArray
-    ) {
-        for (i in 0 until indices.size) {
-            val vertexIndex = indices[i] * 3
-            val normalIndex = indices[i] * 3 + 2
-            val textureIndex = indices[i] * 2 + 1
-
-            vertexArray[i * 3] = vertices[vertexIndex]
-            vertexArray[i * 3 + 1] = vertices[vertexIndex + 1]
-            vertexArray[i * 3 + 2] = vertices[vertexIndex + 2]
-
-            normalArray[i * 3] = normals[normalIndex]
-            normalArray[i * 3 + 1] = normals[normalIndex - 1]
-            normalArray[i * 3 + 2] = normals[normalIndex - 2]
-
-            textureArray[i * 2] = textures[textureIndex]
-            textureArray[i * 2 + 1] = textures[textureIndex - 1]
         }
     }
 }
