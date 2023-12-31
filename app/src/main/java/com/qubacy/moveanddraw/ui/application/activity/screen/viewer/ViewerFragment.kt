@@ -1,5 +1,7 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.viewer
 
+import android.Manifest
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -11,8 +13,12 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.transition.MaterialSharedAxis
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw.databinding.FragmentViewerBinding
+import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
+import com.qubacy.moveanddraw.ui.application.activity.MainActivity
+import com.qubacy.moveanddraw.ui.application.activity.file.picker.GetFileUriCallback
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.transition.DefaultSharedAxisTransitionGenerator
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.base.BaseFragment
+import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.component.canvas.renderer.ViewerDrawingRenderer
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.ViewerViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.ViewerViewModelFactoryQualifier
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.state.ViewerUiState
@@ -22,7 +28,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class ViewerFragment(
 
-) : BaseFragment<ViewerUiState, ViewerViewModel>() {
+) : BaseFragment<ViewerUiState, ViewerViewModel>(), GetFileUriCallback {
 
     @Inject
     @ViewerViewModelFactoryQualifier
@@ -32,6 +38,9 @@ class ViewerFragment(
         factoryProducer = { viewModelFactory }
     )
     private lateinit var mBinding: FragmentViewerBinding
+    private lateinit var mRenderer: ViewerDrawingRenderer
+
+    override val mIsAutomaticPermissionRequestEnabled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,6 +72,12 @@ class ViewerFragment(
 
         mBinding.fragmentViewerTopBar.setNavigationOnClickListener { onNavigationBackButtonClicked() }
         mBinding.fragmentViewerTopBar.setOnMenuItemClickListener { onMenuItemClickListener(it) }
+
+        mRenderer = ViewerDrawingRenderer()
+
+        mBinding.fragmentViewerCanvas.apply { setRenderer(mRenderer) }
+
+
     }
 
     private fun onNavigationBackButtonClicked() {
@@ -86,14 +101,42 @@ class ViewerFragment(
     }
 
     private fun onLoadMenuItemClicked() {
-        // todo: implement..
-
-
+        requestPermissions {
+            (requireActivity() as MainActivity).chooseLocalFile(callback = this)
+        }
     }
 
     override fun setUiElementsState(uiState: ViewerUiState) {
-        TODO("Not yet implemented")
+        setTopBarMenuEnabled(!uiState.isLoading)
+        setCurrentDrawing(uiState.drawing)
+        setProgressIndicatorEnabled(uiState.isLoading)
     }
 
+    private fun setTopBarMenuEnabled(isEnabled: Boolean) {
+        mBinding.fragmentViewerTopBar.menu
+            .setGroupEnabled(R.id.viewer_top_bar_main_group, isEnabled)
+    }
 
+    private fun setCurrentDrawing(drawing: Drawing?) {
+        if (drawing == null) return
+
+        mRenderer.setDrawing(drawing)
+    }
+
+    private fun setProgressIndicatorEnabled(isEnabled: Boolean) {
+        mBinding.fragmentViewerProgressIndicator.visibility =
+            if (isEnabled) View.VISIBLE else View.GONE
+    }
+
+    override fun getPermissionsToRequest(): Array<String>? {
+        return arrayOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        )
+    }
+
+    override fun onFileUriGotten(fileUri: Uri?) {
+        if (fileUri == null) return
+
+        mModel.loadDrawing(fileUri)
+    }
 }

@@ -24,10 +24,6 @@ import javax.inject.Inject
 open class InitialViewModel @Inject constructor(
     private val mInitialUseCase: InitialUseCase
 ) : BusinessViewModel<InitialUiState>(mInitialUseCase) {
-    init {
-        mInitialUseCase.setCoroutineScope(viewModelScope)
-    }
-
     open fun getExampleDrawingPreviews() {
         mInitialUseCase.getExamplePreviews()
     }

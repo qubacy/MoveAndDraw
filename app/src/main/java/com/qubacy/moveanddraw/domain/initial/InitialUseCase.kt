@@ -11,12 +11,12 @@ import javax.inject.Inject
 
 open class InitialUseCase @Inject constructor(
     errorDataRepository: ErrorDataRepository,
-    private val previewDataRepository: PreviewDataRepository
+    private val mPreviewDataRepository: PreviewDataRepository
 ) : UseCase(errorDataRepository) {
     open fun getExamplePreviews() {
         mCoroutineScope.launch(mCoroutineDispatcher) {
             try {
-                val examplePreviews = previewDataRepository.getExamplePreviews() // todo: can be suspend;
+                val examplePreviews = mPreviewDataRepository.getExamplePreviews() // todo: can be suspend;
 
                 mResultFlow.emit(GetExamplePreviewsResult(examplePreviews))
 

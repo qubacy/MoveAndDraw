@@ -2,20 +2,22 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
-        android:id="@+id/viewer_top_bar_share"
-        android:icon="@drawable/ic_share"
-        android:title="Share"
-        android:contentDescription="Share the drawing"
-        app:showAsAction="ifRoom"
-        android:iconTint="?attr/colorOnSurfaceVariant"/>
+    <group android:id="@+id/viewer_top_bar_main_group">
+        <item
+            android:id="@+id/viewer_top_bar_share"
+            android:icon="@drawable/ic_share"
+            android:title="Share"
+            android:contentDescription="Share the drawing"
+            app:showAsAction="ifRoom"
+            android:iconTint="?attr/colorOnSurfaceVariant" />
 
-    <item
-        android:id="@+id/viewer_top_bar_load"
-        android:icon="@drawable/ic_load_local"
-        android:title="Load"
-        android:contentDescription="Load a local drawing"
-        app:showAsAction="ifRoom"
-        android:iconTint="?attr/colorOnSurfaceVariant"/>
+        <item
+            android:id="@+id/viewer_top_bar_load"
+            android:icon="@drawable/ic_load_local"
+            android:title="Load"
+            android:contentDescription="Load a local drawing"
+            app:showAsAction="ifRoom"
+            android:iconTint="?attr/colorOnSurfaceVariant"/>
+    </group>
 
 </menu>

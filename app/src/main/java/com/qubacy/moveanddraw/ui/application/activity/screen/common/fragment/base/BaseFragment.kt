@@ -26,17 +26,23 @@ abstract class BaseFragment<
 
     private lateinit var mPermissionRequestLauncher: ActivityResultLauncher<Array<String>>
 
+    protected open val mIsAutomaticPermissionRequestEnabled = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        if (mIsAutomaticPermissionRequestEnabled) requestPermissions()
+    }
+
+    protected fun requestPermissions(endAction: (() -> Unit)? = null) {
         if (getPermissionsToRequest() == null) return
 
         when {
             checkPermissions() -> {
-                onRequestedPermissionsGranted()
+                onRequestedPermissionsGranted(endAction)
             }
             else -> {
-                mPermissionRequestLauncher = getPermissionRequestLauncher()
+                mPermissionRequestLauncher = getPermissionRequestLauncher(endAction)
 
                 mPermissionRequestLauncher.launch(getPermissionsToRequest())
             }
@@ -110,12 +116,18 @@ abstract class BaseFragment<
         return true
     }
 
-    private fun getPermissionRequestLauncher(): ActivityResultLauncher<Array<String>> {
+    private fun getPermissionRequestLauncher(
+        endAction: (() -> Unit)? = null
+    ): ActivityResultLauncher<Array<String>> {
         return registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions(), getPermissionRequestCallback())
+            ActivityResultContracts.RequestMultiplePermissions(),
+            getPermissionRequestCallback(endAction)
+        )
     }
 
-    private fun getPermissionRequestCallback(): ActivityResultCallback<Map<String, Boolean>> {
+    private fun getPermissionRequestCallback(
+        endAction: (() -> Unit)? = null
+    ): ActivityResultCallback<Map<String, Boolean>> {
         return ActivityResultCallback<Map<String, Boolean>> {
             val deniedPermissions = mutableListOf<String>()
 
@@ -127,7 +139,7 @@ abstract class BaseFragment<
                 }
             }
 
-            if (deniedPermissions.isEmpty()) onRequestedPermissionsGranted()
+            if (deniedPermissions.isEmpty()) onRequestedPermissionsGranted(endAction)
             else onRequestedPermissionsDenied(deniedPermissions)
         }
     }
@@ -136,8 +148,8 @@ abstract class BaseFragment<
         return null
     }
 
-    open fun onRequestedPermissionsGranted() {
-
+    open fun onRequestedPermissionsGranted(endAction: (() -> Unit)? = null) {
+        endAction?.invoke()
     }
 
     open fun onRequestedPermissionsDenied(deniedPermissions: List<String>) {
