@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.transition.MaterialSharedAxis
 import com.qubacy.moveanddraw.R
@@ -18,11 +19,13 @@ import com.qubacy.moveanddraw.ui.application.activity.MainActivity
 import com.qubacy.moveanddraw.ui.application.activity.file.picker.GetFileUriCallback
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.transition.DefaultSharedAxisTransitionGenerator
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.base.BaseFragment
-import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.component.canvas.renderer.ViewerDrawingRenderer
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.mapper.DrawingGLDrawingMapperImpl
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.ViewerViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.ViewerViewModelFactoryQualifier
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.state.ViewerUiState
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -38,7 +41,6 @@ class ViewerFragment(
         factoryProducer = { viewModelFactory }
     )
     private lateinit var mBinding: FragmentViewerBinding
-    private lateinit var mRenderer: ViewerDrawingRenderer
 
     override val mIsAutomaticPermissionRequestEnabled = false
 
@@ -73,11 +75,9 @@ class ViewerFragment(
         mBinding.fragmentViewerTopBar.setNavigationOnClickListener { onNavigationBackButtonClicked() }
         mBinding.fragmentViewerTopBar.setOnMenuItemClickListener { onMenuItemClickListener(it) }
 
-        mRenderer = ViewerDrawingRenderer()
-
-        mBinding.fragmentViewerCanvas.apply { setRenderer(mRenderer) }
-
-
+        mBinding.fragmentViewerCanvas.apply {
+            setDrawingMapper(DrawingGLDrawingMapperImpl())
+        }
     }
 
     private fun onNavigationBackButtonClicked() {
@@ -120,7 +120,9 @@ class ViewerFragment(
     private fun setCurrentDrawing(drawing: Drawing?) {
         if (drawing == null) return
 
-        mRenderer.setDrawing(drawing)
+        lifecycleScope.launch(Dispatchers.IO) {
+            mBinding.fragmentViewerCanvas.setFigure(drawing)
+        }
     }
 
     private fun setProgressIndicatorEnabled(isEnabled: Boolean) {

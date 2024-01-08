@@ -4,9 +4,9 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.qubacy.moveanddraw._common.error.Error
 import com.qubacy.moveanddraw._common.util.livedata.getOrAwaitValue
 import com.qubacy.moveanddraw._common.util.rule.MainCoroutineRule
-import com.qubacy.moveanddraw.domain._common.usecase.UseCase
-import com.qubacy.moveanddraw.domain._common.usecase.result._common.Result
-import com.qubacy.moveanddraw.domain._common.usecase.result.error.ErrorResult
+import com.qubacy.moveanddraw.domain._common.usecase._common.UseCase
+import com.qubacy.moveanddraw.domain._common.usecase._common.result._common.Result
+import com.qubacy.moveanddraw.domain._common.usecase._common.result.error.ErrorResult
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.UiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation.error.ShowErrorUiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model.business.BusinessViewModel

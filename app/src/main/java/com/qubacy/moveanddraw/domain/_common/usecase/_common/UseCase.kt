@@ -1,8 +1,8 @@
-package com.qubacy.moveanddraw.domain._common.usecase
+package com.qubacy.moveanddraw.domain._common.usecase._common
 
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
-import com.qubacy.moveanddraw.domain._common.usecase.result._common.Result
-import com.qubacy.moveanddraw.domain._common.usecase.result.error.ErrorResult
+import com.qubacy.moveanddraw.domain._common.usecase._common.result._common.Result
+import com.qubacy.moveanddraw.domain._common.usecase._common.result.error.ErrorResult
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

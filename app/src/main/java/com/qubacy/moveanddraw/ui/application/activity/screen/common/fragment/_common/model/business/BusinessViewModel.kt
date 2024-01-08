@@ -5,9 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
-import com.qubacy.moveanddraw.domain._common.usecase.UseCase
-import com.qubacy.moveanddraw.domain._common.usecase.result._common.Result
-import com.qubacy.moveanddraw.domain._common.usecase.result.error.ErrorResult
+import com.qubacy.moveanddraw.domain._common.usecase._common.UseCase
+import com.qubacy.moveanddraw.domain._common.usecase._common.result._common.Result
+import com.qubacy.moveanddraw.domain._common.usecase._common.result.error.ErrorResult
 import com.qubacy.moveanddraw.ui.application.MoveAndDrawApplication
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.BaseViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.UiState

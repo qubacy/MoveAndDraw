@@ -1,6 +1,6 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.accelerometer.model
 
-import com.qubacy.moveanddraw.domain._common.usecase.UseCase
+import com.qubacy.moveanddraw.domain._common.usecase._common.UseCase
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.UiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model.business.BusinessViewModel
 

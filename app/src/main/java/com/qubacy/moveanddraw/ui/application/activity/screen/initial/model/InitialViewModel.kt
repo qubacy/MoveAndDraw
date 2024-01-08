@@ -1,12 +1,11 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.initial.model
 
 import android.content.Context
-import androidx.lifecycle.viewModelScope
 import com.qubacy.moveanddraw._common.util.struct.takequeue.TakeQueue
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
 import com.qubacy.moveanddraw.data.preview.repository.PreviewDataRepository
 import com.qubacy.moveanddraw.data.preview.repository.source.local.LocalPreviewDataSource
-import com.qubacy.moveanddraw.domain._common.usecase.result._common.Result
+import com.qubacy.moveanddraw.domain._common.usecase._common.result._common.Result
 import com.qubacy.moveanddraw.domain.initial.InitialUseCase
 import com.qubacy.moveanddraw.domain.initial.result.GetExamplePreviewsResult
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
