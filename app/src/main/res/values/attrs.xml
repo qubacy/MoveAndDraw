@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <attr name="componentOptionChooserOptionTitles" format="reference" />
-    <attr name="componentOptionChooserOptionPreviewPercent" format="float" />
-    <attr name="componentOptionChooserActivationPercent" format="float" />
-    
+    <attr name="optionChooserTint" format="color"/>
+
     <attr name="canvasViewStyle" format="reference"/>
 
     <declare-styleable name="CanvasView">
         <attr name="canvasBackgroundColor" format="color"/>
         <attr name="canvasModelColor" format="color"/>
+    </declare-styleable>
+
+    <attr name="optionChooserStyle" format="reference"/>
+
+    <declare-styleable name="OptionChooserComponent">
+        <attr name="optionChooserTitles" format="reference" />
+        <attr name="optionChooserPreviewPercent" format="float" />
+        <attr name="optionChooserActivationPercent" format="float" />
     </declare-styleable>
 </resources>

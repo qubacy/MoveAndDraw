@@ -27,5 +27,11 @@
         <item name="colorOnSurfaceInverse">@color/md_theme_dark_inverseOnSurface</item>
         <item name="colorSurfaceInverse">@color/md_theme_dark_inverseSurface</item>
         <item name="colorPrimaryInverse">@color/md_theme_dark_inversePrimary</item>
+
+        <item name="optionChooserTint">?attr/colorOnSurface</item>
+        <item name="scrimBackground">@color/scrim</item>
+
+        <item name="canvasViewStyle">@style/CanvasViewStyle</item>
+        <item name="optionChooserStyle">@style/OptionChooserStyle</item>
     </style>
 </resources>

@@ -42,7 +42,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toTopOf="@id/fragment_calibration_guideline_horizontal_80"
-        app:srcCompat="@drawable/ic_phone" />
+        app:srcCompat="@drawable/ic_phone"
+        app:tint="?attr/colorOnSurface"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/fragment_calibration_button_start"

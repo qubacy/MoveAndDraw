@@ -9,7 +9,7 @@
             android:title="Share"
             android:contentDescription="Share the drawing"
             app:showAsAction="ifRoom"
-            android:iconTint="?attr/colorOnSurfaceVariant" />
+            app:iconTint="?attr/colorOnSurfaceVariant" />
 
         <item
             android:id="@+id/viewer_top_bar_load"
@@ -17,7 +17,7 @@
             android:title="Load"
             android:contentDescription="Load a local drawing"
             app:showAsAction="ifRoom"
-            android:iconTint="?attr/colorOnSurfaceVariant"/>
+            app:iconTint="?attr/colorOnSurfaceVariant"/>
     </group>
 
 </menu>

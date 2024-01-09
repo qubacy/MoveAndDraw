@@ -120,6 +120,8 @@ class ViewerFragment(
     private fun setCurrentDrawing(drawing: Drawing?) {
         if (drawing == null) return
 
+        setEntryMessageEnabled(false)
+
         lifecycleScope.launch(Dispatchers.IO) {
             mBinding.fragmentViewerCanvas.componentCanvasField.setFigure(drawing)
         }
@@ -127,6 +129,13 @@ class ViewerFragment(
 
     private fun setProgressIndicatorEnabled(isEnabled: Boolean) {
         mBinding.fragmentViewerProgressIndicator.visibility =
+            if (isEnabled) View.VISIBLE else View.GONE
+    }
+
+    private fun setEntryMessageEnabled(isEnabled: Boolean) {
+        mBinding.fragmentViewerEntryMessage.visibility =
+            if (isEnabled) View.VISIBLE else View.GONE
+        mBinding.fragmentViewerEntryIcon.visibility =
             if (isEnabled) View.VISIBLE else View.GONE
     }
 

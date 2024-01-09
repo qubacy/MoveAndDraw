@@ -1,7 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="canvasViewStyle" parent="">
+    <style name="CanvasViewStyle" parent="">
         <item name="canvasBackgroundColor">?attr/colorSurface</item>
         <item name="canvasModelColor">?attr/colorOnSurface</item>
+    </style>
+    
+    <style name="OptionChooserStyle" parent="">
+        <item name="optionChooserPreviewPercent">0.2</item>
+        <item name="optionChooserActivationPercent">0.6</item>
+    </style>
+
+    <style name="OptionChooserHeaderStyle" parent="Widget.MaterialComponents.TextView">
+        <item name="android:textAppearance">?attr/textAppearanceHeadlineMedium</item>
+        <item name="android:textColor">?attr/optionChooserTint</item>
+    </style>
+
+    <style name="OptionChooserSwipeButton" parent="Widget.Material3.Button.IconButton">
+        <item name="iconTint">?attr/optionChooserTint</item>
     </style>
 </resources>

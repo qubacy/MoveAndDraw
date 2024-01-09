@@ -1,5 +1,6 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.initial.component.chooser.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -7,7 +8,9 @@ import com.google.android.material.textview.MaterialTextView
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.component.button.draggable.view.DraggableButton
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.component.button.draggable.view.OnSwipeMoveCallback
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.view.CanvasView
 import com.qubacy.moveanddraw.ui.application.activity.screen.initial.component.chooser.view.OptionChooserComponentCallback.SwipeOption
+import kotlinx.coroutines.runBlocking
 import kotlin.math.abs
 
 class OptionChooserComponent(
@@ -19,6 +22,8 @@ class OptionChooserComponent(
 
         const val DEFAULT_SWIPE_PREVIEW_PERCENT = 0.3f
         const val DEFAULT_SWIPE_ACTIVATION_PERCENT = 0.5f
+
+        const val DEFAULT_ATTR_FLOAT = -1f
     }
 
     private var mHeader: MaterialTextView? = null
@@ -35,6 +40,38 @@ class OptionChooserComponent(
     private var mComponentOptionChooserSwipeActivationPercent = DEFAULT_SWIPE_ACTIVATION_PERCENT
     val componentOptionChooserSwipeActivationPercent get() =
         mComponentOptionChooserSwipeActivationPercent
+
+    init {
+        initCustomAttrs(attrs)
+    }
+
+    @SuppressLint("Recycle", "ResourceType")
+    private fun initCustomAttrs(attrs: AttributeSet) {
+        val attrsTypedArray = context.obtainStyledAttributes(
+            attrs,
+            intArrayOf(
+                R.attr.optionChooserActivationPercent,
+                R.attr.optionChooserPreviewPercent,
+                R.attr.optionChooserTitles
+            )
+        )
+
+        attrsTypedArray.getFloat(0, -1f).apply {
+            if (this == DEFAULT_ATTR_FLOAT) return@apply
+
+            setComponentOptionChooserSwipeActivationPercent(this)
+        }
+        attrsTypedArray.getFloat(1, -1f).apply {
+            if (this == DEFAULT_ATTR_FLOAT) return@apply
+
+            setComponentOptionChooserOptionPreviewPercent(this)
+        }
+        attrsTypedArray.getTextArray(2).apply {
+            val titlesArray = this.map { it -> it.toString() }.toTypedArray()
+
+            setComponentOptionChooserOptionTitles(titlesArray)
+        }
+    }
 
     override fun onFinishInflate() {
         super.onFinishInflate()
