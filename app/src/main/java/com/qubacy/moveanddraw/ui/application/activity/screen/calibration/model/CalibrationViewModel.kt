@@ -3,7 +3,7 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.qubacy.moveanddraw._common.util.struct.takequeue.TakeQueue
+import com.qubacy.moveanddraw._common.util.struct.takequeue._common.TakeQueue
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
 import com.qubacy.moveanddraw.domain.calibration.CalibrationUseCase
 import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.state.CalibrationUiState

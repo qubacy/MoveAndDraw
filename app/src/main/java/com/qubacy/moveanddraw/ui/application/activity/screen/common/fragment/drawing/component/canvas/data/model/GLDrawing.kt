@@ -10,7 +10,8 @@ import java.nio.ShortBuffer
 open class GLDrawing (
     val vertexArray: FloatArray,
     private val mVertexDrawingOrder: ShortArray? = null,
-    val color: FloatArray = floatArrayOf(1f, 1f, 1f, 1f)
+    @Volatile
+    private var mColor: FloatArray = floatArrayOf(1f, 1f, 1f, 1f)
 ) {
     companion object {
         const val COORDS_PER_VERTEX = 3
@@ -54,6 +55,8 @@ open class GLDrawing (
     private var mIsInitialized = false
     val isInitialized get () = mIsInitialized
 
+    val color get() = mColor
+
     fun init() {
         val vertexShader = GL2Util.loadShader(GLES20.GL_VERTEX_SHADER, mVertexShaderCode)
         val fragmentShader = GL2Util.loadShader(GLES20.GL_FRAGMENT_SHADER, mFragmentShaderCode)
@@ -66,6 +69,10 @@ open class GLDrawing (
         }
 
         mIsInitialized = true
+    }
+
+    fun setColor(rgba: FloatArray) {
+        mColor = rgba
     }
 
     fun draw(mvpMatrix: FloatArray) {
@@ -86,7 +93,7 @@ open class GLDrawing (
                 mVertexBuffer
             )
             GLES20.glGetUniformLocation(mProgram, "vColor").also { colorHandle ->
-                GLES20.glUniform4fv(colorHandle, 1, color, 0)
+                GLES20.glUniform4fv(colorHandle, 1, mColor, 0)
             }
 
             if (mVertexDrawingOrderBuffer != null)

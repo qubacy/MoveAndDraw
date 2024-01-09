@@ -8,5 +8,6 @@
 
     <declare-styleable name="CanvasView">
         <attr name="canvasBackgroundColor" format="color"/>
+        <attr name="canvasModelColor" format="color"/>
     </declare-styleable>
 </resources>

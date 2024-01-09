@@ -7,6 +7,7 @@ import android.opengl.GLSurfaceView
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
+import androidx.annotation.ColorInt
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.mapper.DrawingGLDrawingMapper
@@ -16,6 +17,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ActivityRetainedComponent
+import kotlinx.coroutines.runBlocking
 
 class CanvasView(
     context: Context,
@@ -27,6 +29,8 @@ class CanvasView(
 
         private const val TOUCH_SCALE_FACTOR: Float = 180.0f / 12800f
         private const val AFTER_SCALE_DELAY = 300L
+
+        private const val DEFAULT_COLOR_INT = -1
     }
 
     private val mRenderer: CanvasRenderer
@@ -51,22 +55,43 @@ class CanvasView(
         renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
     }
 
-    @SuppressLint("Recycle")
+    @SuppressLint("Recycle", "ResourceType")
     private fun initCustomAttrs(attrs: AttributeSet) {
-        val attrsTypedArray = context
-            .obtainStyledAttributes(attrs, intArrayOf(R.attr.canvasBackgroundColor))
-        val canvasBackgroundColor = attrsTypedArray.getColor(0, 0)
+        val attrsTypedArray = context.obtainStyledAttributes(
+            attrs,
+            intArrayOf(R.attr.canvasBackgroundColor, R.attr.canvasModelColor)
+        )
 
-        val r = Color.red(canvasBackgroundColor) / 255f
-        val g = Color.green(canvasBackgroundColor) / 255f
-        val b = Color.blue(canvasBackgroundColor) / 255f
-        val a = Color.alpha(canvasBackgroundColor) / 255f
+        attrsTypedArray.getColor(0, -1).apply {
+            if (this == DEFAULT_COLOR_INT) return@apply
 
-        setCanvasBackgroundColor(r, g, b, a)
+            setCanvasBackgroundColor(colorToRGBAFloatArray(this))
+        }
+        attrsTypedArray.getColor(1, -1).apply {
+            if (this == DEFAULT_COLOR_INT) return@apply
+
+            runBlocking {
+                setCanvasModelColor(colorToRGBAFloatArray(this@apply))
+            }
+        }
     }
 
-    private fun setCanvasBackgroundColor(r: Float, g: Float, b: Float, a: Float) {
-        mRenderer.setBackgroundColor(r, g, b, a)
+    private fun colorToRGBAFloatArray(@ColorInt color: Int): FloatArray {
+        return floatArrayOf(
+            Color.red(color) / 255f,
+            Color.green(color) / 255f,
+            Color.blue(color) / 255f,
+            Color.alpha(color) / 255f
+        )
+    }
+
+    private fun setCanvasBackgroundColor(rgba: FloatArray) {
+        mRenderer.setBackgroundColor(rgba[0], rgba[1], rgba[2], rgba[3])
+        requestRender()
+    }
+
+    private suspend fun setCanvasModelColor(rgba: FloatArray) {
+        mRenderer.setModelColor(rgba[0], rgba[1], rgba[2], rgba[3])
         requestRender()
     }
 

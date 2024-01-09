@@ -2,5 +2,6 @@
 <resources>
     <style name="canvasViewStyle" parent="">
         <item name="canvasBackgroundColor">?attr/colorSurface</item>
+        <item name="canvasModelColor">?attr/colorOnSurface</item>
     </style>
 </resources>

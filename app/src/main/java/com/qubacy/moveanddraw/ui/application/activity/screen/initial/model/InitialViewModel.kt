@@ -1,7 +1,7 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.initial.model
 
 import android.content.Context
-import com.qubacy.moveanddraw._common.util.struct.takequeue.TakeQueue
+import com.qubacy.moveanddraw._common.util.struct.takequeue._common.TakeQueue
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
 import com.qubacy.moveanddraw.data.preview.repository.PreviewDataRepository
 import com.qubacy.moveanddraw.data.preview.repository.source.local.LocalPreviewDataSource

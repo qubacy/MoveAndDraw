@@ -4,7 +4,9 @@ import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import androidx.annotation.FloatRange
+import com.qubacy.moveanddraw._common.util.struct.takequeue.mutable.MutableTakeQueue
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.model.GLDrawing
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.command._common.RenderCommand
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import javax.microedition.khronos.egl.EGLConfig
@@ -15,7 +17,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-class CanvasRenderer(
+open class CanvasRenderer(
 
 ) : GLSurfaceView.Renderer {
     companion object {
@@ -56,7 +58,11 @@ class CanvasRenderer(
     @Volatile
     private var mIsCameraLocationInitialized = false
     @Volatile
-    private var mColor: FloatArray = floatArrayOf(0.0f, 0.0f, 0.0f, 1.0f)
+    private var mBackgroundColor: FloatArray = floatArrayOf(0.0f, 0.0f, 0.0f, 1.0f)
+    @Volatile
+    private var mDefaultModelColor: FloatArray = floatArrayOf(1f, 1f, 1f, 1f)
+
+    private var mRenderCommandQueue = MutableTakeQueue<RenderCommand>()
 
     private fun getFigureCenterPoint(figure: GLDrawing): FloatArray {
         var minX = figure.vertexArray[0]
@@ -86,19 +92,34 @@ class CanvasRenderer(
         )
     }
 
+     protected suspend fun addRenderCommand(renderCommand: RenderCommand) {
+        mRenderCommandQueue.put(renderCommand)
+    }
+
+    suspend fun setModelColor(
+        @FloatRange(0.0, 1.0) r: Float,
+        @FloatRange(0.0, 1.0) g: Float,
+        @FloatRange(0.0, 1.0) b: Float,
+        @FloatRange(0.0, 1.0) a: Float
+    ) {
+        mDefaultModelColor = floatArrayOf(r, g, b, a)
+    }
+
     fun setBackgroundColor(
         @FloatRange(0.0, 1.0) r: Float,
         @FloatRange(0.0, 1.0) g: Float,
         @FloatRange(0.0, 1.0) b: Float,
         @FloatRange(0.0, 1.0) a: Float
     ) {
-        mColor = floatArrayOf(r, g, b, a)
+        mBackgroundColor = floatArrayOf(r, g, b, a)
     }
 
     suspend fun setFigure(figure: GLDrawing) {
         mIsFigureBlocked.lock()
 
-        mFigure = figure
+        mFigure = figure.apply {
+            setColor(mDefaultModelColor)
+        }
 
         mSphereRadius = mFigure!!.vertexArray.map { abs(it) }.max() + DEFAULT_SPHERE_RADIUS
         mCameraRadius = mSphereRadius
@@ -199,7 +220,7 @@ class CanvasRenderer(
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-        GLES20.glClearColor(mColor[0], mColor[1], mColor[2], mColor[3])
+        GLES20.glClearColor(mBackgroundColor[0], mBackgroundColor[1], mBackgroundColor[2], mBackgroundColor[3])
 
         mFigure?.init()
 
@@ -215,6 +236,7 @@ class CanvasRenderer(
     }
 
     override fun onDrawFrame(gl: GL10?) = runBlocking {
+        executePendingRenderCommands()
         mIsFigureBlocked.lock()
 
         GLES20.glEnable(GLES20.GL_DEPTH_TEST)
@@ -239,5 +261,23 @@ class CanvasRenderer(
         mFigure?.draw(mVPMatrix)
 
         mIsFigureBlocked.unlock()
+    }
+
+    private suspend fun executePendingRenderCommands() {
+        while (true) {
+            val command = mRenderCommandQueue.take() ?: break
+
+            executeRenderCommand(command)
+        }
+    }
+
+    private fun executeRenderCommand(renderCommand: RenderCommand) {
+        when (renderCommand::class) {
+            else -> processRenderCommand(renderCommand)
+        }
+    }
+
+    protected open fun processRenderCommand(command: RenderCommand) {
+
     }
 }

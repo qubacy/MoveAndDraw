@@ -17,6 +17,7 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._co
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.UiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation.error.ShowErrorUiOperation
+import kotlinx.coroutines.runBlocking
 
 abstract class BaseFragment<
     UiStateType : UiState,
@@ -59,7 +60,7 @@ abstract class BaseFragment<
         }
     }
 
-    protected open fun processUiState(uiState: UiStateType) {
+    protected open fun processUiState(uiState: UiStateType) = runBlocking {
         setUiElementsState(uiState)
 
         while (true) {

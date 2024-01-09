@@ -3,7 +3,7 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.qubacy.moveanddraw._common.util.struct.takequeue.TakeQueue
+import com.qubacy.moveanddraw._common.util.struct.takequeue._common.TakeQueue
 import com.qubacy.moveanddraw.data.drawing.repository.DrawingDataRepository
 import com.qubacy.moveanddraw.data.drawing.repository.source.local.LocalDrawingDataSource
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
