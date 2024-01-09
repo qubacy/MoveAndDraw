@@ -24,12 +24,13 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.view.CanvasView
+    <include
         android:id="@+id/fragment_viewer_canvas"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintTop_toBottomOf="@id/fragment_viewer_top_bar_container"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        layout="@layout/component_canvas"/>
 
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/fragment_viewer_progress_indicator"

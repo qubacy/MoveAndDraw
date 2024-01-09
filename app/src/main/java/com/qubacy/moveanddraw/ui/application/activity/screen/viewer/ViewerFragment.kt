@@ -42,7 +42,7 @@ class ViewerFragment(
     )
     private lateinit var mBinding: FragmentViewerBinding
 
-    override val mIsAutomaticPermissionRequestEnabled = false
+    override val mIsAutomaticPermissionRequestEnabled = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,7 +75,7 @@ class ViewerFragment(
         mBinding.fragmentViewerTopBar.setNavigationOnClickListener { onNavigationBackButtonClicked() }
         mBinding.fragmentViewerTopBar.setOnMenuItemClickListener { onMenuItemClickListener(it) }
 
-        mBinding.fragmentViewerCanvas.apply {
+        mBinding.fragmentViewerCanvas.componentCanvasField.apply {
             setDrawingMapper(DrawingGLDrawingMapperImpl())
         }
     }
@@ -101,9 +101,9 @@ class ViewerFragment(
     }
 
     private fun onLoadMenuItemClicked() {
-        requestPermissions {
+        //requestPermissions { // todo: think of getting the permissions in an on-demand manner;
             (requireActivity() as MainActivity).chooseLocalFile(callback = this)
-        }
+        //}
     }
 
     override fun setUiElementsState(uiState: ViewerUiState) {
@@ -121,7 +121,7 @@ class ViewerFragment(
         if (drawing == null) return
 
         lifecycleScope.launch(Dispatchers.IO) {
-            mBinding.fragmentViewerCanvas.setFigure(drawing)
+            mBinding.fragmentViewerCanvas.componentCanvasField.setFigure(drawing)
         }
     }
 

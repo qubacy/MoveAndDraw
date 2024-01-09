@@ -3,4 +3,10 @@
     <attr name="componentOptionChooserOptionTitles" format="reference" />
     <attr name="componentOptionChooserOptionPreviewPercent" format="float" />
     <attr name="componentOptionChooserActivationPercent" format="float" />
+    
+    <attr name="canvasViewStyle" format="reference"/>
+
+    <declare-styleable name="CanvasView">
+        <attr name="canvasBackgroundColor" format="color"/>
+    </declare-styleable>
 </resources>

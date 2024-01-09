@@ -1,10 +1,13 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.view
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Color
 import android.opengl.GLSurfaceView
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
+import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.mapper.DrawingGLDrawingMapper
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.mapper.DrawingGLDrawingMapperImpl
@@ -43,8 +46,28 @@ class CanvasView(
         mScaleGestureDetector = ScaleGestureDetector(context, this)
 
         setRenderer(mRenderer)
+        initCustomAttrs(attrs)
 
         renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
+    }
+
+    @SuppressLint("Recycle")
+    private fun initCustomAttrs(attrs: AttributeSet) {
+        val attrsTypedArray = context
+            .obtainStyledAttributes(attrs, intArrayOf(R.attr.canvasBackgroundColor))
+        val canvasBackgroundColor = attrsTypedArray.getColor(0, 0)
+
+        val r = Color.red(canvasBackgroundColor) / 255f
+        val g = Color.green(canvasBackgroundColor) / 255f
+        val b = Color.blue(canvasBackgroundColor) / 255f
+        val a = Color.alpha(canvasBackgroundColor) / 255f
+
+        setCanvasBackgroundColor(r, g, b, a)
+    }
+
+    private fun setCanvasBackgroundColor(r: Float, g: Float, b: Float, a: Float) {
+        mRenderer.setBackgroundColor(r, g, b, a)
+        requestRender()
     }
 
     fun setDrawingMapper(drawingGLDrawingMapper: DrawingGLDrawingMapper) {
