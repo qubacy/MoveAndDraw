@@ -6,7 +6,7 @@ import com.qubacy.moveanddraw.data.drawing.model.toDrawing
 import com.qubacy.moveanddraw.data.drawing.repository.DrawingDataRepository
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
 import com.qubacy.moveanddraw.domain._common.usecase._common.UseCase
-import com.qubacy.moveanddraw.domain.viewer.result.LoadDrawingResult
+import com.qubacy.moveanddraw.domain._common.usecase.drawing.result.LoadDrawingResult
 import kotlinx.coroutines.launch
 
 abstract class DrawingUseCase(

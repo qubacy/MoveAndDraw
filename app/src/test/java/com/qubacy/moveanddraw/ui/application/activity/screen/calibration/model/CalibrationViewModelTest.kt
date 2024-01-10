@@ -1,5 +1,6 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model
 
+import com.qubacy.moveanddraw._common.data.InitData
 import com.qubacy.moveanddraw._common.util.livedata.getOrAwaitValue
 import com.qubacy.moveanddraw.domain.calibration.CalibrationUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -16,7 +17,7 @@ import kotlinx.coroutines.runBlocking
 class CalibrationViewModelTest :
     BusinessViewModelTest<CalibrationUiState, CalibrationUseCase, CalibrationViewModel>() {
 
-    override fun mockUseCase(): CalibrationUseCase {
+    override fun mockUseCase(initData: InitData?): CalibrationUseCase {
         return Mockito.mock(CalibrationUseCase::class.java)
     }
 

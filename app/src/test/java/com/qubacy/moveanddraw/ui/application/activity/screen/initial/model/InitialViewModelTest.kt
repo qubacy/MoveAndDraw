@@ -1,12 +1,13 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.initial.model
 
-import android.net.Uri
+import com.qubacy.moveanddraw._common.data.InitData
 import com.qubacy.moveanddraw._common.error.Error
 import com.qubacy.moveanddraw._common.util.livedata.getOrAwaitValue
 import com.qubacy.moveanddraw._common.util.mock.UriMockUtil
 import com.qubacy.moveanddraw.domain.initial.InitialUseCase
 import com.qubacy.moveanddraw.domain.initial.result.GetExamplePreviewsResult
 import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.model.BusinessViewModelTest
+import com.qubacy.moveanddraw.ui.application.activity.screen.initial.model.data.InitialUseCaseMockInitData
 import com.qubacy.moveanddraw.ui.application.activity.screen.initial.model.state.InitialUiState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -19,21 +20,25 @@ class InitialViewModelTest :
     BusinessViewModelTest<InitialUiState, InitialUseCase, InitialViewModel>() {
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun initViewModel(
-        error: Error? = null,
-        previewUris: List<Uri> = listOf()
+    override fun initViewModel(
+        error: Error?,
+        useCaseMockInitData: InitData?
     ) {
-        super.initViewModel(error)
+        super.initViewModel(error, null)
 
-        Mockito.`when`(mUseCaseMock.getExamplePreviews())
-            .thenAnswer {
-                mainCoroutineRule.launch {
-                    mResultFlow.emit(GetExamplePreviewsResult(previewUris))
+        if (useCaseMockInitData != null) {
+            val initialUseCaseMockInitData = useCaseMockInitData as InitialUseCaseMockInitData
+
+            Mockito.`when`(mUseCaseMock.getExamplePreviews())
+                .thenAnswer {
+                    mainCoroutineRule.launch {
+                        mResultFlow.emit(GetExamplePreviewsResult(initialUseCaseMockInitData.previewUris))
+                    }
                 }
-            }
+        }
     }
 
-    override fun mockUseCase(): InitialUseCase {
+    override fun mockUseCase(initData: InitData?): InitialUseCase {
         return Mockito.mock(InitialUseCase::class.java)
     }
 
@@ -51,7 +56,7 @@ class InitialViewModelTest :
     fun getExampleDrawingPreviewsTest() = mainCoroutineRule.run {
         val exampleDrawingPreviewUris = listOf(UriMockUtil.getMockedUri())
 
-        initViewModel(previewUris = exampleDrawingPreviewUris)
+        initViewModel(useCaseMockInitData = InitialUseCaseMockInitData(exampleDrawingPreviewUris))
 
         mViewModel.getExampleDrawingPreviews()
 

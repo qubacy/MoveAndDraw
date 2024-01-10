@@ -6,7 +6,7 @@ import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
 import com.qubacy.moveanddraw.domain._common.usecase._common.result._common.Result
 import com.qubacy.moveanddraw.domain._common.usecase._common.result.error.ErrorResult
 import com.qubacy.moveanddraw.domain._common.usecase.drawing.DrawingUseCase
-import com.qubacy.moveanddraw.domain.viewer.result.LoadDrawingResult
+import com.qubacy.moveanddraw.domain._common.usecase.drawing.result.LoadDrawingResult
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation.error.ShowErrorUiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model.business.BusinessViewModel
@@ -16,12 +16,16 @@ abstract class DrawingViewModel<UiStateType : DrawingUiState>(
     protected val mDrawingUseCase: DrawingUseCase
 ) : BusinessViewModel<UiStateType>(mDrawingUseCase) {
     fun loadDrawing(drawingUri: Uri) {
-        mDrawingUseCase.loadDrawing(drawingUri)
+        System.out.println("loadDrawing(): thread.id = ${Thread.currentThread().id}")
 
         mUiState.value = generateDrawingUiState(isLoading = true)
+
+        mDrawingUseCase.loadDrawing(drawingUri)
     }
 
     override fun processResult(result: Result): UiStateType? {
+        System.out.println("processResult(): thread.id = ${Thread.currentThread().id}")
+
         return when (result::class) {
             LoadDrawingResult::class -> { processLoadDrawingResult(result as LoadDrawingResult) }
             else -> null
