@@ -30,5 +30,6 @@
     <string name="fragment_calibration_button_start_caption_calibrated">Let\'s go!</string>
     
     <string name="fragment_viewer_top_bar_title">Viewer</string>
+    <string name="fragment_viewer_entry_message_text">Load a local drawing!</string>
 
 </resources>

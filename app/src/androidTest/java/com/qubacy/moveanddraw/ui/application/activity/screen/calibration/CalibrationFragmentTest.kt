@@ -1,10 +1,7 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.calibration
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelLazy
 import androidx.navigation.Navigation
-import androidx.navigation.testing.TestNavHostController
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.assertion.ViewAssertions
 import androidx.test.espresso.matcher.ViewMatchers
@@ -12,57 +9,43 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw._common.util.launcher.launchFragmentInHiltContainer
 import com.qubacy.moveanddraw.ui._common.util.view.action.click.SimpleClickViewAction
+import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.StatefulFragmentTest
 import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.CalibrationViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.CalibrationViewModelFactoryModule
 import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.state.CalibrationUiState
-import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
 import org.hamcrest.Matchers
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.lang.reflect.Field
 
 @RunWith(AndroidJUnit4::class)
 @HiltAndroidTest
-@UninstallModules(CalibrationViewModelFactoryModule::class)//CalibrationViewModelModule::class)
-class CalibrationFragmentTest {
-    @get:Rule
-    var hiltRule = HiltAndroidRule(this)
+@UninstallModules(CalibrationViewModelFactoryModule::class)
+class CalibrationFragmentTest(
 
-    private lateinit var mFragment: CalibrationFragment
-
-    private lateinit var mModel: CalibrationViewModel
-    private lateinit var mUiState: MutableLiveData<CalibrationUiState>
-
-    private lateinit var mNavController: TestNavHostController
-
-    private fun setState(uiState: CalibrationUiState) {
-        mUiState.postValue(uiState)
-    }
-
-    private fun mockViewModel() {
-        mUiState = mModel.uiState as MutableLiveData<CalibrationUiState>
-    }
-
-    @Before
-    fun setup() {
-        mNavController = TestNavHostController(ApplicationProvider.getApplicationContext())
-
-        val mModelFieldReflection = CalibrationFragment::class.java
+) : StatefulFragmentTest<CalibrationUiState, CalibrationViewModel, CalibrationFragment>() {
+    override fun retrieveModelFieldReflection(): Field {
+        return CalibrationViewModel::class.java
             .getDeclaredField("mModel\$delegate")
             .apply { isAccessible = true }
+    }
 
+    override fun initFragment(modelFieldReflection: Field) {
         launchFragmentInHiltContainer<CalibrationFragment> {
             mNavController.setGraph(R.navigation.nav_graph)
             Navigation.setViewNavController(requireView(), mNavController)
 
             mFragment = this as CalibrationFragment
-            mModel = (mModelFieldReflection.get(mFragment) as ViewModelLazy<CalibrationViewModel>).value
+            mModel = (modelFieldReflection.get(mFragment) as ViewModelLazy<CalibrationViewModel>).value
         }
+    }
 
-        mockViewModel()
+    @Before
+    override fun setup() {
+        super.setup()
     }
 
     @Test

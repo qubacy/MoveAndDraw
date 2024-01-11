@@ -16,16 +16,12 @@ abstract class DrawingViewModel<UiStateType : DrawingUiState>(
     protected val mDrawingUseCase: DrawingUseCase
 ) : BusinessViewModel<UiStateType>(mDrawingUseCase) {
     fun loadDrawing(drawingUri: Uri) {
-        System.out.println("loadDrawing(): thread.id = ${Thread.currentThread().id}")
-
         mUiState.value = generateDrawingUiState(isLoading = true)
 
         mDrawingUseCase.loadDrawing(drawingUri)
     }
 
     override fun processResult(result: Result): UiStateType? {
-        System.out.println("processResult(): thread.id = ${Thread.currentThread().id}")
-
         return when (result::class) {
             LoadDrawingResult::class -> { processLoadDrawingResult(result as LoadDrawingResult) }
             else -> null

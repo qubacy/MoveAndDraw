@@ -3,8 +3,6 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.test.platform.app.InstrumentationRegistry
-import com.qubacy.moveanddraw.data._common.repository._common.source.local.TestDatabase
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
 import com.qubacy.moveanddraw.domain.calibration.CalibrationUseCase
 import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.state.CalibrationUiState
@@ -19,7 +17,7 @@ import org.mockito.Mockito
     components = [ActivityRetainedComponent::class],
     replaces = [CalibrationViewModelFactoryModule::class]
 )
-object FakeCalibrationViewModelFactoryModule {
+object FakeCalibrationViewModelModule {
     class FakeCalibrationViewModelFactory() : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             val viewModelMock = Mockito.mock(CalibrationViewModel::class.java)

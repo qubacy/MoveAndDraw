@@ -1,8 +1,8 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment.drawing.model
 
+import app.cash.turbine.test
 import com.qubacy.moveanddraw._common.data.InitData
 import com.qubacy.moveanddraw._common.error.Error
-import com.qubacy.moveanddraw._common.util.livedata.getOrAwaitValue
 import com.qubacy.moveanddraw._common.util.mock.AnyMockUtil
 import com.qubacy.moveanddraw._common.util.mock.UriMockUtil
 import com.qubacy.moveanddraw._common.util.rule.MainCoroutineRule
@@ -13,11 +13,9 @@ import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._c
 import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment.drawing.model.data.DrawingMockUseCaseInitData
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.DrawingViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.DrawingUiState
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
@@ -58,28 +56,21 @@ abstract class DrawingViewModelTest<
         super.setup()
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun loadDrawingTest() = runTest {
-        System.out.println("loadDrawingTest(): thread.id = ${Thread.currentThread().id}")
-
         val drawingToLoadUri = UriMockUtil.getMockedUri()
         val loadedDrawing = Drawing(floatArrayOf(), floatArrayOf(), floatArrayOf(), arrayOf())
 
         initViewModel(useCaseMockInitData = DrawingMockUseCaseInitData(loadedDrawing))
 
-        mViewModel.loadDrawing(drawingToLoadUri)
+        mViewModel.uiStateFlow.test {
+            skipItems(1)
 
-        // todo: DOESN'T WORK!! it doesn't return THE LAST UI STATE (because of .emit()):
+            mViewModel.loadDrawing(drawingToLoadUri)
 
-        val scheduler = (mainCoroutineRule.coroutineDispatcher as TestDispatcher).scheduler
+            val drawingState = awaitItem()!!
 
-        scheduler.runCurrent()
-
-        val uiState = mViewModel.uiState.getOrAwaitValue()!!
-
-        System.out.println("loadDrawingTest(): ending..")
-
-        Assert.assertEquals(loadedDrawing, uiState.drawing)
+            Assert.assertEquals(loadedDrawing, drawingState.drawing)
+        }
     }
 }

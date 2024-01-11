@@ -48,7 +48,7 @@
         app:layout_constraintEnd_toEndOf="@id/fragment_viewer_canvas"
         android:layout_marginBottom="@dimen/default_component_margin_half"
         android:textAppearance="?attr/textAppearanceTitleLarge"
-        android:text="Load a local drawing!"/>
+        android:text="@string/fragment_viewer_entry_message_text"/>
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/fragment_viewer_entry_icon"
