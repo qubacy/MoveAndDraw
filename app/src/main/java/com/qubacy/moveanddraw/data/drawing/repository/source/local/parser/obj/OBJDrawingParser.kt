@@ -35,6 +35,10 @@ class OBJDrawingParser : DrawingParser {
         )
     }
 
+    private fun prepareLine(line: String): String {
+        return line.trim().replace(Regex("\\s\\s+"), " ")
+    }
+
     private fun readVectors(
         reader: BufferedReader,
         finalVertices: MutableList<Float>,
@@ -49,7 +53,8 @@ class OBJDrawingParser : DrawingParser {
 
             if (line == null) break
 
-            val tokens = line.split(TOKEN_SPLITTER)
+            val preparedLine = prepareLine(line)
+            val tokens = preparedLine.split(TOKEN_SPLITTER)
 
             when (tokens[0]) {
                 VERTEX_TOKEN -> {
