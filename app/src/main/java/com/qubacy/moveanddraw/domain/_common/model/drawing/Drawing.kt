@@ -1,6 +1,9 @@
 package com.qubacy.moveanddraw.domain._common.model.drawing
 
+import android.net.Uri
+
 data class Drawing(
+    val uri: Uri,
     val vertexArray: FloatArray,
     val normalArray: FloatArray,
     val textureArray: FloatArray,
@@ -29,5 +32,4 @@ data class Drawing(
 
         return result
     }
-
 }

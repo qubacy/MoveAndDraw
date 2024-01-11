@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -32,6 +33,14 @@
         app:layout_constraintBottom_toBottomOf="parent"
         layout="@layout/component_canvas"/>
 
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/fragment_viewer_progress_indicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/fragment_viewer_top_bar_container"
+        android:indeterminate="true"
+        android:visibility="gone"/>
+
     <FrameLayout
         android:id="@+id/fragment_viewer_canvas_vertical_center"
         android:layout_width="match_parent"
@@ -60,16 +69,5 @@
         android:layout_marginTop="@dimen/default_component_margin_half"
         app:srcCompat="@drawable/ic_cat"
         app:tint="?attr/colorOnSurface"/>
-
-    <com.google.android.material.progressindicator.CircularProgressIndicator
-        android:id="@+id/fragment_viewer_progress_indicator"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="@id/fragment_viewer_canvas"
-        app:layout_constraintBottom_toBottomOf="@id/fragment_viewer_canvas"
-        app:layout_constraintStart_toStartOf="@id/fragment_viewer_canvas"
-        app:layout_constraintEnd_toEndOf="@id/fragment_viewer_canvas"
-        android:indeterminate="true"
-        android:visibility="gone"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

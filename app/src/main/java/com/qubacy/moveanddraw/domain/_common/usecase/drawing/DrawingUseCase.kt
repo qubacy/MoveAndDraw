@@ -20,7 +20,7 @@ abstract class DrawingUseCase(
             try {
                 val loadedDrawing = mDrawingDataRepository.loadDrawing(drawingUri) // todo: can be suspend;
 
-                mResultFlow.emit(LoadDrawingResult(loadedDrawing.toDrawing()))
+                mResultFlow.emit(LoadDrawingResult(loadedDrawing.toDrawing(drawingUri)))
 
             } catch (e: MADErrorException) {
                 onErrorCaught(e.errorId)

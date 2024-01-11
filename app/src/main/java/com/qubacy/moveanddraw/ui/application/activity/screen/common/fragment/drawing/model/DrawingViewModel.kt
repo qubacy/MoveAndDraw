@@ -15,6 +15,15 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.dra
 abstract class DrawingViewModel<UiStateType : DrawingUiState>(
     protected val mDrawingUseCase: DrawingUseCase
 ) : BusinessViewModel<UiStateType>(mDrawingUseCase) {
+    companion object {
+        const val DRAWING_MIME_TYPE = "model/obj"
+        val DRAWING_FILE_EXTENSIONS = arrayOf("obj")
+    }
+
+    fun isDrawingFileExtensionValid(ext: String): Boolean {
+        return DRAWING_FILE_EXTENSIONS.contains(ext)
+    }
+
     fun loadDrawing(drawingUri: Uri) {
         mUiState.value = generateDrawingUiState(isLoading = true)
 

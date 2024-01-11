@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.transition.MaterialSharedAxis
 import com.qubacy.moveanddraw.R
+import com.qubacy.moveanddraw._common.error.ErrorEnum
 import com.qubacy.moveanddraw.databinding.FragmentViewerBinding
 import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.MainActivity
@@ -20,6 +21,7 @@ import com.qubacy.moveanddraw.ui.application.activity.file.picker.GetFileUriCall
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.transition.DefaultSharedAxisTransitionGenerator
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.base.BaseFragment
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.mapper.DrawingGLDrawingMapperImpl
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.DrawingViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.ViewerViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.ViewerViewModelFactoryQualifier
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.state.ViewerUiState
@@ -95,9 +97,13 @@ class ViewerFragment(
     }
 
     private fun onShareMenuItemClicked() {
-        // todo: implement..
+        val drawingUri = mModel.uiState.value?.drawing?.uri
 
+        if (drawingUri == null)
+            return mModel.retrieveError(ErrorEnum.NO_FILE_LOADED.id)
 
+        (requireActivity() as MainActivity).shareLocalFile(
+            drawingUri, DrawingViewModel.DRAWING_MIME_TYPE)
     }
 
     private fun onLoadMenuItemClicked() {
@@ -147,6 +153,11 @@ class ViewerFragment(
 
     override fun onFileUriGotten(fileUri: Uri?) {
         if (fileUri == null) return
+
+        val ext = fileUri.lastPathSegment!!.split('.').last()
+
+        if (!mModel.isDrawingFileExtensionValid(ext))
+            return mModel.retrieveError(ErrorEnum.WRONG_FILE_TYPE.id)
 
         mModel.loadDrawing(fileUri)
     }

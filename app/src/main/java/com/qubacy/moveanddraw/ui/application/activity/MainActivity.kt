@@ -1,5 +1,6 @@
 package com.qubacy.moveanddraw.ui.application.activity
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
@@ -40,5 +41,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun onLocalFileChosen(fileUri: Uri?) {
         mChooseLocalFileCallback?.onFileUriGotten(fileUri)
+    }
+
+    fun shareLocalFile(uri: Uri, mimeType: String) {
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = mimeType
+
+            putExtra(Intent.EXTRA_STREAM, uri)
+        }
+        val shareIntent = Intent.createChooser(intent, null)
+
+        startActivity(shareIntent)
     }
 }

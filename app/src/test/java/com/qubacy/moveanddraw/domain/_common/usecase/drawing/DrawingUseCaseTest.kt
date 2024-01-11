@@ -68,9 +68,9 @@ abstract class DrawingUseCaseTest<UseCaseType : DrawingUseCase> {
 
     @Test
     fun loadDrawingTest(): Unit = runTest {
-        val loadedDataDrawing = DataDrawing(floatArrayOf(), floatArrayOf(), floatArrayOf(), arrayOf())
-        val loadedDrawing = loadedDataDrawing.toDrawing()
         val mockedUri = UriMockUtil.getMockedUri()
+        val loadedDataDrawing = DataDrawing(floatArrayOf(), floatArrayOf(), floatArrayOf(), arrayOf())
+        val loadedDrawing = loadedDataDrawing.toDrawing(mockedUri)
 
         initUseCase(loadedDataDrawing = loadedDataDrawing)
 
