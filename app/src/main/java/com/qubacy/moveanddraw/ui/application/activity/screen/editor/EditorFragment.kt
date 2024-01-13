@@ -83,12 +83,27 @@ class EditorFragment(
         menuInflater.inflate(R.menu.editor_top_bar, menu)
     }
 
+    override fun processCustomMenuAction(menuItemId: Int): Boolean {
+        when (menuItemId) {
+            R.id.editor_top_bar_save -> { onSaveMenuItemClicked() }
+            else -> return false
+        }
+
+        return true
+    }
+
     override fun getAccelerometerStateHolder(): AccelerometerStateHolder {
         return mModel
     }
 
     override fun getAccelerometerModel(): EditorViewModel {
         return mModel
+    }
+
+    private fun onSaveMenuItemClicked() {
+        // todo: implement..
+
+
     }
 
     override fun onShareMenuItemClicked() {

@@ -12,7 +12,6 @@ import com.google.android.material.transition.MaterialSharedAxis
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw._common.error.ErrorEnum
 import com.qubacy.moveanddraw.databinding.FragmentViewerBinding
-import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.transition.DefaultSharedAxisTransitionGenerator
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.DrawingFragment
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.ViewerViewModel
@@ -89,14 +88,7 @@ class ViewerFragment(
     override fun setUiElementsState(uiState: ViewerUiState) {
         super.setUiElementsState(uiState)
 
-        setCurrentDrawing(uiState.drawing)
-    }
-
-    private fun setCurrentDrawing(drawing: Drawing?) {
-        if (drawing == null) return
-
-        setEntryMessageEnabled(false)
-        setCanvasDrawing(drawing)
+        if (uiState.drawing != null) setEntryMessageEnabled(false)
     }
 
     private fun setEntryMessageEnabled(isEnabled: Boolean) {

@@ -4,7 +4,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <group android:id="@+id/editor_top_bar_main_group">
-
         <item
             android:id="@+id/editor_top_bar_save"
             android:icon="@drawable/ic_save"

@@ -88,6 +88,13 @@ abstract class DrawingFragment<
     override fun setUiElementsState(uiState: DrawingUiStateType) {
         setTopBarMenuEnabled(!uiState.isLoading)
         setProgressIndicatorEnabled(uiState.isLoading)
+        setCurrentDrawing(uiState.drawing)
+    }
+
+    private fun setCurrentDrawing(drawing: Drawing?) {
+        if (drawing == null) return
+
+        setCanvasDrawing(drawing)
     }
 
     protected fun setTopBarMenuEnabled(isEnabled: Boolean) {
@@ -98,7 +105,7 @@ abstract class DrawingFragment<
         mProgressIndicator.visibility = if (isEnabled) View.VISIBLE else View.GONE
     }
 
-    protected fun setCanvasDrawing(drawing: Drawing) {
+    protected open fun setCanvasDrawing(drawing: Drawing) {
         lifecycleScope.launch(Dispatchers.IO) {
             mCanvasView.setFigure(drawing)
         }
