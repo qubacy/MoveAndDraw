@@ -14,6 +14,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.transition.MaterialSharedAxis
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw._common.error.ErrorEnum
+import com.qubacy.moveanddraw._common.util.context.getFileNameByUri
 import com.qubacy.moveanddraw.databinding.FragmentViewerBinding
 import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.MainActivity
@@ -154,7 +155,8 @@ class ViewerFragment(
     override fun onFileUriGotten(fileUri: Uri?) {
         if (fileUri == null) return
 
-        val ext = fileUri.lastPathSegment!!.split('.').last()
+        val fileName = requireContext().getFileNameByUri(fileUri)
+        val ext = fileName.split('.').last()
 
         if (!mModel.isDrawingFileExtensionValid(ext))
             return mModel.retrieveError(ErrorEnum.WRONG_FILE_TYPE.id)
