@@ -3,7 +3,7 @@ package com.qubacy.moveanddraw.domain._common.model.drawing
 import android.net.Uri
 
 data class Drawing(
-    val uri: Uri,
+    val uri: Uri? = null,
     val vertexArray: FloatArray,
     val normalArray: FloatArray,
     val textureArray: FloatArray,
@@ -15,6 +15,7 @@ data class Drawing(
 
         other as Drawing
 
+        if (uri != other) return false
         if (!vertexArray.contentEquals(other.vertexArray)) return false
         if (!normalArray.contentEquals(other.normalArray)) return false
         if (!textureArray.contentEquals(other.textureArray)) return false

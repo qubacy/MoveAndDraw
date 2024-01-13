@@ -8,7 +8,9 @@ import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
 import com.qubacy.moveanddraw.domain.calibration.CalibrationUseCase
 import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.state.CalibrationUiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.accelerometer.model.AccelerometerViewModel
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model.business.BusinessViewModel
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.accelerometer.model._common.AccelerometerStateHolder
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.accelerometer.model.simple.SimpleAccelerometerStateHolder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,7 +27,8 @@ import kotlin.concurrent.schedule
 @HiltViewModel
 open class CalibrationViewModel @Inject constructor(
     private val mCalibrationUseCase: CalibrationUseCase
-) : AccelerometerViewModel<CalibrationUiState>(mCalibrationUseCase) {
+) : BusinessViewModel<CalibrationUiState>(mCalibrationUseCase),
+    AccelerometerStateHolder by SimpleAccelerometerStateHolder() {
     companion object {
         const val CALIBRATING_DURATION = 5000L
     }

@@ -19,7 +19,6 @@
             android:minHeight="?attr/actionBarSize"
             style="@style/Widget.Material3.AppBarLayout"
             app:title="@string/fragment_viewer_top_bar_title"
-            app:menu="@menu/viewer_top_bar"
             app:navigationIcon="@drawable/ic_go_back"
             app:navigationIconTint="?attr/colorOnSurfaceVariant"/>
 
