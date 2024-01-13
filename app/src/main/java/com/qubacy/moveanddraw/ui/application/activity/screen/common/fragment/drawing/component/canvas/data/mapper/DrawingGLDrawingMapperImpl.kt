@@ -9,7 +9,7 @@ class DrawingGLDrawingMapperImpl : DrawingGLDrawingMapper {
 
         val trianglesVertices = mutableListOf<Short>()
 
-        for (i in 0 until face.size - 2) {
+        for (i in 1 until face.size - 1) {
             val curTriangleVertices = listOf(
                 face[0].first, face[i].first, face[i + 1].first
             )

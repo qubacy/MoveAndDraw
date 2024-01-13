@@ -9,9 +9,8 @@ import java.nio.ShortBuffer
 
 open class GLDrawing (
     val vertexArray: FloatArray,
-    private val mVertexDrawingOrder: ShortArray? = null,
-    @Volatile
-    private var mColor: FloatArray = floatArrayOf(1f, 1f, 1f, 1f)
+    val vertexDrawingOrder: ShortArray? = null,
+    color: FloatArray = floatArrayOf(1f, 1f, 1f, 1f)
 ) {
     companion object {
         const val COORDS_PER_VERTEX = 3
@@ -41,11 +40,11 @@ open class GLDrawing (
                 position(0)
             }
         }
-    private val mVertexDrawingOrderBuffer: ShortBuffer? = if (mVertexDrawingOrder != null)
-        ByteBuffer.allocateDirect(mVertexDrawingOrder.size * Short.SIZE_BYTES).run {
+    private val mVertexDrawingOrderBuffer: ShortBuffer? = if (vertexDrawingOrder != null)
+        ByteBuffer.allocateDirect(vertexDrawingOrder.size * Short.SIZE_BYTES).run {
             order(ByteOrder.nativeOrder())
             asShortBuffer().apply {
-                put(mVertexDrawingOrder)
+                put(vertexDrawingOrder)
                 position(0)
             }
         }
@@ -55,6 +54,8 @@ open class GLDrawing (
     private var mIsInitialized = false
     val isInitialized get () = mIsInitialized
 
+    @Volatile
+    private var mColor: FloatArray = color
     val color get() = mColor
 
     fun init() {
@@ -98,12 +99,32 @@ open class GLDrawing (
 
             if (mVertexDrawingOrderBuffer != null)
                 GLES20.glDrawElements(
-                    GLES20.GL_TRIANGLES, mVertexDrawingOrder!!.size,
+                    GLES20.GL_TRIANGLES, vertexDrawingOrder!!.size,
                     GLES20.GL_UNSIGNED_SHORT, mVertexDrawingOrderBuffer)
             else
                 GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mVertexCount)
 
             GLES20.glDisableVertexAttribArray(it)
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as GLDrawing
+
+        if (!vertexArray.contentEquals(other.vertexArray)) return false
+        if (!vertexDrawingOrder.contentEquals(other.vertexDrawingOrder)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = vertexArray.contentHashCode()
+
+        result = 31 * result + vertexDrawingOrder.contentHashCode()
+
+        return result
     }
 }
