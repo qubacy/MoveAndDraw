@@ -9,6 +9,10 @@ data class DataDrawing(
     val textureArray: FloatArray,
     val faceArray: Array<Array<Triple<Short, Short?, Short?>>>
 ) {
+    companion object {
+        const val VERTEX_COORD_COUNT = 3
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

@@ -101,13 +101,21 @@ class EditorFragment(
     }
 
     private fun onSaveMenuItemClicked() {
-        // todo: implement..
+        // todo: checking if the drawing's file exists.
+        // todo: if it doesn't then an appropriate dialog should be shown..
+
+        val drawing =
+
+        // todo: saving the file..
 
 
     }
 
     override fun onShareMenuItemClicked() {
-        // todo: implement..
+        // todo: if the drawing's file doesn't exist then save it..
+
+
+        // todo: sharing the file..
 
 
     }

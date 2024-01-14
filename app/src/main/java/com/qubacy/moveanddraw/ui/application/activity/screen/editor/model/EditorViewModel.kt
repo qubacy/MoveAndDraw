@@ -36,7 +36,17 @@ open class EditorViewModel @Inject constructor(
         return EditorUiState(drawing, isLoading, pendingOperations)
     }
 
+    fun saveCurrentDrawingToNewFile(drawing: Drawing, filename: String) {
+        mUiState.value = generateDrawingUiState(drawing = drawing, isLoading = true)
 
+        mEditorUseCase.saveDrawing(drawing, filename = filename)
+    }
+
+    fun saveCurrentDrawingChanges(drawing: Drawing) {
+        mUiState.value = generateDrawingUiState(drawing = drawing, isLoading = true)
+
+        mEditorUseCase.saveDrawing(drawing, drawingUri = drawing.uri)
+    }
 }
 
 class EditorViewModelFactory(

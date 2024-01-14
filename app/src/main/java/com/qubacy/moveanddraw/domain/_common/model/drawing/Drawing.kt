@@ -1,6 +1,7 @@
 package com.qubacy.moveanddraw.domain._common.model.drawing
 
 import android.net.Uri
+import com.qubacy.moveanddraw.data.drawing.model.DataDrawing
 
 data class Drawing(
     val uri: Uri? = null,
@@ -33,4 +34,8 @@ data class Drawing(
 
         return result
     }
+}
+
+fun Drawing.toDataDrawing(): DataDrawing {
+    return DataDrawing(vertexArray, normalArray, textureArray, faceArray)
 }

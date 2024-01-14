@@ -43,6 +43,8 @@ class CanvasView(
 
     private var mDrawingMapper: DrawingGLDrawingMapper? = null
 
+    private var mCurrentDrawing: Drawing? = null
+
     init {
         setEGLContextClientVersion(2)
 
@@ -101,6 +103,8 @@ class CanvasView(
 
     suspend fun setFigure(figure: Drawing) { // todo: is it throwable?
         if (mDrawingMapper == null) return
+
+        mCurrentDrawing = figure
 
         val glDrawing = mDrawingMapper!!.map(figure)
 

@@ -12,4 +12,12 @@ class DrawingDataRepository @Inject constructor(
     fun loadDrawing(drawingUri: Uri): DataDrawing {
         return mLocalDrawingDataSource.load(drawingUri)
     }
+
+    fun saveDrawing(drawing: DataDrawing, drawingUri: Uri): String {
+        return mLocalDrawingDataSource.saveChanges(drawing, drawingUri)
+    }
+
+    fun saveNewDrawing(drawing: DataDrawing, filename: String): String {
+        return mLocalDrawingDataSource.saveNewFile(drawing, filename)
+    }
 }
