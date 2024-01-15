@@ -1,19 +1,20 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.editor
 
 import android.content.Context
-import android.content.DialogInterface
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.Toolbar
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.dialog.MaterialDialogs
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.transition.MaterialSharedAxis
 import com.qubacy.moveanddraw.R
@@ -25,17 +26,24 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.dra
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.EditorViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.EditorViewModelFactoryQualifier
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.EditorUiState
+import com.skydoves.colorpickerview.ColorPickerDialog
+import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class EditorFragment(
 
 ) : DrawingFragment<EditorUiState, EditorViewModel>(),
-    AccelerometerFragment<EditorUiState, EditorViewModel>
+    AccelerometerFragment<EditorUiState, EditorViewModel>,
+    Toolbar.OnMenuItemClickListener
 {
     companion object {
         const val TAG = "EDITOR_FRAGMENT"
+
+        const val STATE_MODEL_COLOR_KEY = "modelColor"
     }
 
     @Inject
@@ -47,6 +55,8 @@ class EditorFragment(
     )
 
     private lateinit var mBinding: FragmentEditorBinding
+
+    private var mModelColor: Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +71,21 @@ class EditorFragment(
             MaterialSharedAxis.Z,
             false
         )
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        if (mModelColor != null)
+            outState.putInt(STATE_MODEL_COLOR_KEY, mModelColor!!)
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+
+        mModelColor = savedInstanceState?.getInt(STATE_MODEL_COLOR_KEY)
+
+        applyCurrentModelColor()
     }
 
     override fun onCreateView(
@@ -80,7 +105,7 @@ class EditorFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
+        mBinding.fragmentEditorBottomBar.setOnMenuItemClickListener(this)
     }
 
     override fun inflateTopAppBarMenu(menuInflater: MenuInflater, menu: Menu) {
@@ -151,5 +176,67 @@ class EditorFragment(
 
     override fun getFragmentContext(): Context {
         return requireContext()
+    }
+
+    override fun onMenuItemClick(item: MenuItem?): Boolean {
+        if (item == null) return false
+
+        when (item.itemId) {
+            R.id.editor_bottom_bar_pick_color -> { onPickColorClicked() }
+            R.id.editor_bottom_bar_undo -> { onUndoClicked() }
+            else ->  return false
+        }
+
+        return true
+    }
+
+    private fun onPickColorClicked() {
+        ColorPickerDialog.Builder(requireContext())
+            .setTitle(R.string.component_dialog_color_picker_title)
+            .setPositiveButton(
+                R.string.component_dialog_color_picker_button_positive_caption,
+                ColorEnvelopeListener { envelope, fromUser ->
+                    onColorPicked(envelope.color)
+                })
+            .setNegativeButton(
+                R.string.component_dialog_color_picker_button_negative_caption
+            ) { dialogInterface, i ->
+                dialogInterface.dismiss()
+            }
+            .attachAlphaSlideBar(false)
+            .attachBrightnessSlideBar(true)
+            .setBottomSpace(12)
+            .show()
+    }
+
+    private fun onColorPicked(@ColorInt color: Int) {
+        mModelColor = color
+
+        applyCurrentModelColor()
+    }
+
+    private fun applyCurrentModelColor() {
+        if (mModelColor == null) return
+
+        changePreviewColor(mModelColor!!)
+        changeCanvasModelColor(mModelColor!!)
+    }
+
+    private fun changePreviewColor(@ColorInt color: Int) {
+        val drawable = mBinding.fragmentEditorBottomBar.menu
+            .findItem(R.id.editor_bottom_bar_pick_color).icon!!
+
+        DrawableCompat.setTint(drawable, color)
+        drawable.invalidateSelf()
+    }
+
+    private fun changeCanvasModelColor(@ColorInt color: Int) = runBlocking {
+        mCanvasView.setCanvasModelColor(color)
+    }
+
+    private fun onUndoClicked() {
+        // todo: implement..
+
+
     }
 }

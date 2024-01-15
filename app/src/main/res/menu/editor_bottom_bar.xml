@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <group android:id="@+id/editor_bottom_bar_main_group">
+        <item
+            android:id="@+id/editor_bottom_bar_pick_color"
+            android:icon="@drawable/ic_color_preview"
+            android:title="Pick Color"
+            app:showAsAction="ifRoom"
+            app:iconTint="?attr/colorOnSurfaceVariant"/>
+
+        <item
+            android:id="@+id/editor_bottom_bar_undo"
+            android:icon="@drawable/ic_undo"
+            android:title="Undo"
+            app:showAsAction="ifRoom"
+            app:iconTint="?attr/colorOnSurfaceVariant"/>
+    </group>
+</menu>

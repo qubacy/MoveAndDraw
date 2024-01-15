@@ -12,7 +12,7 @@ class EditorCanvasRenderer(
 ) : CanvasRenderer() {
     companion object {
         val DEVICE_DRAWING_COLOR = floatArrayOf(0f, 1f, 0f, 1f)
-        const val DEVICE_DRAWING_SIZE = 0.2f
+        const val DEVICE_DRAWING_SIZE = 0.08f
     }
 
     @Volatile
@@ -23,10 +23,10 @@ class EditorCanvasRenderer(
     private fun generateDeviceGLDrawing(x: Float, y: Float, z: Float): GLDrawing {
         return GLDrawing(
             floatArrayOf(
-                -DEVICE_DRAWING_SIZE + x, -DEVICE_DRAWING_SIZE + y, z,
-                -DEVICE_DRAWING_SIZE + x, DEVICE_DRAWING_SIZE + y, z,
-                DEVICE_DRAWING_SIZE + x, DEVICE_DRAWING_SIZE + y, z,
-                DEVICE_DRAWING_SIZE + x, -DEVICE_DRAWING_SIZE + y, z,
+                -DEVICE_DRAWING_SIZE / 2 + x, -DEVICE_DRAWING_SIZE / 2 + y, z,
+                -DEVICE_DRAWING_SIZE / 2 + x, DEVICE_DRAWING_SIZE / 2 + y, z,
+                DEVICE_DRAWING_SIZE / 2 + x, DEVICE_DRAWING_SIZE / 2 + y, z,
+                DEVICE_DRAWING_SIZE / 2 + x, -DEVICE_DRAWING_SIZE / 2 + y, z,
                 x, y, DEVICE_DRAWING_SIZE + z,
                 x, y, -DEVICE_DRAWING_SIZE + z
             ),

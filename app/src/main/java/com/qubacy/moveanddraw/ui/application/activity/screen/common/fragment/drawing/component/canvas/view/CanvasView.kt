@@ -13,10 +13,11 @@ import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.mapper.DrawingGLDrawingMapper
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.CanvasRenderer
 import kotlinx.coroutines.runBlocking
+import java.util.Collections
 
 open class CanvasView(
     context: Context,
-    val attrs: AttributeSet
+    attrs: AttributeSet
 ) : GLSurfaceView(context, attrs),
     ScaleGestureDetector.OnScaleGestureListener
 {
@@ -41,23 +42,19 @@ open class CanvasView(
 
     protected var mCurrentDrawing: Drawing? = null
 
+    protected var mCanvasBackgroundColor: FloatArray = floatArrayOf(0f, 0f, 0f, 1f)
+    protected var mCanvasModelColor: FloatArray = floatArrayOf(1f, 1f, 1f, 1f)
+
     init {
-//
-//        setEGLContextClientVersion(2)
-//
-//        mScaleGestureDetector = ScaleGestureDetector(context, this)
-//        mRenderer = CanvasRenderer()
-//
-//        setRenderer(mRenderer)
-//        initCustomAttrs(attrs)
-//
-//        renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
+        initCustomAttrs(attrs)
     }
 
-    fun init() {
+    fun init() = runBlocking {
         setEGLContextClientVersion(2)
         setRenderer(mRenderer)
-        initCustomAttrs(attrs)
+
+        setCanvasBackgroundColor(mCanvasBackgroundColor)
+        setCanvasModelColor(mCanvasModelColor)
 
         renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
     }
@@ -72,14 +69,12 @@ open class CanvasView(
         attrsTypedArray.getColor(0, -1).apply {
             if (this == DEFAULT_COLOR_INT) return@apply
 
-            setCanvasBackgroundColor(colorToRGBAFloatArray(this))
+            mCanvasBackgroundColor = colorToRGBAFloatArray(this)
         }
         attrsTypedArray.getColor(1, -1).apply {
             if (this == DEFAULT_COLOR_INT) return@apply
 
-            runBlocking {
-                setCanvasModelColor(colorToRGBAFloatArray(this@apply))
-            }
+            mCanvasModelColor = colorToRGBAFloatArray(this)
         }
     }
 
@@ -97,9 +92,23 @@ open class CanvasView(
         requestRender()
     }
 
-    private suspend fun setCanvasModelColor(rgba: FloatArray) {
+    suspend fun setCanvasModelColor(rgba: FloatArray) {
         mRenderer.setModelColor(rgba[0], rgba[1], rgba[2], rgba[3])
         requestRender()
+    }
+
+    suspend fun setCanvasModelColor(color: Int) {
+        setCanvasModelColor(colorToRGBAFloatArray(color))
+    }
+
+    suspend fun setCanvasModelColor(argb: IntArray) {
+        val argbFloatArray = argb.toMutableList().map { it / 255f } as MutableList<Float>
+
+        argbFloatArray.removeAt(0).also {
+            argbFloatArray.add(it)
+        }
+
+        setCanvasModelColor(argbFloatArray.toFloatArray())
     }
 
     fun setDrawingMapper(drawingGLDrawingMapper: DrawingGLDrawingMapper) {

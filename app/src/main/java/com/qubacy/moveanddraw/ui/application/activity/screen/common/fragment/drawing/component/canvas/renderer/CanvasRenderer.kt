@@ -103,6 +103,10 @@ open class CanvasRenderer(
         @FloatRange(0.0, 1.0) a: Float
     ) {
         mDefaultModelColor = floatArrayOf(r, g, b, a)
+
+        mFigure?.apply {
+            setColor(mDefaultModelColor)
+        }
     }
 
     fun setBackgroundColor(

@@ -16,6 +16,10 @@
     <string name="component_dialog_filename_input_button_positive_caption">Confirm</string>
     <string name="component_dialog_filename_input_button_negative_caption">Cancel</string>
 
+    <string name="component_dialog_color_picker_title">Pick your Color</string>
+    <string name="component_dialog_color_picker_button_positive_caption">Confirm</string>
+    <string name="component_dialog_color_picker_button_negative_caption">Cancel</string>
+
     <!-- Fragments: -->
 
     <string name="fragment_initial_header_title_text"><![CDATA[Move & Draw]]></string>
