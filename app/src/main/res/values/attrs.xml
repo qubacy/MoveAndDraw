@@ -9,6 +9,12 @@
         <attr name="canvasModelColor" format="color"/>
     </declare-styleable>
 
+    <attr name="canvasEditorViewStyle" format="reference"/>
+
+    <declare-styleable name="EditorCanvasView" parent="@declare-styleable/CanvasView">
+
+    </declare-styleable>
+
     <attr name="optionChooserStyle" format="reference"/>
 
     <declare-styleable name="OptionChooserComponent">

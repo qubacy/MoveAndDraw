@@ -30,9 +30,9 @@ open class CanvasRenderer(
         private const val MAX_SCALE_FACTOR = 3f
     }
 
-    private val mVPMatrix = FloatArray(16)
-    private val mProjectionMatrix = FloatArray(16)
-    private val mViewMatrix = FloatArray(16)
+    protected val mVPMatrix = FloatArray(16)
+    protected val mProjectionMatrix = FloatArray(16)
+    protected val mViewMatrix = FloatArray(16)
 
     private var mSphereRadius = DEFAULT_SPHERE_RADIUS
     private var mCameraRadius = mSphereRadius
@@ -188,13 +188,13 @@ open class CanvasRenderer(
     }
 
     fun handleRotation(dx: Float, dy: Float) {
-        if (mFigure == null) return
+        //if (mFigure == null) return
 
         mCameraLocation = getTranslatedCameraLocation(dx, dy)
     }
 
     fun handleScale(scaleFactor: Float) {
-        if (mFigure == null) return
+        //if (mFigure == null) return
 
         val newScaleFactor = mCurScaleFactor * (1 / scaleFactor)
 

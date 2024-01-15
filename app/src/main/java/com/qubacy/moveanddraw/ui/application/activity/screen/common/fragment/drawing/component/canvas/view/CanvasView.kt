@@ -11,19 +11,15 @@ import androidx.annotation.ColorInt
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.mapper.DrawingGLDrawingMapper
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.mapper.DrawingGLDrawingMapperImpl
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.CanvasRenderer
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ActivityRetainedComponent
 import kotlinx.coroutines.runBlocking
 
-class CanvasView(
+open class CanvasView(
     context: Context,
-    attrs: AttributeSet
+    val attrs: AttributeSet
 ) : GLSurfaceView(context, attrs),
-    ScaleGestureDetector.OnScaleGestureListener {
+    ScaleGestureDetector.OnScaleGestureListener
+{
     companion object {
         const val TAG = "CANVAS_VIEW"
 
@@ -33,24 +29,33 @@ class CanvasView(
         private const val DEFAULT_COLOR_INT = -1
     }
 
-    private val mRenderer: CanvasRenderer
-    private val mScaleGestureDetector: ScaleGestureDetector
+    protected open val mRenderer: CanvasRenderer = CanvasRenderer()
+    protected val mScaleGestureDetector: ScaleGestureDetector = ScaleGestureDetector(context, this)
 
-    private var mLastScaleEventTimestamp = 0L
+    protected var mLastScaleEventTimestamp = 0L
 
-    private var previousX: Float = 0f
-    private var previousY: Float = 0f
+    protected var previousX: Float = 0f
+    protected var previousY: Float = 0f
 
-    private var mDrawingMapper: DrawingGLDrawingMapper? = null
+    protected var mDrawingMapper: DrawingGLDrawingMapper? = null
 
-    private var mCurrentDrawing: Drawing? = null
+    protected var mCurrentDrawing: Drawing? = null
 
     init {
+//
+//        setEGLContextClientVersion(2)
+//
+//        mScaleGestureDetector = ScaleGestureDetector(context, this)
+//        mRenderer = CanvasRenderer()
+//
+//        setRenderer(mRenderer)
+//        initCustomAttrs(attrs)
+//
+//        renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
+    }
+
+    fun init() {
         setEGLContextClientVersion(2)
-
-        mRenderer = CanvasRenderer()
-        mScaleGestureDetector = ScaleGestureDetector(context, this)
-
         setRenderer(mRenderer)
         initCustomAttrs(attrs)
 
@@ -160,14 +165,5 @@ class CanvasView(
 
     override fun onScaleEnd(detector: ScaleGestureDetector) {
         mLastScaleEventTimestamp = System.currentTimeMillis()
-    }
-}
-
-@Module
-@InstallIn(ActivityRetainedComponent::class)
-object CanvasViewModel {
-    @Provides
-    fun provideDrawingMapper(): DrawingGLDrawingMapper {
-        return DrawingGLDrawingMapperImpl()
     }
 }

@@ -45,6 +45,7 @@ abstract class DrawingFragment<
         mTopMenuBar.setOnMenuItemClickListener { onMenuItemClickListener(it) }
 
         mCanvasView.apply {
+            init()
             setDrawingMapper(DrawingGLDrawingMapperImpl())
         }
     }

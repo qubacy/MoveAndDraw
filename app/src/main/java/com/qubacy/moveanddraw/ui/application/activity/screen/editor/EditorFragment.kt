@@ -1,14 +1,20 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.editor
 
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.dialog.MaterialDialogs
+import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.transition.MaterialSharedAxis
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw.databinding.FragmentEditorBinding
@@ -65,7 +71,7 @@ class EditorFragment(
         mBinding = FragmentEditorBinding.inflate(inflater, container, false)
 
         mTopMenuBar = mBinding.fragmentEditorTopBar
-        mCanvasView = mBinding.fragmentEditorCanvas.componentCanvasField
+        mCanvasView = mBinding.fragmentEditorCanvas.componentEditorCanvasField
         mProgressIndicator = mBinding.fragmentEditorProgressIndicator
 
         return mBinding.root
@@ -104,11 +110,34 @@ class EditorFragment(
         // todo: checking if the drawing's file exists.
         // todo: if it doesn't then an appropriate dialog should be shown..
 
-        val drawing =
+
+
+        getDrawingFilenameWithDialog() {
+
+        }
 
         // todo: saving the file..
 
 
+    }
+
+    private fun getDrawingFilenameWithDialog(onProvided: (String) -> Unit) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setView(R.layout.component_dialog_filename_input)
+            .setPositiveButton(
+                R.string.component_dialog_filename_input_button_positive_caption
+            ) { dialog, which ->
+                val textField = (dialog as AlertDialog)
+                    .findViewById<TextInputEditText>(R.id.component_dialog_filename_text_field)!!
+
+                onProvided(textField.text.toString())
+            }
+            .setNegativeButton(
+                R.string.component_dialog_filename_input_button_negative_caption
+            ) { dialog, which ->
+
+            }
+            .show()
     }
 
     override fun onShareMenuItemClicked() {

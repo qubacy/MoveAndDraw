@@ -32,6 +32,7 @@
         <item name="scrimBackground">@color/scrim</item>
 
         <item name="canvasViewStyle">@style/CanvasViewStyle</item>
+        <item name="canvasEditorViewStyle">@style/EditorCanvasViewStyle</item>
         <item name="optionChooserStyle">@style/OptionChooserStyle</item>
     </style>
 </resources>

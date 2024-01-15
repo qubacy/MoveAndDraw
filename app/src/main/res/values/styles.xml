@@ -4,6 +4,10 @@
         <item name="canvasBackgroundColor">?attr/colorSurface</item>
         <item name="canvasModelColor">?attr/colorOnSurface</item>
     </style>
+
+    <style name="EditorCanvasViewStyle" parent="CanvasViewStyle">
+
+    </style>
     
     <style name="OptionChooserStyle" parent="">
         <item name="optionChooserPreviewPercent">0.2</item>
