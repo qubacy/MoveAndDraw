@@ -46,14 +46,20 @@ interface AccelerometerFragment<
         sensorManager.unregisterListener(this)
     }
 
+    fun checkSensorEventValidity(event: SensorEvent?): Boolean {
+        return event != null
+    }
+
     override fun onSensorChanged(event: SensorEvent?) {
+        if (!checkSensorEventValidity(event)) return
+
         Log.d(
             TAG, "onSensorChanged(): event.x = ${event?.values?.get(0)};" +
                 " event.y = ${event?.values?.get(1)}; " +
                 "event.z = ${event?.values?.get(2)}")
 
         getAccelerometerStateHolder()
-            .setLastOffsets(event!!.values!![0], event.values!![1], event.values!![2])
+            .applyAccelerations(event!!.values!![0], event.values!![1], event.values!![2])
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {

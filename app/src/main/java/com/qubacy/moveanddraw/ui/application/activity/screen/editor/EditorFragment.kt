@@ -1,6 +1,7 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.editor
 
 import android.content.Context
+import android.hardware.SensorEvent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -12,8 +13,11 @@ import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.navArgs
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.transition.MaterialSharedAxis
@@ -23,20 +27,22 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._co
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.accelerometer.AccelerometerFragment
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.accelerometer.model._common.AccelerometerStateHolder
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.DrawingFragment
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.view.EditorCanvasView
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.EditorViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.EditorViewModelFactoryQualifier
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.EditorUiState
 import com.skydoves.colorpickerview.ColorPickerDialog
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
-
 
 @AndroidEntryPoint
 class EditorFragment(
 
-) : DrawingFragment<EditorUiState, EditorViewModel>(),
+) : DrawingFragment<EditorUiState, EditorViewModel, EditorCanvasView>(),
     AccelerometerFragment<EditorUiState, EditorViewModel>,
     Toolbar.OnMenuItemClickListener
 {
@@ -44,7 +50,10 @@ class EditorFragment(
         const val TAG = "EDITOR_FRAGMENT"
 
         const val STATE_MODEL_COLOR_KEY = "modelColor"
+        const val SENSOR_DELAY = 100L
     }
+
+    private val mArgs by navArgs<EditorFragmentArgs>()
 
     @Inject
     @EditorViewModelFactoryQualifier
@@ -57,6 +66,7 @@ class EditorFragment(
     private lateinit var mBinding: FragmentEditorBinding
 
     private var mModelColor: Int? = null
+    private var mLastSensorDataTime: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -105,7 +115,48 @@ class EditorFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        mModel.setConstantOffsets(mArgs.xOffset, mArgs.yOffset, mArgs.zOffset)
+
         mBinding.fragmentEditorBottomBar.setOnMenuItemClickListener(this)
+
+        postponeEnterTransition()
+        view.doOnPreDraw { startPostponedEnterTransition() }
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        startSensorListening()
+    }
+
+    override fun onDestroy() {
+        endSensorListening()
+
+        super.onDestroy()
+    }
+
+    override fun setUiElementsState(uiState: EditorUiState) {
+        super.setUiElementsState(uiState)
+
+        applyNewDevicePosition(uiState.devicePos)
+    }
+
+    private fun applyNewDevicePosition(devicePos: FloatArray) {
+        lifecycleScope.launch (Dispatchers.IO) {
+            mCanvasView.changeDevicePosition(devicePos[0], devicePos[1], devicePos[2])
+        }
+    }
+
+    override fun checkSensorEventValidity(event: SensorEvent?): Boolean {
+        if (!super.checkSensorEventValidity(event)) return false
+
+        val curTime = System.currentTimeMillis()
+
+        if (mLastSensorDataTime + SENSOR_DELAY > curTime) return false
+
+        mLastSensorDataTime = curTime
+
+        return true
     }
 
     override fun inflateTopAppBarMenu(menuInflater: MenuInflater, menu: Menu) {
@@ -235,8 +286,6 @@ class EditorFragment(
     }
 
     private fun onUndoClicked() {
-        // todo: implement..
-
-
+        mModel.removeLastFace()
     }
 }

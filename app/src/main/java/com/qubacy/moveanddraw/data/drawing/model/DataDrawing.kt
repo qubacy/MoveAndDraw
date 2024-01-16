@@ -38,5 +38,10 @@ data class DataDrawing(
 }
 
 fun DataDrawing.toDrawing(uri: Uri): Drawing {
-    return Drawing(uri, vertexArray, normalArray, textureArray, faceArray)
+    val vertices = mutableListOf<Triple<Float, Float, Float>>()
+
+    for (i in vertexArray.indices step DataDrawing.VERTEX_COORD_COUNT)
+        vertices.add(Triple(vertexArray[i], vertexArray[i + 1], vertexArray[i + 2]))
+
+    return Drawing(uri, vertices.toTypedArray(), normalArray, textureArray, faceArray)
 }

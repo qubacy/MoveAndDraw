@@ -33,6 +33,20 @@ open class CalibrationViewModel @Inject constructor(
         const val CALIBRATING_DURATION = 5000L
     }
 
+    private var mXAverageOffset: Float = 0f
+    private var mYAverageOffset: Float = 0f
+    private var mZAverageOffset: Float = 0f
+
+    val xAverageOffset get() = mXAverageOffset
+    val yAverageOffset get() = mYAverageOffset
+    val zAverageOffset get() = mZAverageOffset
+
+    private var mXTotalOffset: Float = 0f
+    private var mYTotalOffset: Float = 0f
+    private var mZTotalOffset: Float = 0f
+
+    private var mUpdateCount: Int = 0
+
     fun startCalibration() {
         mUiState.value = CalibrationUiState(CalibrationUiState.State.CALIBRATING)
 
@@ -51,6 +65,29 @@ open class CalibrationViewModel @Inject constructor(
         val state = mUiState.value?.state ?: CalibrationUiState.State.IDLE
 
         return CalibrationUiState(state = state, pendingOperations = TakeQueue(uiOperation))
+    }
+
+    override fun applyAccelerations(
+        xAcceleration: Float, yAcceleration: Float, zAcceleration: Float
+    ) {
+        mUpdateCount += 1
+
+        val offsets = getOffsetsByAccelerations(xAcceleration, yAcceleration, zAcceleration)
+
+        updateTotalOffsets(offsets)
+        updateAverageOffsetsValues()
+    }
+
+    private fun updateAverageOffsetsValues() {
+        mXAverageOffset = mXTotalOffset / mUpdateCount
+        mYAverageOffset = mYTotalOffset / mUpdateCount
+        mZAverageOffset = mZTotalOffset / mUpdateCount
+    }
+
+    private fun updateTotalOffsets(offsets: FloatArray) {
+        mXTotalOffset += offsets[0]
+        mYTotalOffset += offsets[1]
+        mZTotalOffset += offsets[2]
     }
 }
 

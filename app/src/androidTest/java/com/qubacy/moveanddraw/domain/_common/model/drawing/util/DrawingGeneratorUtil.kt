@@ -1,15 +1,17 @@
 package com.qubacy.moveanddraw.domain._common.model.drawing.util
 
+import android.net.Uri
 import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
 
 object DrawingGeneratorUtil {
     fun generateSquareDrawing(): Drawing {
         return Drawing(
-            floatArrayOf(
-                0f, 0f, 0f,
-                0f, 1f, 0f,
-                1f, 0f, 0f,
-                1f, 1f, 0f
+            Uri.parse(String()),
+            arrayOf(
+                Triple(0f, 0f, 0f),
+                Triple(0f, 1f, 0f),
+                Triple(1f, 0f, 0f),
+                Triple(1f, 1f, 0f)
             ),
             floatArrayOf(),
             floatArrayOf(),

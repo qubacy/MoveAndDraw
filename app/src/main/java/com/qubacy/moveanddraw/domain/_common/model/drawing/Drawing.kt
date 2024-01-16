@@ -5,7 +5,7 @@ import com.qubacy.moveanddraw.data.drawing.model.DataDrawing
 
 data class Drawing(
     val uri: Uri? = null,
-    val vertexArray: FloatArray,
+    val vertexArray: Array<Triple<Float, Float, Float>>,
     val normalArray: FloatArray,
     val textureArray: FloatArray,
     val faceArray: Array<Array<Triple<Short, Short?, Short?>>>
@@ -37,5 +37,10 @@ data class Drawing(
 }
 
 fun Drawing.toDataDrawing(): DataDrawing {
-    return DataDrawing(vertexArray, normalArray, textureArray, faceArray)
+    return DataDrawing(
+        vertexArray.flatMap { it.toList() }.toFloatArray(),
+        normalArray,
+        textureArray,
+        faceArray
+    )
 }

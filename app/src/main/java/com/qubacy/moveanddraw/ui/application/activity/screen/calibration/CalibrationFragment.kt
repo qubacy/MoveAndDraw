@@ -98,8 +98,9 @@ class CalibrationFragment(
     }
 
     private fun goToEditor() {
-        val offsets = floatArrayOf(mModel.xLastOffset, mModel.yLastOffset, mModel.zLastOffset)
-        val action = CalibrationFragmentDirections.actionCalibrationFragmentToEditorFragment(offsets)
+        val action = CalibrationFragmentDirections
+            .actionCalibrationFragmentToEditorFragment(
+                mModel.xAverageOffset, mModel.yAverageOffset, mModel.zAverageOffset)
 
         findNavController().navigate(action)
     }

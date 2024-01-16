@@ -30,7 +30,7 @@ class DrawingGLDrawingMapperImpl : DrawingGLDrawingMapper {
         }
 
         return GLDrawing(
-            drawing.vertexArray,
+            drawing.vertexArray.flatMap { it.toList() }.toFloatArray(),
             vertexDrawingOrder.toShortArray()
         )
     }

@@ -14,6 +14,7 @@ import com.qubacy.moveanddraw._common.error.ErrorEnum
 import com.qubacy.moveanddraw.databinding.FragmentViewerBinding
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.transition.DefaultSharedAxisTransitionGenerator
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.DrawingFragment
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.view.CanvasView
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.ViewerViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.ViewerViewModelFactoryQualifier
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.state.ViewerUiState
@@ -23,7 +24,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class ViewerFragment(
 
-) : DrawingFragment<ViewerUiState, ViewerViewModel>() {
+) : DrawingFragment<ViewerUiState, ViewerViewModel, CanvasView>() {
 
     @Inject
     @ViewerViewModelFactoryQualifier

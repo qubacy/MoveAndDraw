@@ -1,7 +1,9 @@
 package com.qubacy.moveanddraw.domain.editor
 
 import android.net.Uri
+import androidx.lifecycle.viewModelScope
 import com.qubacy.moveanddraw._common.exception.error.MADErrorException
+import com.qubacy.moveanddraw._common.util.struct.takequeue._common.TakeQueue
 import com.qubacy.moveanddraw.data.drawing.model.toDrawing
 import com.qubacy.moveanddraw.data.drawing.repository.DrawingDataRepository
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
@@ -9,7 +11,10 @@ import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
 import com.qubacy.moveanddraw.domain._common.model.drawing.toDataDrawing
 import com.qubacy.moveanddraw.domain._common.usecase.drawing.DrawingUseCase
 import com.qubacy.moveanddraw.domain._common.usecase.drawing.result.LoadDrawingResult
+import com.qubacy.moveanddraw.domain.editor.result.RemoveLastFaceFromDrawingResult
 import com.qubacy.moveanddraw.domain.editor.result.SaveDrawingResult
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.EditorUiState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -41,6 +46,23 @@ class EditorUseCase @Inject constructor(
 
                 throw e
             }
+        }
+    }
+
+    open fun removeLastFaceFromDrawing(drawing: Drawing) {
+        mCoroutineScope.launch(mCoroutineDispatcher) {
+            val faces = drawing.faceArray.filterIndexed {
+                index, face -> index != drawing.faceArray.size - 1
+            }
+            val editedDrawing = Drawing(
+                drawing.uri,
+                drawing.vertexArray,
+                drawing.normalArray,
+                drawing.textureArray,
+                faces.toTypedArray()
+            )
+
+            mResultFlow.emit(RemoveLastFaceFromDrawingResult(editedDrawing))
         }
     }
 }

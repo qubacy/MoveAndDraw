@@ -27,12 +27,13 @@ import kotlinx.coroutines.launch
 
 abstract class DrawingFragment<
     DrawingUiStateType : DrawingUiState,
-    DrawingViewModelType : DrawingViewModel<DrawingUiStateType>
+    DrawingViewModelType : DrawingViewModel<DrawingUiStateType>,
+    CanvasViewType : CanvasView
 >(
 
 ) : BaseFragment<DrawingUiStateType, DrawingViewModelType>(), GetFileUriCallback {
 
-    protected lateinit var mCanvasView: CanvasView
+    protected lateinit var mCanvasView: CanvasViewType
     protected lateinit var mTopMenuBar: Toolbar
     protected lateinit var mProgressIndicator: LinearProgressIndicator
 
