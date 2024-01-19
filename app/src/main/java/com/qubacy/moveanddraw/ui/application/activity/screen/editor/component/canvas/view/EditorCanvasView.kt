@@ -14,7 +14,9 @@ class EditorCanvasView(
 
     private var mIsInEditorMode: Boolean = false
 
-    suspend fun enableEditorMode(isEnabled: Boolean) {
+    fun enableEditorMode(isEnabled: Boolean) {
         mIsInEditorMode = isEnabled
+
+        mRenderer.setHelpingPlaneVisible(isEnabled)
     }
 }

@@ -3,12 +3,14 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.dr
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
+import android.util.Log
 import androidx.annotation.FloatRange
 import com.qubacy.moveanddraw._common.util.struct.takequeue.mutable.MutableTakeQueue
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.model.GLDrawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.command._common.RenderCommand
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 import kotlin.math.PI
@@ -27,7 +29,10 @@ open class CanvasRenderer(
         private const val DEFAULT_SPHERE_RADIUS = 8f
 
         private const val MIN_SCALE_FACTOR = 0.25f
-        private const val MAX_SCALE_FACTOR = 3f
+        private const val MAX_SCALE_FACTOR = 100f
+
+        private const val CAMERA_NEAR = 0.01f
+        private const val CAMERA_FOV = 90f
     }
 
     protected val mVPMatrix = FloatArray(16)
@@ -118,9 +123,7 @@ open class CanvasRenderer(
         mBackgroundColor = floatArrayOf(r, g, b, a)
     }
 
-    suspend fun setFigure(figure: GLDrawing) {
-        mIsFigureBlocked.lock()
-
+    suspend fun setFigure(figure: GLDrawing) = mIsFigureBlocked.withLock {
         mFigure = figure.apply {
             setColor(mDefaultModelColor)
         }
@@ -140,8 +143,6 @@ open class CanvasRenderer(
         setFrustum()
 
         mIsCameraLocationInitialized = true
-
-        mIsFigureBlocked.unlock()
     }
 
     private fun getTranslatedCameraLocation(dx: Float, dy: Float): FloatArray {
@@ -196,7 +197,9 @@ open class CanvasRenderer(
     }
 
     fun handleScale(scaleFactor: Float) {
-        val newScaleFactor = mCurScaleFactor * (1 / scaleFactor)
+        val newScaleFactor = mCurScaleFactor * scaleFactor //(1 / scaleFactor)
+
+        Log.d(TAG, "handleScale(): scaleFactor = $scaleFactor; newScaleFactor = $newScaleFactor")
 
         if (newScaleFactor !in MIN_SCALE_FACTOR..MAX_SCALE_FACTOR) return
 
@@ -206,11 +209,19 @@ open class CanvasRenderer(
     }
 
     private fun setFrustum() {
-        Matrix.frustumM(
+//        Matrix.frustumM(
+//            mProjectionMatrix, 0,
+//            -mViewportRatio, mViewportRatio,
+//            -1f, 1f,
+//            DEFAULT_FRASTUM_NEAR * (1 / mCurScaleFactor),
+//            mSphereRadius * 2 * (1 / mCurScaleFactor)
+//        )
+
+        Matrix.perspectiveM(
             mProjectionMatrix, 0,
-            -mViewportRatio, mViewportRatio,
-            -1f, 1f,
-            3f * (1 / mCurScaleFactor), mSphereRadius * 2 * (1 / mCurScaleFactor)
+            CAMERA_FOV, mViewportRatio,
+            CAMERA_NEAR,
+            mSphereRadius * 2
         )
     }
 
@@ -239,32 +250,35 @@ open class CanvasRenderer(
         setFrustum()
     }
 
-    override fun onDrawFrame(gl: GL10?) = runBlocking {
+    override fun onDrawFrame(gl: GL10?): Unit = runBlocking {
         executePendingRenderCommands()
-        mIsFigureBlocked.lock()
 
-        GLES20.glEnable(GLES20.GL_DEPTH_TEST)
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
+        mIsFigureBlocked.withLock {
+            GLES20.glEnable(GLES20.GL_DEPTH_TEST)
+            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
 
-        Matrix.setLookAtM(
-            mViewMatrix, 0,
-            mCameraLocation[0] * mCurScaleFactor,
-            mCameraLocation[1] * mCurScaleFactor,
-            mCameraLocation[2] * mCurScaleFactor,
-            mViewCenterLocation[0], mViewCenterLocation[1], mViewCenterLocation[2],
-            0f, 0f, 1.0f
-        )
-        Matrix.multiplyMM(
-            mVPMatrix, 0,
-            mProjectionMatrix, 0,
-            mViewMatrix, 0
-        )
+            Matrix.setLookAtM(
+                mViewMatrix, 0,
+                mCameraLocation[0] * (1 / mCurScaleFactor),
+                mCameraLocation[1] * (1 / mCurScaleFactor),
+                mCameraLocation[2] * (1 / mCurScaleFactor),
+                mViewCenterLocation[0], mViewCenterLocation[1], mViewCenterLocation[2],
+                0f, 0f, 1.0f
+            )
+            Matrix.multiplyMM(
+                mVPMatrix, 0,
+                mProjectionMatrix, 0,
+                mViewMatrix, 0
+            )
 
+            drawFigure()
+        }
+    }
+
+    private fun drawFigure() {
         if (mFigure?.isInitialized == false) mFigure!!.init()
 
         mFigure?.draw(mVPMatrix)
-
-        mIsFigureBlocked.unlock()
     }
 
     private suspend fun executePendingRenderCommands() {

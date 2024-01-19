@@ -19,6 +19,12 @@ class EditorCanvasRenderer(
 
     private val mHelpingPlaneDrawingMutex: Mutex = Mutex(false)
 
+    private var mIsHelpingPlaneVisible: Boolean = false
+
+    fun setHelpingPlaneVisible(isVisible: Boolean) {
+        mIsHelpingPlaneVisible = isVisible
+    }
+
     private fun generateHelpingPlaneGLDrawing(): GLDrawing {
         return GLDrawing(
             floatArrayOf(0f, 0f, 0f, 0f, 1f, 0f, 1f, 1f, 0f, 1f, 0f, 0f),
@@ -42,10 +48,13 @@ class EditorCanvasRenderer(
     override fun onDrawFrame(gl: GL10?): Unit = runBlocking {
         super.onDrawFrame(gl)
 
-        mHelpingPlaneDrawingMutex.withLock {
-            if (!mHelpingPlaneDrawing.isInitialized) mHelpingPlaneDrawing.init()
+        drawHelpingPlane()
+    }
 
-            mHelpingPlaneDrawing.draw(mVPMatrix)
-        }
+    private suspend fun drawHelpingPlane() = mHelpingPlaneDrawingMutex.withLock {
+        if (!mIsHelpingPlaneVisible) return@withLock
+        if (!mHelpingPlaneDrawing.isInitialized) mHelpingPlaneDrawing.init()
+
+        mHelpingPlaneDrawing.draw(mVPMatrix)
     }
 }
