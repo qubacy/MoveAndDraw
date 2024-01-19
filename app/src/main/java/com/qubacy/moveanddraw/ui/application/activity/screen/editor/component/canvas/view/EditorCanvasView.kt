@@ -12,15 +12,9 @@ class EditorCanvasView(
 ) {
     override val mRenderer: EditorCanvasRenderer = EditorCanvasRenderer()
 
-    private var mDeviceX: Float = 0f
-    private var mDeviceY: Float = 0f
-    private var mDeviceZ: Float = 0f
+    private var mIsInEditorMode: Boolean = false
 
-    suspend fun changeDevicePosition(xOffset: Float, yOffset: Float, zOffset: Float) {
-        mDeviceX += xOffset
-        mDeviceY += yOffset
-        mDeviceZ += zOffset
-
-        mRenderer.setDeviceDrawingPosition(mDeviceX, mDeviceY, mDeviceZ)
+    suspend fun enableEditorMode(isEnabled: Boolean) {
+        mIsInEditorMode = isEnabled
     }
 }

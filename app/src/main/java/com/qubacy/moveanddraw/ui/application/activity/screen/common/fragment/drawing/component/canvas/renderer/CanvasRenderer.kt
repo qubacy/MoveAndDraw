@@ -192,14 +192,10 @@ open class CanvasRenderer(
     }
 
     fun handleRotation(dx: Float, dy: Float) {
-        //if (mFigure == null) return
-
         mCameraLocation = getTranslatedCameraLocation(dx, dy)
     }
 
     fun handleScale(scaleFactor: Float) {
-        //if (mFigure == null) return
-
         val newScaleFactor = mCurScaleFactor * (1 / scaleFactor)
 
         if (newScaleFactor !in MIN_SCALE_FACTOR..MAX_SCALE_FACTOR) return

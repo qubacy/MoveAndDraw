@@ -43,14 +43,12 @@ import javax.inject.Inject
 class EditorFragment(
 
 ) : DrawingFragment<EditorUiState, EditorViewModel, EditorCanvasView>(),
-    AccelerometerFragment<EditorUiState, EditorViewModel>,
     Toolbar.OnMenuItemClickListener
 {
     companion object {
         const val TAG = "EDITOR_FRAGMENT"
 
         const val STATE_MODEL_COLOR_KEY = "modelColor"
-        const val SENSOR_DELAY = 100L
     }
 
     private val mArgs by navArgs<EditorFragmentArgs>()
@@ -115,7 +113,7 @@ class EditorFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        mModel.setConstantOffsets(mArgs.xOffset, mArgs.yOffset, mArgs.zOffset)
+//        mModel.setConstantOffsets(mArgs.xOffset, mArgs.yOffset, mArgs.zOffset)
 
         mBinding.fragmentEditorBottomBar.setOnMenuItemClickListener(this)
 
@@ -123,41 +121,23 @@ class EditorFragment(
         view.doOnPreDraw { startPostponedEnterTransition() }
     }
 
-    override fun onStart() {
-        super.onStart()
-
-        startSensorListening()
-    }
-
-    override fun onDestroy() {
-        endSensorListening()
-
-        super.onDestroy()
-    }
-
     override fun setUiElementsState(uiState: EditorUiState) {
         super.setUiElementsState(uiState)
 
-        applyNewDevicePosition(uiState.devicePos)
+        // ??
     }
 
-    private fun applyNewDevicePosition(devicePos: FloatArray) {
-        lifecycleScope.launch (Dispatchers.IO) {
-            mCanvasView.changeDevicePosition(devicePos[0], devicePos[1], devicePos[2])
-        }
-    }
-
-    override fun checkSensorEventValidity(event: SensorEvent?): Boolean {
-        if (!super.checkSensorEventValidity(event)) return false
-
-        val curTime = System.currentTimeMillis()
-
-        if (mLastSensorDataTime + SENSOR_DELAY > curTime) return false
-
-        mLastSensorDataTime = curTime
-
-        return true
-    }
+//    override fun checkSensorEventValidity(event: SensorEvent?): Boolean {
+//        if (!super.checkSensorEventValidity(event)) return false
+//
+//        val curTime = System.currentTimeMillis()
+//
+//        if (mLastSensorDataTime + SENSOR_DELAY > curTime) return false
+//
+//        mLastSensorDataTime = curTime
+//
+//        return true
+//    }
 
     override fun inflateTopAppBarMenu(menuInflater: MenuInflater, menu: Menu) {
         super.inflateTopAppBarMenu(menuInflater, menu)
@@ -172,14 +152,6 @@ class EditorFragment(
         }
 
         return true
-    }
-
-    override fun getAccelerometerStateHolder(): AccelerometerStateHolder {
-        return mModel
-    }
-
-    override fun getAccelerometerModel(): EditorViewModel {
-        return mModel
     }
 
     private fun onSaveMenuItemClicked() {
@@ -223,10 +195,6 @@ class EditorFragment(
         // todo: sharing the file..
 
 
-    }
-
-    override fun getFragmentContext(): Context {
-        return requireContext()
     }
 
     override fun onMenuItemClick(item: MenuItem?): Boolean {

@@ -6,7 +6,6 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._co
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.DrawingUiState
 
 class EditorUiState(
-    val devicePos: FloatArray = floatArrayOf(0f, 0f, 0f),
     drawing: Drawing? = null,
     isLoading: Boolean = false,
     pendingOperations: TakeQueue<UiOperation> = TakeQueue()

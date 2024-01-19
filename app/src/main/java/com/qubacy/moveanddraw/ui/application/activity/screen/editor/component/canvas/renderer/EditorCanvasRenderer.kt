@@ -4,6 +4,7 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.dra
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.CanvasRenderer
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
@@ -11,63 +12,40 @@ class EditorCanvasRenderer(
 
 ) : CanvasRenderer() {
     companion object {
-        val DEVICE_DRAWING_COLOR = floatArrayOf(0f, 1f, 0f, 1f)
-        const val DEVICE_DRAWING_SIZE = 0.08f
+        val HELPING_PLANE_DRAWING_COLOR = floatArrayOf(0f, 1f, 0f, 0.3f)
     }
 
-    @Volatile
-    private lateinit var mDeviceDrawing: GLDrawing
+    private val mHelpingPlaneDrawing: GLDrawing = generateHelpingPlaneGLDrawing()
 
-    private val mDeviceDrawingMutex: Mutex = Mutex(false)
+    private val mHelpingPlaneDrawingMutex: Mutex = Mutex(false)
 
-    private fun generateDeviceGLDrawing(x: Float, y: Float, z: Float): GLDrawing {
+    private fun generateHelpingPlaneGLDrawing(): GLDrawing {
         return GLDrawing(
-            floatArrayOf(
-                -DEVICE_DRAWING_SIZE / 2 + x, -DEVICE_DRAWING_SIZE / 2 + y, z,
-                -DEVICE_DRAWING_SIZE / 2 + x, DEVICE_DRAWING_SIZE / 2 + y, z,
-                DEVICE_DRAWING_SIZE / 2 + x, DEVICE_DRAWING_SIZE / 2 + y, z,
-                DEVICE_DRAWING_SIZE / 2 + x, -DEVICE_DRAWING_SIZE / 2 + y, z,
-                x, y, DEVICE_DRAWING_SIZE + z,
-                x, y, -DEVICE_DRAWING_SIZE + z
-            ),
-            shortArrayOf(
-                0, 1, 4,
-                1, 2, 4,
-                2, 3, 4,
-                0, 3, 4,
-                0, 1, 5,
-                1, 2, 5,
-                2, 3, 5,
-                0, 3, 5
-            ),
-            DEVICE_DRAWING_COLOR
+            floatArrayOf(0f, 0f, 0f, 0f, 1f, 0f, 1f, 1f, 0f, 1f, 0f, 0f),
+            shortArrayOf(0, 1, 2, 0, 2, 3),
+            HELPING_PLANE_DRAWING_COLOR
         )
     }
 
-    suspend fun setDeviceDrawingPosition(x: Float, y: Float, z: Float) {
-        mDeviceDrawingMutex.lock()
+    private suspend fun setHelpingPlaneDrawingPosition(
+        x: Float, y: Float, z: Float
+    ) = mHelpingPlaneDrawingMutex.withLock {
+        // todo: implement..
 
-        mDeviceDrawing = generateDeviceGLDrawing(x, y, z)
-        mDeviceDrawing.init()
 
-        mDeviceDrawingMutex.unlock()
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         super.onSurfaceCreated(gl, config)
-
-        runBlocking {
-            setDeviceDrawingPosition(0f, 0f, 0f)
-        }
     }
 
-    override fun onDrawFrame(gl: GL10?) = runBlocking {
+    override fun onDrawFrame(gl: GL10?): Unit = runBlocking {
         super.onDrawFrame(gl)
 
-        mDeviceDrawingMutex.lock()
+        mHelpingPlaneDrawingMutex.withLock {
+            if (!mHelpingPlaneDrawing.isInitialized) mHelpingPlaneDrawing.init()
 
-        mDeviceDrawing.draw(mVPMatrix)
-
-        mDeviceDrawingMutex.unlock()
+            mHelpingPlaneDrawing.draw(mVPMatrix)
+        }
     }
 }
