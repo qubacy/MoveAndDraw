@@ -18,5 +18,11 @@ class EditorCanvasView(
         mIsInEditorMode = isEnabled
 
         mRenderer.setHelpingPlaneVisible(isEnabled)
+        requestRender()
+    }
+
+    fun setHelpingPlaneDistance(distance: Float) {
+        mRenderer.setHelpingPlaneDistance(distance)
+        requestRender()
     }
 }

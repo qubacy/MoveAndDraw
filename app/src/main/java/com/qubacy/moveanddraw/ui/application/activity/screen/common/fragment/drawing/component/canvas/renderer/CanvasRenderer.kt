@@ -26,7 +26,7 @@ open class CanvasRenderer(
         const val TAG = "CANVAS_RENDERER"
 
         private val CENTER_POSITION = floatArrayOf(0f, 0f, 0f)
-        private const val DEFAULT_SPHERE_RADIUS = 8f
+        private const val DEFAULT_SPHERE_RADIUS = 2f
 
         private const val MIN_SCALE_FACTOR = 0.25f
         private const val MAX_SCALE_FACTOR = 100f
@@ -39,8 +39,8 @@ open class CanvasRenderer(
     protected val mProjectionMatrix = FloatArray(16)
     protected val mViewMatrix = FloatArray(16)
 
-    private var mSphereRadius = DEFAULT_SPHERE_RADIUS
-    private var mCameraRadius = mSphereRadius
+    protected var mSphereRadius = DEFAULT_SPHERE_RADIUS
+    protected var mCameraRadius = mSphereRadius
 
     @Volatile
     private var mCameraCenterLocation = floatArrayOf(0f, 0f, 0f)
@@ -57,8 +57,8 @@ open class CanvasRenderer(
     @Volatile
     private var mCurScaleFactor = 1f
 
-    private var mFigure: GLDrawing? = null
-    private val mIsFigureBlocked = Mutex(false)
+    protected var mFigure: GLDrawing? = null
+    protected val mIsFigureBlocked = Mutex(false)
 
     @Volatile
     private var mIsCameraLocationInitialized = false
@@ -140,7 +140,7 @@ open class CanvasRenderer(
         mIsCameraLocationInitialized = false
 
         setDefaultCameraLocation()
-        setFrustum()
+        setPerspective()
 
         mIsCameraLocationInitialized = true
     }
@@ -205,10 +205,10 @@ open class CanvasRenderer(
 
         mCurScaleFactor = newScaleFactor
 
-        setFrustum()
+        setPerspective()
     }
 
-    private fun setFrustum() {
+    private fun setPerspective() {
 //        Matrix.frustumM(
 //            mProjectionMatrix, 0,
 //            -mViewportRatio, mViewportRatio,
@@ -247,7 +247,7 @@ open class CanvasRenderer(
 
         mViewportRatio = width.toFloat() / height.toFloat()
 
-        setFrustum()
+        setPerspective()
     }
 
     override fun onDrawFrame(gl: GL10?): Unit = runBlocking {
