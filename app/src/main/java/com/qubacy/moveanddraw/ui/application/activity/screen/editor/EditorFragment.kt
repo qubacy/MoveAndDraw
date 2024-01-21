@@ -1,7 +1,5 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.editor
 
-import android.content.Context
-import android.hardware.SensorEvent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -12,11 +10,11 @@ import android.view.ViewGroup
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
@@ -24,8 +22,6 @@ import com.google.android.material.transition.MaterialSharedAxis
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw.databinding.FragmentEditorBinding
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.transition.DefaultSharedAxisTransitionGenerator
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.accelerometer.AccelerometerFragment
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.accelerometer.model._common.AccelerometerStateHolder
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.DrawingFragment
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.view.EditorCanvasView
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.EditorViewModel
@@ -34,8 +30,6 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.
 import com.skydoves.colorpickerview.ColorPickerDialog
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
@@ -49,6 +43,17 @@ class EditorFragment(
         const val TAG = "EDITOR_FRAGMENT"
 
         const val STATE_MODEL_COLOR_KEY = "modelColor"
+        const val BOTTOM_MENU_MODE_KEY = "bottomMenuMode"
+    }
+
+    enum class BottomMenuMode(val id: Int) {
+        MAIN(0), FACE(1);
+
+        companion object {
+            fun getBottomMenuModeById(id: Int): BottomMenuMode {
+                return BottomMenuMode.values().first { it.id == id }
+            }
+        }
     }
 
     private val mArgs by navArgs<EditorFragmentArgs>()
@@ -62,9 +67,9 @@ class EditorFragment(
     )
 
     private lateinit var mBinding: FragmentEditorBinding
+    private var mBottomMenuMode: BottomMenuMode = BottomMenuMode.MAIN
 
     private var mModelColor: Int? = null
-    private var mLastSensorDataTime: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,6 +91,8 @@ class EditorFragment(
 
         if (mModelColor != null)
             outState.putInt(STATE_MODEL_COLOR_KEY, mModelColor!!)
+
+        outState.putInt(BOTTOM_MENU_MODE_KEY, mBottomMenuMode.id)
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
@@ -93,7 +100,11 @@ class EditorFragment(
 
         mModelColor = savedInstanceState?.getInt(STATE_MODEL_COLOR_KEY)
 
+        val bottomMenuModeId = savedInstanceState?.getInt(BOTTOM_MENU_MODE_KEY) ?: BottomMenuMode.MAIN.id
+        val bottomMenuMode = BottomMenuMode.getBottomMenuModeById(bottomMenuModeId)
+
         applyCurrentModelColor()
+        setBottomMenuMode(bottomMenuMode)
     }
 
     override fun onCreateView(
@@ -116,6 +127,7 @@ class EditorFragment(
 //        mModel.setConstantOffsets(mArgs.xOffset, mArgs.yOffset, mArgs.zOffset)
 
         mBinding.fragmentEditorBottomBar.setOnMenuItemClickListener(this)
+        mBinding.fragmentEditorButtonMainAction.setOnClickListener { onMainActionClicked() }
 
         postponeEnterTransition()
         view.doOnPreDraw { startPostponedEnterTransition() }
@@ -125,6 +137,54 @@ class EditorFragment(
         super.setUiElementsState(uiState)
 
         // ??
+    }
+
+    private fun onMainActionClicked() {
+        when (mBottomMenuMode) {
+            BottomMenuMode.MAIN -> onAddFaceClicked()
+            BottomMenuMode.FACE -> onCancelClicked()
+        }
+    }
+
+    private fun onAddFaceClicked() {
+        // todo: changing the bottom menu appearance..
+
+        setBottomMenuMode(BottomMenuMode.FACE)
+    }
+
+    private fun onSaveFaceClicked() {
+        // todo: saving a new face...
+
+
+        // todo: changing the bottom menu appearance if the operation went OK..
+
+        setBottomMenuMode(BottomMenuMode.MAIN)
+    }
+
+    private fun setBottomMenuMode(mode: BottomMenuMode) {
+        mBottomMenuMode = mode
+
+        when (mode) {
+            BottomMenuMode.MAIN -> { setBottomMenuMainGroupVisibility(true) }
+            BottomMenuMode.FACE -> { setBottomMenuMainGroupVisibility(false) }
+        }
+
+        setMainActionAppearanceByBottomMenuMode(mode)
+    }
+
+    private fun setBottomMenuMainGroupVisibility(isVisible: Boolean) {
+        mBinding.fragmentEditorBottomBar.menu.setGroupVisible(R.id.editor_bottom_bar_main_group, isVisible)
+        mBinding.fragmentEditorBottomBar.menu.setGroupVisible(R.id.editor_bottom_bar_face_group, !isVisible)
+    }
+
+    private fun setMainActionAppearanceByBottomMenuMode(mode: BottomMenuMode) {
+        val iconDrawableId = when (mode) {
+            BottomMenuMode.MAIN -> { R.drawable.ic_surface }
+            BottomMenuMode.FACE -> { R.drawable.ic_check }
+        }
+        val iconDrawable = ResourcesCompat.getDrawable(resources, iconDrawableId, requireContext().theme)
+
+        mBinding.fragmentEditorButtonMainAction.setImageDrawable(iconDrawable)
     }
 
 //    override fun checkSensorEventValidity(event: SensorEvent?): Boolean {
@@ -139,7 +199,7 @@ class EditorFragment(
 //        return true
 //    }
 
-    override fun inflateTopAppBarMenu(menuInflater: MenuInflater, menu: Menu) {
+     override fun inflateTopAppBarMenu(menuInflater: MenuInflater, menu: Menu) {
         super.inflateTopAppBarMenu(menuInflater, menu)
 
         menuInflater.inflate(R.menu.editor_top_bar, menu)
@@ -200,13 +260,41 @@ class EditorFragment(
     override fun onMenuItemClick(item: MenuItem?): Boolean {
         if (item == null) return false
 
-        when (item.itemId) {
-            R.id.editor_bottom_bar_pick_color -> { onPickColorClicked() }
-            R.id.editor_bottom_bar_undo -> { onUndoClicked() }
+        when (item.groupId) {
+            R.id.editor_bottom_bar_main_group -> { onMainGroupMenuItemClicked(item) }
+            R.id.editor_bottom_bar_face_group -> { onFaceGroupMenuItemClicked(item) }
             else ->  return false
         }
 
         return true
+    }
+
+    private fun onMainGroupMenuItemClicked(item: MenuItem) {
+        when (item.itemId) {
+            R.id.editor_bottom_bar_pick_color -> { onPickColorClicked() }
+            R.id.editor_bottom_bar_undo_face -> { onUndoFaceClicked() }
+        }
+    }
+
+    private fun onFaceGroupMenuItemClicked(item: MenuItem) {
+        when (item.itemId) {
+            R.id.editor_bottom_bar_undo_vertex -> { onUndoVertexClicked() }
+            R.id.editor_bottom_bar_cancel -> { onCancelClicked() }
+        }
+    }
+
+    private fun onCancelClicked() {
+        // todo: cleaning a vertex buffer..
+
+
+
+        setBottomMenuMode(BottomMenuMode.MAIN)
+    }
+
+    private fun onUndoVertexClicked() {
+        // todo: implement..
+
+
     }
 
     private fun onPickColorClicked() {
@@ -253,7 +341,7 @@ class EditorFragment(
         mCanvasView.setCanvasModelColor(color)
     }
 
-    private fun onUndoClicked() {
+    private fun onUndoFaceClicked() {
         mModel.removeLastFace()
     }
 }

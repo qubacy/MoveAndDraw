@@ -12,10 +12,28 @@
             app:iconTint="?attr/colorOnSurfaceVariant"/>
 
         <item
-            android:id="@+id/editor_bottom_bar_undo"
+            android:id="@+id/editor_bottom_bar_undo_face"
             android:icon="@drawable/ic_undo"
             android:title="Undo"
             app:showAsAction="ifRoom"
             app:iconTint="?attr/colorOnSurfaceVariant"/>
     </group>
+
+    <group android:id="@+id/editor_bottom_bar_face_group" android:visible="false">
+        <item
+            android:id="@+id/editor_bottom_bar_undo_vertex"
+            android:icon="@drawable/ic_undo"
+            android:title="Undo"
+            app:showAsAction="ifRoom"
+            app:iconTint="?attr/colorOnSurfaceVariant"/>
+
+        <item
+            android:id="@+id/editor_bottom_bar_cancel"
+            android:icon="@drawable/ic_cross"
+            android:title="Cancel"
+            app:showAsAction="ifRoom"
+            app:iconTint="?attr/colorOnSurfaceVariant"/>
+
+    </group>
+
 </menu>

@@ -48,11 +48,11 @@
         app:menu="@menu/editor_bottom_bar"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fragment_editor_button_add_point"
+        android:id="@+id/fragment_editor_button_main_action"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_anchor="@id/fragment_editor_bottom_bar"
         android:layout_marginEnd="@dimen/default_screen_padding"
-        app:srcCompat="@drawable/ic_touch"/>
+        app:srcCompat="@drawable/ic_surface"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

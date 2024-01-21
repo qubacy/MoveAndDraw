@@ -255,6 +255,8 @@ open class CanvasRenderer(
 
         mIsFigureBlocked.withLock {
             GLES20.glEnable(GLES20.GL_DEPTH_TEST)
+            GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA)
+            GLES20.glEnable(GLES20.GL_BLEND)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
 
             Matrix.setLookAtM(
