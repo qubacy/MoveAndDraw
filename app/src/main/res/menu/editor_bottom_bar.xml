@@ -9,15 +9,25 @@
             android:icon="@drawable/ic_color_preview"
             android:title="Pick Color"
             app:showAsAction="ifRoom"
-            app:iconTint="?attr/colorOnSurfaceVariant"/>
+            app:iconTint="?attr/colorOnSurfaceVariant"
+            android:orderInCategory="1"/>
 
         <item
             android:id="@+id/editor_bottom_bar_undo_face"
             android:icon="@drawable/ic_undo"
             android:title="Undo"
             app:showAsAction="ifRoom"
-            app:iconTint="?attr/colorOnSurfaceVariant"/>
+            app:iconTint="?attr/colorOnSurfaceVariant"
+            android:orderInCategory="3"/>
     </group>
+
+    <item
+        android:id="@+id/editor_bottom_bar_drawing_mode"
+        android:icon="@drawable/ic_square"
+        android:title="Drawing mode"
+        app:showAsAction="ifRoom"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        android:orderInCategory="2"/>
 
     <group android:id="@+id/editor_bottom_bar_face_group" android:visible="false">
         <item
@@ -25,15 +35,16 @@
             android:icon="@drawable/ic_undo"
             android:title="Undo"
             app:showAsAction="ifRoom"
-            app:iconTint="?attr/colorOnSurfaceVariant"/>
+            app:iconTint="?attr/colorOnSurfaceVariant"
+            android:orderInCategory="1"/>
 
         <item
             android:id="@+id/editor_bottom_bar_cancel"
             android:icon="@drawable/ic_cross"
             android:title="Cancel"
             app:showAsAction="ifRoom"
-            app:iconTint="?attr/colorOnSurfaceVariant"/>
-
+            app:iconTint="?attr/colorOnSurfaceVariant"
+            android:orderInCategory="3"/>
     </group>
 
 </menu>

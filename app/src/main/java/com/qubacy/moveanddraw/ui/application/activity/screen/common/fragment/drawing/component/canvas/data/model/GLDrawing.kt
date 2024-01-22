@@ -2,18 +2,18 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.dr
 
 import android.opengl.GLES20
 import com.qubacy.moveanddraw._common.util.struct.array.toNativeBuffer
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.util.GL2Util
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import java.nio.ShortBuffer
 
 open class GLDrawing (
     vertexArray: FloatArray,
     vertexDrawingOrder: ShortArray? = null,
+    drawingMode: GLContext.DrawingMode = GLContext.DrawingMode.FILLED,
     color: FloatArray = floatArrayOf(1f, 1f, 1f, 1f)
 ) {
     companion object {
@@ -23,13 +23,17 @@ open class GLDrawing (
     protected open val mVertexShaderCode =
         "uniform mat4 uVPMatrix;" +
         "attribute vec4 vPosition;" +
+        "attribute vec4 vNormal;" +
         "void main() {" +
         "  gl_Position = uVPMatrix * vPosition;" +
         "}"
     protected open val mFragmentShaderCode =
         "precision mediump float;" +
         "uniform vec4 vColor;" +
+//        "uniform vec4 cameraPos;" +
         "void main() {" +
+//        "  lightVec = cameraPos - gl_Position;" +
+//        "  cosine = dot product(object normal, normalize(lightVec));" +
         "  gl_FragColor = vColor;" +
         "}"
     protected var mProgram: Int = 0
@@ -61,6 +65,9 @@ open class GLDrawing (
     private var mColor: FloatArray = color
     val color get() = mColor
 
+    @Volatile
+    private var mDrawingMode: GLContext.DrawingMode = drawingMode
+
     fun init() {
         val vertexShader = GL2Util.loadShader(GLES20.GL_VERTEX_SHADER, mVertexShaderCode)
         val fragmentShader = GL2Util.loadShader(GLES20.GL_FRAGMENT_SHADER, mFragmentShaderCode)
@@ -73,6 +80,10 @@ open class GLDrawing (
         }
 
         mIsInitialized = true
+    }
+
+    fun setDrawingMode(drawingMode: GLContext.DrawingMode) {
+        mDrawingMode = drawingMode
     }
 
     fun setColor(rgba: FloatArray) {
@@ -110,18 +121,47 @@ open class GLDrawing (
                 )
                 GLES20.glGetUniformLocation(mProgram, "vColor").also { colorHandle ->
                     GLES20.glUniform4fv(colorHandle, 1, mColor, 0)
-                }
 
-                if (mVertexDrawingOrderBuffer != null)
-                    GLES20.glDrawElements(
-                        GLES20.GL_TRIANGLES, mVertexDrawingOrder!!.size,
-                        GLES20.GL_UNSIGNED_SHORT, mVertexDrawingOrderBuffer)
-                else
-                    GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mVertexCount)
+                    drawElementsWithDrawingModeAndColor(mDrawingMode, colorHandle)
+                }
 
                 GLES20.glDisableVertexAttribArray(it)
             }
         }
+    }
+
+    private fun generateOutlineColor(): FloatArray {
+        return mColor.mapIndexed { i, it ->
+            if (i != mColor.size - 1) (it + 0.3f) % 1 else it
+        }.toFloatArray()
+    }
+
+    private fun drawElementsWithDrawingModeAndColor(
+        drawingMode: GLContext.DrawingMode,
+        colorHandle: Int
+    ) {
+        when (drawingMode) {
+            GLContext.DrawingMode.SKETCH -> drawElementsWithGLMode(GLES20.GL_LINE_LOOP)
+            GLContext.DrawingMode.FILLED -> drawElementsWithGLMode(GLES20.GL_TRIANGLES)
+            GLContext.DrawingMode.OUTLINED -> {
+                drawElementsWithGLMode(GLES20.GL_TRIANGLES)
+
+                val outlineColor = generateOutlineColor()
+
+                GLES20.glUniform4fv(colorHandle, 1, outlineColor, 0)
+
+                drawElementsWithGLMode(GLES20.GL_LINE_LOOP)
+            }
+        }
+    }
+
+    private fun drawElementsWithGLMode(glMode: Int) {
+        if (mVertexDrawingOrderBuffer != null)
+            GLES20.glDrawElements(
+                glMode, mVertexDrawingOrder!!.size,
+                GLES20.GL_UNSIGNED_SHORT, mVertexDrawingOrderBuffer)
+        else
+            GLES20.glDrawArrays(glMode, 0, mVertexCount)
     }
 
     override fun equals(other: Any?): Boolean {

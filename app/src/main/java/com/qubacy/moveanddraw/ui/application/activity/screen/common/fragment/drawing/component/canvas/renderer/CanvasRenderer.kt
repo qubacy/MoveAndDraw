@@ -3,9 +3,9 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.dr
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
-import android.util.Log
 import androidx.annotation.FloatRange
 import com.qubacy.moveanddraw._common.util.struct.takequeue.mutable.MutableTakeQueue
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.model.GLDrawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.command._common.RenderCommand
 import kotlinx.coroutines.runBlocking
@@ -26,13 +26,13 @@ open class CanvasRenderer(
         const val TAG = "CANVAS_RENDERER"
 
         private val CENTER_POSITION = floatArrayOf(0f, 0f, 0f)
-        private const val DEFAULT_SPHERE_RADIUS = 2f
+        const val DEFAULT_SPHERE_RADIUS = 2f
 
         private const val MIN_SCALE_FACTOR = 0.25f
         private const val MAX_SCALE_FACTOR = 100f
 
-        private const val CAMERA_NEAR = 0.01f
-        private const val CAMERA_FOV = 90f
+        const val DEFAULT_CAMERA_NEAR = 0.01f
+        private const val CAMERA_FOV = 60f
     }
 
     protected val mVPMatrix = FloatArray(16)
@@ -41,6 +41,7 @@ open class CanvasRenderer(
 
     protected var mSphereRadius = DEFAULT_SPHERE_RADIUS
     protected var mCameraRadius = mSphereRadius
+    protected var mCameraNear = DEFAULT_CAMERA_NEAR
 
     @Volatile
     private var mCameraCenterLocation = floatArrayOf(0f, 0f, 0f)
@@ -101,7 +102,7 @@ open class CanvasRenderer(
         mRenderCommandQueue.put(renderCommand)
     }
 
-    suspend fun setModelColor(
+    fun setModelColor(
         @FloatRange(0.0, 1.0) r: Float,
         @FloatRange(0.0, 1.0) g: Float,
         @FloatRange(0.0, 1.0) b: Float,
@@ -121,6 +122,10 @@ open class CanvasRenderer(
         @FloatRange(0.0, 1.0) a: Float
     ) {
         mBackgroundColor = floatArrayOf(r, g, b, a)
+    }
+
+    fun setFigureDrawingMode(drawingMode: GLContext.DrawingMode) {
+        mFigure?.setDrawingMode(drawingMode)
     }
 
     suspend fun setFigure(figure: GLDrawing) = mIsFigureBlocked.withLock {
@@ -192,14 +197,12 @@ open class CanvasRenderer(
         return floatArrayOf(newX, newY, newZ)
     }
 
-    fun handleRotation(dx: Float, dy: Float) {
+    open fun handleRotation(dx: Float, dy: Float) {
         mCameraLocation = getTranslatedCameraLocation(dx, dy)
     }
 
-    fun handleScale(scaleFactor: Float) {
-        val newScaleFactor = mCurScaleFactor * scaleFactor //(1 / scaleFactor)
-
-        Log.d(TAG, "handleScale(): scaleFactor = $scaleFactor; newScaleFactor = $newScaleFactor")
+    open fun handleScale(scaleFactor: Float) {
+        val newScaleFactor = mCurScaleFactor * scaleFactor
 
         if (newScaleFactor !in MIN_SCALE_FACTOR..MAX_SCALE_FACTOR) return
 
@@ -208,19 +211,11 @@ open class CanvasRenderer(
         setPerspective()
     }
 
-    private fun setPerspective() {
-//        Matrix.frustumM(
-//            mProjectionMatrix, 0,
-//            -mViewportRatio, mViewportRatio,
-//            -1f, 1f,
-//            DEFAULT_FRASTUM_NEAR * (1 / mCurScaleFactor),
-//            mSphereRadius * 2 * (1 / mCurScaleFactor)
-//        )
-
+    protected fun setPerspective() {
         Matrix.perspectiveM(
             mProjectionMatrix, 0,
             CAMERA_FOV, mViewportRatio,
-            CAMERA_NEAR,
+            mCameraNear,
             mSphereRadius * 2
         )
     }

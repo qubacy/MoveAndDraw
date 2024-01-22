@@ -17,12 +17,11 @@ class EditorCanvasView(
     fun enableEditorMode(isEnabled: Boolean) {
         mIsInEditorMode = isEnabled
 
-        mRenderer.setHelpingPlaneVisible(isEnabled)
-        requestRender()
-    }
+        val editorRendererMode =
+            if (isEnabled) EditorCanvasRenderer.EditorRendererMode.CREATING_FACE
+            else EditorCanvasRenderer.EditorRendererMode.VIEWING
 
-    fun setHelpingPlaneDistance(distance: Float) {
-        mRenderer.setHelpingPlaneDistance(distance)
+        mRenderer.setMode(editorRendererMode)
         requestRender()
     }
 }

@@ -10,10 +10,10 @@ import android.view.ScaleGestureDetector
 import androidx.annotation.ColorInt
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.mapper.DrawingGLDrawingMapper
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.CanvasRenderer
 import kotlinx.coroutines.runBlocking
-import java.util.Collections
 
 open class CanvasView(
     context: Context,
@@ -24,7 +24,7 @@ open class CanvasView(
     companion object {
         const val TAG = "CANVAS_VIEW"
 
-        private const val TOUCH_SCALE_FACTOR: Float = 180.0f / 12800f
+        private const val TOUCH_SCALE_FACTOR: Float = 180.0f / 25600f
         private const val AFTER_SCALE_DELAY = 300L
 
         private const val DEFAULT_COLOR_INT = -1
@@ -115,15 +115,24 @@ open class CanvasView(
         mDrawingMapper = drawingGLDrawingMapper
     }
 
-    suspend fun setFigure(figure: Drawing) { // todo: is it throwable?
+    fun setFigureDrawingMode(drawingMode: GLContext.DrawingMode) {
+        mRenderer.setFigureDrawingMode(drawingMode)
+        requestRender()
+    }
+
+    suspend fun setFigure(
+        figure: Drawing,
+        drawingMode: GLContext.DrawingMode? = null
+    ) {
         if (mDrawingMapper == null) return
 
         mCurrentDrawing = figure
 
         val glDrawing = mDrawingMapper!!.map(figure)
 
-        mRenderer.setFigure(glDrawing)
+        if (drawingMode != null) glDrawing.setDrawingMode(drawingMode)
 
+        mRenderer.setFigure(glDrawing)
         requestRender()
     }
 

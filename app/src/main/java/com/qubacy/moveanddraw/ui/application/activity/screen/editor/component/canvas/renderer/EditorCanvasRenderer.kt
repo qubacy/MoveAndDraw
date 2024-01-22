@@ -1,6 +1,8 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.renderer
 
 import android.opengl.Matrix
+import android.util.Log
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.model.GLDrawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.CanvasRenderer
 import kotlinx.coroutines.runBlocking
@@ -12,37 +14,91 @@ import javax.microedition.khronos.opengles.GL10
 class EditorCanvasRenderer(
 
 ) : CanvasRenderer() {
-    companion object {
-        val HELPING_PLANE_DRAWING_COLOR = floatArrayOf(0f, 1f, 0f, 0.3f)
+    enum class EditorRendererMode {
+        VIEWING, CREATING_FACE;
+    }
 
-        const val DEFAULT_HELPING_PLANE_DISTANCE = 2f
-        const val MIN_HELPING_PLANE_DISTANCE = 1f
+    companion object {
+        val HELPING_PLANE_DRAWING_COLOR = floatArrayOf(0f, 1f, 0f, 0.4f)
+
+        const val MIN_HELPING_PLANE_DISTANCE = DEFAULT_CAMERA_NEAR
+        const val HELPING_PLANE_MODEL_GAP = 0.001f
     }
 
     private val mHelpingPlaneDrawing: GLDrawing = generateHelpingPlaneGLDrawing()
 
     private val mHelpingPlaneDrawingMutex: Mutex = Mutex(false)
 
-    private var mIsHelpingPlaneVisible: Boolean = true // todo: change to false;
-    private var mHelpingPlaneDistance: Float = DEFAULT_HELPING_PLANE_DISTANCE
+    private var mEditorRendererMode: EditorRendererMode = EditorRendererMode.VIEWING
+    private var mIsHelpingPlaneVisible: Boolean = false
 
-    val helpingPlaneDistance get() = mHelpingPlaneDistance
+    fun setMode(mode: EditorRendererMode) {
+        mEditorRendererMode = mode
 
-    fun setHelpingPlaneVisible(isVisible: Boolean) {
-        mIsHelpingPlaneVisible = isVisible
+        setHelpingPlaneVisibilityByMode(mode)
+        changeCameraNearByMode(mode)
     }
 
-    fun setHelpingPlaneDistance(distance: Float) {
-        if (distance !in MIN_HELPING_PLANE_DISTANCE..(mSphereRadius * 2))
-            return
+    private fun changeCameraNearByMode(mode: EditorRendererMode) {
+        val cameraNear = when (mode) {
+            EditorRendererMode.VIEWING -> DEFAULT_CAMERA_NEAR
+            EditorRendererMode.CREATING_FACE -> MIN_HELPING_PLANE_DISTANCE
+        }
 
-        mHelpingPlaneDistance = distance
+        changeCameraNear(cameraNear) // todo: isn't working..
+    }
+
+    private fun setHelpingPlaneVisibilityByMode(mode: EditorRendererMode) {
+        mIsHelpingPlaneVisible = when (mode) {
+            EditorRendererMode.VIEWING -> false
+            EditorRendererMode.CREATING_FACE -> true
+        }
+    }
+
+//    fun setHelpingPlaneDistance(distance: Float) {
+//        if (distance !in MIN_HELPING_PLANE_DISTANCE..(mSphereRadius * 2))
+//            return
+//
+//        mHelpingPlaneDistance = distance
+//    }
+
+    override fun handleScale(scaleFactor: Float) {
+        when (mEditorRendererMode) {
+            EditorRendererMode.CREATING_FACE -> handleHelpingPlaneDistanceChange(scaleFactor)
+            else -> super.handleScale(scaleFactor)
+        }
+    }
+
+    override fun handleRotation(dx: Float, dy: Float) {
+        when (mEditorRendererMode) {
+            EditorRendererMode.CREATING_FACE -> {  } // nothing?
+            else -> super.handleRotation(dx, dy)
+        }
+    }
+
+    private fun handleHelpingPlaneDistanceChange(distanceFactor: Float) {
+        val newNear = mCameraNear * distanceFactor
+        val filteredNewNear =
+            if (newNear <= MIN_HELPING_PLANE_DISTANCE) MIN_HELPING_PLANE_DISTANCE
+            else if (newNear >= mSphereRadius * 2) mSphereRadius * 2 - HELPING_PLANE_MODEL_GAP
+            else newNear
+
+        changeCameraNear(filteredNewNear)
+    }
+
+    private fun changeCameraNear(near: Float) {
+        Log.d(TAG, "changeCameraNear(): near = $near")
+
+        mCameraNear = near
+
+        setPerspective()
     }
 
     private fun generateHelpingPlaneGLDrawing(): GLDrawing {
         return GLDrawing(
             floatArrayOf(0f, 0f, 0f, 0f, 1f, 0f, 1f, 1f, 0f, 1f, 0f, 0f),
             shortArrayOf(0, 1, 2, 0, 2, 3),
+            GLContext.DrawingMode.FILLED,
             HELPING_PLANE_DRAWING_COLOR
         )
     }
@@ -68,13 +124,13 @@ class EditorCanvasRenderer(
     }
 
     private fun getHelpingPlaneVertices(): FloatArray {
-        val normalizedHelpingPlaneDistance = 0.95f + (mHelpingPlaneDistance / (mSphereRadius * 2)) / 20
+        val normalizedHelpingPlaneZ = -1f + HELPING_PLANE_MODEL_GAP
 
         val helpingPlaneVertices = arrayOf(
-            1f, 1f, normalizedHelpingPlaneDistance,//0.95f, //0.999f,
-            -1f, 1f, normalizedHelpingPlaneDistance,//0.95f, //0.999f,
-            -1f, -1f, normalizedHelpingPlaneDistance,//0.95f, //0.999f,
-            1f, -1f, normalizedHelpingPlaneDistance,//0.95f //0.999f
+            1f, 1f, normalizedHelpingPlaneZ,
+            -1f, 1f, normalizedHelpingPlaneZ,
+            -1f, -1f, normalizedHelpingPlaneZ,
+            1f, -1f, normalizedHelpingPlaneZ
         )
 
         val projToWorldCoordsMatrix = FloatArray(16)

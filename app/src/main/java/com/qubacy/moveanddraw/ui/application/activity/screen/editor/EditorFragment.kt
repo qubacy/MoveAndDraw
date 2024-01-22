@@ -15,14 +15,17 @@ import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.transition.MaterialSharedAxis
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw.databinding.FragmentEditorBinding
+import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.transition.DefaultSharedAxisTransitionGenerator
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.DrawingFragment
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.view.EditorCanvasView
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.EditorViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.EditorViewModelFactoryQualifier
@@ -30,6 +33,8 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.
 import com.skydoves.colorpickerview.ColorPickerDialog
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
@@ -43,15 +48,16 @@ class EditorFragment(
         const val TAG = "EDITOR_FRAGMENT"
 
         const val STATE_MODEL_COLOR_KEY = "modelColor"
-        const val BOTTOM_MENU_MODE_KEY = "bottomMenuMode"
+        const val EDITOR_MODE_KEY = "editorMode"
+        const val DRAWING_MODE_KEY = "drawingMode"
     }
 
-    enum class BottomMenuMode(val id: Int) {
+    enum class EditorMode(val id: Int) {
         MAIN(0), FACE(1);
 
         companion object {
-            fun getBottomMenuModeById(id: Int): BottomMenuMode {
-                return BottomMenuMode.values().first { it.id == id }
+            fun getBottomMenuModeById(id: Int): EditorMode {
+                return EditorMode.values().first { it.id == id }
             }
         }
     }
@@ -67,9 +73,10 @@ class EditorFragment(
     )
 
     private lateinit var mBinding: FragmentEditorBinding
-    private var mBottomMenuMode: BottomMenuMode = BottomMenuMode.MAIN
+    private var mEditorMode: EditorMode = EditorMode.MAIN
 
     private var mModelColor: Int? = null
+    private var mDrawingMode: GLContext.DrawingMode = GLContext.DrawingMode.FILLED
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,7 +99,8 @@ class EditorFragment(
         if (mModelColor != null)
             outState.putInt(STATE_MODEL_COLOR_KEY, mModelColor!!)
 
-        outState.putInt(BOTTOM_MENU_MODE_KEY, mBottomMenuMode.id)
+        outState.putInt(EDITOR_MODE_KEY, mEditorMode.id)
+        outState.putInt(DRAWING_MODE_KEY, mDrawingMode.id)
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
@@ -100,11 +108,15 @@ class EditorFragment(
 
         mModelColor = savedInstanceState?.getInt(STATE_MODEL_COLOR_KEY)
 
-        val bottomMenuModeId = savedInstanceState?.getInt(BOTTOM_MENU_MODE_KEY) ?: BottomMenuMode.MAIN.id
-        val bottomMenuMode = BottomMenuMode.getBottomMenuModeById(bottomMenuModeId)
+        val editorModeId = savedInstanceState?.getInt(EDITOR_MODE_KEY) ?: EditorMode.MAIN.id
+        val editorMode = EditorMode.getBottomMenuModeById(editorModeId)
+
+        val drawingModeId = savedInstanceState?.getInt(DRAWING_MODE_KEY) ?: GLContext.DrawingMode.FILLED.id
+        val drawingMode = GLContext.DrawingMode.getDrawingModeById(drawingModeId)
 
         applyCurrentModelColor()
-        setBottomMenuMode(bottomMenuMode)
+        setEditorMode(editorMode)
+        setDrawingMode(drawingMode)
     }
 
     override fun onCreateView(
@@ -139,17 +151,23 @@ class EditorFragment(
         // ??
     }
 
+    override fun setCanvasDrawing(drawing: Drawing) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            mCanvasView.setFigure(drawing, mDrawingMode)
+        }
+    }
+
     private fun onMainActionClicked() {
-        when (mBottomMenuMode) {
-            BottomMenuMode.MAIN -> onAddFaceClicked()
-            BottomMenuMode.FACE -> onCancelClicked()
+        when (mEditorMode) {
+            EditorMode.MAIN -> onAddFaceClicked()
+            EditorMode.FACE -> onCancelClicked()
         }
     }
 
     private fun onAddFaceClicked() {
         // todo: changing the bottom menu appearance..
 
-        setBottomMenuMode(BottomMenuMode.FACE)
+        setEditorMode(EditorMode.FACE)
     }
 
     private fun onSaveFaceClicked() {
@@ -158,18 +176,43 @@ class EditorFragment(
 
         // todo: changing the bottom menu appearance if the operation went OK..
 
-        setBottomMenuMode(BottomMenuMode.MAIN)
+        setEditorMode(EditorMode.MAIN)
     }
 
-    private fun setBottomMenuMode(mode: BottomMenuMode) {
-        mBottomMenuMode = mode
+    private fun setEditorMode(mode: EditorMode) {
+        mEditorMode = mode
 
         when (mode) {
-            BottomMenuMode.MAIN -> { setBottomMenuMainGroupVisibility(true) }
-            BottomMenuMode.FACE -> { setBottomMenuMainGroupVisibility(false) }
+            EditorMode.MAIN -> {
+                setBottomMenuMainGroupVisibility(true)
+                mBinding.fragmentEditorCanvas.root.enableEditorMode(false)
+            }
+            EditorMode.FACE -> {
+                setBottomMenuMainGroupVisibility(false)
+                mBinding.fragmentEditorCanvas.root.enableEditorMode(true)
+            }
         }
 
         setMainActionAppearanceByBottomMenuMode(mode)
+    }
+
+    private fun setDrawingMode(drawingMode: GLContext.DrawingMode) {
+        mDrawingMode = drawingMode
+
+        setDrawingModeActionAppearanceByDrawingMode(drawingMode)
+
+        mBinding.fragmentEditorCanvas.root.setFigureDrawingMode(drawingMode)
+    }
+
+    private fun setDrawingModeActionAppearanceByDrawingMode(drawingMode: GLContext.DrawingMode) {
+        val drawingModeDrawableId = when (drawingMode) {
+            GLContext.DrawingMode.FILLED -> R.drawable.ic_square
+            GLContext.DrawingMode.SKETCH -> R.drawable.ic_mesh
+            GLContext.DrawingMode.OUTLINED -> R.drawable.ic_outlined_square
+        }
+
+        mBinding.fragmentEditorBottomBar.menu
+            .findItem(R.id.editor_bottom_bar_drawing_mode).setIcon(drawingModeDrawableId)
     }
 
     private fun setBottomMenuMainGroupVisibility(isVisible: Boolean) {
@@ -177,10 +220,10 @@ class EditorFragment(
         mBinding.fragmentEditorBottomBar.menu.setGroupVisible(R.id.editor_bottom_bar_face_group, !isVisible)
     }
 
-    private fun setMainActionAppearanceByBottomMenuMode(mode: BottomMenuMode) {
+    private fun setMainActionAppearanceByBottomMenuMode(mode: EditorMode) {
         val iconDrawableId = when (mode) {
-            BottomMenuMode.MAIN -> { R.drawable.ic_surface }
-            BottomMenuMode.FACE -> { R.drawable.ic_check }
+            EditorMode.MAIN -> { R.drawable.ic_surface }
+            EditorMode.FACE -> { R.drawable.ic_check }
         }
         val iconDrawable = ResourcesCompat.getDrawable(resources, iconDrawableId, requireContext().theme)
 
@@ -263,10 +306,17 @@ class EditorFragment(
         when (item.groupId) {
             R.id.editor_bottom_bar_main_group -> { onMainGroupMenuItemClicked(item) }
             R.id.editor_bottom_bar_face_group -> { onFaceGroupMenuItemClicked(item) }
-            else ->  return false
+            else ->  onCommonMenuItemClicked(item)
         }
 
         return true
+    }
+
+    private fun onCommonMenuItemClicked(item: MenuItem) {
+        when (item.itemId) {
+            R.id.editor_bottom_bar_drawing_mode -> { onDrawingModeClicked() }
+            else -> throw IllegalStateException()
+        }
     }
 
     private fun onMainGroupMenuItemClicked(item: MenuItem) {
@@ -283,12 +333,19 @@ class EditorFragment(
         }
     }
 
+    private fun onDrawingModeClicked() {
+        val newDrawingModeId = (mDrawingMode.id + 1) % GLContext.DrawingMode.values().size
+        val newDrawingMode = GLContext.DrawingMode.getDrawingModeById(newDrawingModeId)
+
+        setDrawingMode(newDrawingMode)
+    }
+
     private fun onCancelClicked() {
         // todo: cleaning a vertex buffer..
 
 
 
-        setBottomMenuMode(BottomMenuMode.MAIN)
+        setEditorMode(EditorMode.MAIN)
     }
 
     private fun onUndoVertexClicked() {
