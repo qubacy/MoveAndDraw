@@ -6,6 +6,7 @@ import android.util.Range
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.model.GLDrawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.CanvasRenderer
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.util.GL2Util
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -93,14 +94,20 @@ class EditorCanvasRenderer(
         }
     }
 
-    fun handleClick(x: Float, y: Float) {
+    suspend fun handleClick(x: Float, y: Float) {
         when (mEditorRendererMode) {
             EditorRendererMode.CREATING_FACE -> addSketchVertex(x, y)
             else -> { }
         }
     }
 
-    private fun addSketchVertex(x: Float, y: Float) {
+    suspend fun removeLastSketchFaceVertex() = mFaceSketchMutex.withLock {
+        mFaceSketchDotBuffer.removeLast()
+    }
+
+    private suspend fun addSketchVertex(x: Float, y: Float) = mFaceSketchMutex.withLock {
+        Log.d(TAG, "addSketchVertex(): x = $x; y = $y;")
+
         mFaceSketchDotBuffer.add(Pair(x, y))
     }
 
@@ -210,7 +217,7 @@ class EditorCanvasRenderer(
     private fun getFaceSketchVerticesByDots(faceSketchDots: List<Pair<Float, Float>>): FloatArray {
         val halfWidth = mDeviceWidth / 2
         val halfHeight = mDeviceHeight / 2
-        val normalizedZ = -1f + HELPING_PLANE_MODEL_GAP
+        val normalizedZ = -1f + HELPING_PLANE_MODEL_GAP / 2
 
         val faceSketchVertices = FloatArray(faceSketchDots.size * GLDrawing.COORDS_PER_VERTEX)
         var curFaceSketchIndex = 0
@@ -242,10 +249,15 @@ class EditorCanvasRenderer(
     }
 
     private fun getFaceSketchDrawingOrderByVertices(faceSketchVertices: FloatArray): ShortArray {
-        // todo: implement a custom figure drawing order composing..
+        val vertexIdArray = IntRange(0, faceSketchVertices.size / GLDrawing.COORDS_PER_VERTEX - 1)
+            .map { it.toShort() }.toShortArray()
 
+        val vertexCount = vertexIdArray.size
 
+        if (vertexCount < 3) return vertexIdArray
 
-        return IntRange(0, faceSketchVertices.size / GLDrawing.COORDS_PER_VERTEX - 1).map { it.toShort() }.toShortArray()
+        val drawingOrder = GL2Util.polygonToTriangles(vertexIdArray)
+
+        return drawingOrder.toShortArray()
     }
 }

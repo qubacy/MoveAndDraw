@@ -4,13 +4,16 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.Log
 import android.view.AbsSavedState
 import android.view.MotionEvent
-import android.view.View
-import android.view.View.OnClickListener
+import android.view.ScaleGestureDetector
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.view.CanvasView
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.renderer.EditorCanvasRenderer
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlin.math.abs
 
 class EditorCanvasView(
     context: Context, attributeSet: AttributeSet
@@ -20,12 +23,14 @@ class EditorCanvasView(
     companion object {
         const val SKETCH_FACE_DOT_ARRAY_KEY = "sketchFaceDotArray"
         const val SUPER_STATE_KEY = "superState"
+
+        private const val MIN_MOVE_DETECTION_DISTANCE_IN_PX = 10
     }
 
     override val mRenderer: EditorCanvasRenderer = EditorCanvasRenderer()
 
     private var mIsInEditorMode: Boolean = false
-    private var mIsMoving = false
+    private var mIsLongAction = false
 
     fun enableEditorMode(isEnabled: Boolean) {
         mIsInEditorMode = isEnabled
@@ -38,24 +43,43 @@ class EditorCanvasView(
         requestRender()
     }
 
-    override fun processMoveTouchEventAction(e: MotionEvent): Boolean {
-        mIsMoving = true
-
-        return super.processMoveTouchEventAction(e)
+    suspend fun removeLastSketchVertex() {
+        mRenderer.removeLastSketchFaceVertex()
+        requestRender()
     }
 
-    override fun processOtherTouchEventAction(e: MotionEvent) {
+    override fun processMoveTouchEventAction(e: MotionEvent): Boolean {
+        super.processMoveTouchEventAction(e)
+
+        Log.d(TAG, "processMoveTouchEventAction(): mPrevDX = $mPrevDX; mPrevDY = $mPrevDY;")
+
+        if (abs(mPrevDX) >= MIN_MOVE_DETECTION_DISTANCE_IN_PX
+         || abs(mPrevDY) >= MIN_MOVE_DETECTION_DISTANCE_IN_PX
+        ) {
+            mIsLongAction = true
+        }
+
+        return true
+    }
+
+    override fun processOtherTouchEventAction(e: MotionEvent): Boolean {
+        Log.d(TAG, "processOtherTouchEventAction(): mIsMoving = $mIsLongAction;")
+
         when (e.action) {
             MotionEvent.ACTION_UP -> {
-                if (mIsMoving) {
-                    mIsMoving = false
+                if (mIsLongAction) {
+                    mIsLongAction = false
 
                 } else {
-                    mRenderer.handleClick(e.x, e.y)
-                    requestRender()
+                    mLifecycleScope?.launch(Dispatchers.IO) {
+                        mRenderer.handleClick(e.x, e.y)
+                        requestRender()
+                    }
                 }
             }
         }
+
+        return true
     }
 
     // todo: rethink the following:
@@ -82,5 +106,11 @@ class EditorCanvasView(
         }
 
         return bundle
+    }
+
+    override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
+        mIsLongAction = true
+
+        return true
     }
 }

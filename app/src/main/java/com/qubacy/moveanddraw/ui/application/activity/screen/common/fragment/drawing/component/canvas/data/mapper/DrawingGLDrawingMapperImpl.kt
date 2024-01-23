@@ -2,22 +2,13 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.dr
 
 import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.model.GLDrawing
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.util.GL2Util
 
 class DrawingGLDrawingMapperImpl : DrawingGLDrawingMapper {
     private fun mapFace(face: Array<Triple<Short, Short?, Short?>>): List<Short> {
-        if (face.size == 3) return face.map { it.first }
+        val faceVertexIdArray = face.map { it.first }.toShortArray()
 
-        val trianglesVertices = mutableListOf<Short>()
-
-        for (i in 1 until face.size - 1) {
-            val curTriangleVertices = listOf(
-                face[0].first, face[i].first, face[i + 1].first
-            )
-
-            trianglesVertices.addAll(curTriangleVertices)
-        }
-
-        return trianglesVertices
+        return GL2Util.polygonToTriangles(faceVertexIdArray)
     }
 
     override fun map(drawing: Drawing): GLDrawing {

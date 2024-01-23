@@ -48,6 +48,7 @@ abstract class DrawingFragment<
         mCanvasView.apply {
             init()
             setDrawingMapper(DrawingGLDrawingMapperImpl())
+            setLifecycleOwner(lifecycle)
         }
     }
 

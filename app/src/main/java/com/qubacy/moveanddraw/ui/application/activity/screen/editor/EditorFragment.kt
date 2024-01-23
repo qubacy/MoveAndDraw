@@ -349,9 +349,9 @@ class EditorFragment(
     }
 
     private fun onUndoVertexClicked() {
-        // todo: implement..
-
-
+        lifecycleScope.launch(Dispatchers.IO) {
+            mCanvasView.removeLastSketchVertex()
+        }
     }
 
     private fun onPickColorClicked() {

@@ -8,18 +8,25 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import androidx.annotation.ColorInt
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.coroutineScope
+import androidx.lifecycle.lifecycleScope
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.mapper.DrawingGLDrawingMapper
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.CanvasRenderer
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 
 open class CanvasView(
     context: Context,
     attrs: AttributeSet
 ) : GLSurfaceView(context, attrs),
-    ScaleGestureDetector.OnScaleGestureListener
+    ScaleGestureDetector.OnScaleGestureListener,
+    LifecycleEventObserver
 {
     companion object {
         const val TAG = "CANVAS_VIEW"
@@ -28,6 +35,8 @@ open class CanvasView(
         private const val AFTER_SCALE_DELAY = 300L
 
         private const val DEFAULT_COLOR_INT = -1
+
+        const val DEFAULT_COORD_VALUE = -1f
     }
 
     protected open val mRenderer: CanvasRenderer = CanvasRenderer()
@@ -35,8 +44,11 @@ open class CanvasView(
 
     protected var mLastScaleEventTimestamp = 0L
 
-    protected var mPreviousX: Float = 0f
-    protected var mPreviousY: Float = 0f
+    protected var mPrevX = DEFAULT_COORD_VALUE
+    protected var mPrevY = DEFAULT_COORD_VALUE
+
+    protected var mPrevDX = DEFAULT_COORD_VALUE
+    protected var mPrevDY = DEFAULT_COORD_VALUE
 
     protected var mDrawingMapper: DrawingGLDrawingMapper? = null
 
@@ -44,6 +56,8 @@ open class CanvasView(
 
     protected var mCanvasBackgroundColor: FloatArray = floatArrayOf(0f, 0f, 0f, 1f)
     protected var mCanvasModelColor: FloatArray = floatArrayOf(1f, 1f, 1f, 1f)
+
+    protected var mLifecycleScope: CoroutineScope? = null
 
     init {
         initCustomAttrs(attrs)
@@ -76,6 +90,12 @@ open class CanvasView(
 
             mCanvasModelColor = colorToRGBAFloatArray(this)
         }
+    }
+
+    fun setLifecycleOwner(lifecycle: Lifecycle) {
+        lifecycle.addObserver(this)
+
+        mLifecycleScope = lifecycle.coroutineScope
     }
 
     private fun colorToRGBAFloatArray(@ColorInt color: Int): FloatArray {
@@ -138,41 +158,61 @@ open class CanvasView(
 
     override fun onTouchEvent(e: MotionEvent): Boolean {
         if (e.pointerCount == 2) {
-            mScaleGestureDetector.onTouchEvent(e)
-            requestRender()
+            processScaleEventAction(e)
 
             return true
 
         } else if (e.pointerCount > 2)
             return false
 
-        when (e.action) {
+        return when (e.action) {
+            MotionEvent.ACTION_DOWN -> processDownTouchEventAction(e)
             MotionEvent.ACTION_MOVE -> processMoveTouchEventAction(e)
             else -> processOtherTouchEventAction(e)
         }
+    }
+
+    protected open fun processScaleEventAction(e: MotionEvent) {
+        mScaleGestureDetector.onTouchEvent(e)
+        requestRender()
+    }
+
+    protected open fun processDownTouchEventAction(e: MotionEvent): Boolean {
+        mPrevDX = DEFAULT_COORD_VALUE
+        mPrevDY = DEFAULT_COORD_VALUE
+
+        mPrevX = DEFAULT_COORD_VALUE
+        mPrevY = DEFAULT_COORD_VALUE
 
         return true
     }
 
     protected open fun processMoveTouchEventAction(e: MotionEvent): Boolean {
+        if (mPrevX == DEFAULT_COORD_VALUE || mPrevY == DEFAULT_COORD_VALUE) {
+            mPrevX = e.x
+            mPrevY = e.y
+
+            return false
+        }
+
         val curTime = System.currentTimeMillis()
 
         if (mLastScaleEventTimestamp + AFTER_SCALE_DELAY > curTime)
             return false
 
-        val dx = e.x - mPreviousX
-        val dy = e.y - mPreviousY
+        mPrevDX = e.x - mPrevX
+        mPrevDY = e.y - mPrevY
 
-        mPreviousX = e.x
-        mPreviousY = e.y
+        mPrevX = e.x
+        mPrevY = e.y
 
-        mRenderer.handleRotation(dx * TOUCH_SCALE_FACTOR, dy * TOUCH_SCALE_FACTOR)
+        mRenderer.handleRotation(mPrevDX * TOUCH_SCALE_FACTOR, mPrevDY * TOUCH_SCALE_FACTOR)
         requestRender()
 
         return true
     }
 
-    protected open fun processOtherTouchEventAction(e: MotionEvent) { }
+    protected open fun processOtherTouchEventAction(e: MotionEvent): Boolean { return true }
 
     override fun onScale(detector: ScaleGestureDetector): Boolean {
         mRenderer.handleScale(detector.scaleFactor)
@@ -186,5 +226,11 @@ open class CanvasView(
 
     override fun onScaleEnd(detector: ScaleGestureDetector) {
         mLastScaleEventTimestamp = System.currentTimeMillis()
+    }
+
+    override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+        mLifecycleScope =
+            if (!event.targetState.isAtLeast(Lifecycle.State.CREATED)) null
+            else source.lifecycleScope
     }
 }
