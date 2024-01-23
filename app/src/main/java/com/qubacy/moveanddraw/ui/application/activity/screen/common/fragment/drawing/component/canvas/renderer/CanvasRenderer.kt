@@ -68,6 +68,9 @@ open class CanvasRenderer(
     @Volatile
     private var mDefaultModelColor: FloatArray = floatArrayOf(1f, 1f, 1f, 1f)
 
+    protected var mDeviceWidth: Int = 0
+    protected var mDeviceHeight: Int = 0
+
     private var mRenderCommandQueue = MutableTakeQueue<RenderCommand>()
 
     private fun getFigureCenterPoint(figure: GLDrawing): FloatArray {
@@ -238,6 +241,9 @@ open class CanvasRenderer(
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
+        mDeviceWidth = width
+        mDeviceHeight = height
+
         GLES20.glViewport(0, 0, width, height)
 
         mViewportRatio = width.toFloat() / height.toFloat()

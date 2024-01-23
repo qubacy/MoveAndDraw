@@ -35,8 +35,8 @@ open class CanvasView(
 
     protected var mLastScaleEventTimestamp = 0L
 
-    protected var previousX: Float = 0f
-    protected var previousY: Float = 0f
+    protected var mPreviousX: Float = 0f
+    protected var mPreviousY: Float = 0f
 
     protected var mDrawingMapper: DrawingGLDrawingMapper? = null
 
@@ -137,9 +137,6 @@ open class CanvasView(
     }
 
     override fun onTouchEvent(e: MotionEvent): Boolean {
-        val x: Float = e.x
-        val y: Float = e.y
-
         if (e.pointerCount == 2) {
             mScaleGestureDetector.onTouchEvent(e)
             requestRender()
@@ -150,26 +147,32 @@ open class CanvasView(
             return false
 
         when (e.action) {
-            MotionEvent.ACTION_MOVE -> {
-                val curTime = System.currentTimeMillis()
-
-                if (mLastScaleEventTimestamp + AFTER_SCALE_DELAY > curTime)
-                    return false
-
-                val dx: Float = x - previousX
-                val dy: Float = y - previousY
-
-                mRenderer.handleRotation(dx * TOUCH_SCALE_FACTOR, dy * TOUCH_SCALE_FACTOR)
-
-                requestRender()
-            }
+            MotionEvent.ACTION_MOVE -> processMoveTouchEventAction(e)
+            else -> processOtherTouchEventAction(e)
         }
-
-        previousX = x
-        previousY = y
 
         return true
     }
+
+    protected open fun processMoveTouchEventAction(e: MotionEvent): Boolean {
+        val curTime = System.currentTimeMillis()
+
+        if (mLastScaleEventTimestamp + AFTER_SCALE_DELAY > curTime)
+            return false
+
+        val dx = e.x - mPreviousX
+        val dy = e.y - mPreviousY
+
+        mPreviousX = e.x
+        mPreviousY = e.y
+
+        mRenderer.handleRotation(dx * TOUCH_SCALE_FACTOR, dy * TOUCH_SCALE_FACTOR)
+        requestRender()
+
+        return true
+    }
+
+    protected open fun processOtherTouchEventAction(e: MotionEvent) { }
 
     override fun onScale(detector: ScaleGestureDetector): Boolean {
         mRenderer.handleScale(detector.scaleFactor)

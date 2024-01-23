@@ -25,6 +25,7 @@ open class GLDrawing (
         "attribute vec4 vPosition;" +
         "attribute vec4 vNormal;" +
         "void main() {" +
+        "  gl_PointSize = 5.0;" +
         "  gl_Position = uVPMatrix * vPosition;" +
         "}"
     protected open val mFragmentShaderCode =
@@ -57,9 +58,7 @@ open class GLDrawing (
     val vertexDrawingOrder get() = mVertexDrawingOrder
 
     protected val mMutex: Mutex = Mutex(false)
-
-    @Volatile
-    protected var mVertexCount = vertexArray.size / COORDS_PER_VERTEX
+    protected val mVertexCount get() = vertexArray.size / COORDS_PER_VERTEX
 
     @Volatile
     private var mColor: FloatArray = color
@@ -122,7 +121,10 @@ open class GLDrawing (
                 GLES20.glGetUniformLocation(mProgram, "vColor").also { colorHandle ->
                     GLES20.glUniform4fv(colorHandle, 1, mColor, 0)
 
-                    drawElementsWithDrawingModeAndColor(mDrawingMode, colorHandle)
+                    if (mVertexCount <= 0) {  }
+                    else if (mVertexCount == 1) drawElementsWithGLMode(GLES20.GL_POINTS)
+                    else if (mVertexCount == 2) drawElementsWithGLMode(GLES20.GL_LINES)
+                    else drawElementsWithDrawingModeAndColor(mDrawingMode, colorHandle)
                 }
 
                 GLES20.glDisableVertexAttribArray(it)

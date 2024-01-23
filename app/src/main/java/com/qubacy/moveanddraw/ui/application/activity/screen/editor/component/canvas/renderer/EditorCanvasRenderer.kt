@@ -2,6 +2,7 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.c
 
 import android.opengl.Matrix
 import android.util.Log
+import android.util.Range
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.model.GLDrawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.CanvasRenderer
@@ -20,23 +21,39 @@ class EditorCanvasRenderer(
 
     companion object {
         val HELPING_PLANE_DRAWING_COLOR = floatArrayOf(0f, 1f, 0f, 0.4f)
+        val FACE_SKETCH_DRAWING_COLOR = floatArrayOf(1f, 0f, 1f, 1f)
 
         const val MIN_HELPING_PLANE_DISTANCE = DEFAULT_CAMERA_NEAR
         const val HELPING_PLANE_MODEL_GAP = 0.001f
+
+        const val COORDS_PER_DOT = 2
     }
 
     private val mHelpingPlaneDrawing: GLDrawing = generateHelpingPlaneGLDrawing()
+    private val mFaceSketchDrawing: GLDrawing = generateFaceSketchDrawing()
+    private val mFaceSketchDotBuffer: MutableList<Pair<Float, Float>> = mutableListOf()
 
-    private val mHelpingPlaneDrawingMutex: Mutex = Mutex(false)
+    private val mFaceSketchMutex: Mutex = Mutex(false)
+
+    val faceSketchDotBuffer: List<Pair<Float, Float>> get() = mFaceSketchDotBuffer
 
     private var mEditorRendererMode: EditorRendererMode = EditorRendererMode.VIEWING
     private var mIsHelpingPlaneVisible: Boolean = false
+
+    private val mProjWorldMatrix = FloatArray(16)
+
+    suspend fun setFaceSketchDotBuffer(faceSketchDotArray: FloatArray) = mFaceSketchMutex.withLock {
+        for (i in faceSketchDotArray.indices step COORDS_PER_DOT) {
+            mFaceSketchDotBuffer.add(Pair(faceSketchDotArray[i], faceSketchDotArray[i + 1]))
+        }
+    }
 
     fun setMode(mode: EditorRendererMode) {
         mEditorRendererMode = mode
 
         setHelpingPlaneVisibilityByMode(mode)
         changeCameraNearByMode(mode)
+        mFaceSketchDotBuffer.clear()
     }
 
     private fun changeCameraNearByMode(mode: EditorRendererMode) {
@@ -76,6 +93,17 @@ class EditorCanvasRenderer(
         }
     }
 
+    fun handleClick(x: Float, y: Float) {
+        when (mEditorRendererMode) {
+            EditorRendererMode.CREATING_FACE -> addSketchVertex(x, y)
+            else -> { }
+        }
+    }
+
+    private fun addSketchVertex(x: Float, y: Float) {
+        mFaceSketchDotBuffer.add(Pair(x, y))
+    }
+
     private fun handleHelpingPlaneDistanceChange(distanceFactor: Float) {
         val newNear = mCameraNear * distanceFactor
         val filteredNewNear =
@@ -103,6 +131,15 @@ class EditorCanvasRenderer(
         )
     }
 
+    private fun generateFaceSketchDrawing(): GLDrawing {
+        return GLDrawing(
+            floatArrayOf(),
+            shortArrayOf(),
+            GLContext.DrawingMode.SKETCH,
+            FACE_SKETCH_DRAWING_COLOR
+        )
+    }
+
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         super.onSurfaceCreated(gl, config)
     }
@@ -111,10 +148,11 @@ class EditorCanvasRenderer(
         super.onDrawFrame(gl)
 
         drawHelpingPlane()
+        drawFaceSketch()
     }
 
-    private suspend fun drawHelpingPlane() = mHelpingPlaneDrawingMutex.withLock {
-        if (!mIsHelpingPlaneVisible) return@withLock
+    private fun drawHelpingPlane(): Unit = runBlocking {
+        if (!mIsHelpingPlaneVisible) return@runBlocking
         if (!mHelpingPlaneDrawing.isInitialized) mHelpingPlaneDrawing.init()
 
         val helpingPlaneVertices = getHelpingPlaneVertices()
@@ -133,8 +171,7 @@ class EditorCanvasRenderer(
             1f, -1f, normalizedHelpingPlaneZ
         )
 
-        val projToWorldCoordsMatrix = FloatArray(16)
-        Matrix.invertM(projToWorldCoordsMatrix, 0, mVPMatrix, 0)
+        Matrix.invertM(mProjWorldMatrix, 0, mVPMatrix, 0)
 
         val projHelpingPlaneVertices = FloatArray(helpingPlaneVertices.size)
 
@@ -146,7 +183,7 @@ class EditorCanvasRenderer(
 
             Matrix.multiplyMV(
                 projVertex, 0,
-                projToWorldCoordsMatrix, 0,
+                mProjWorldMatrix, 0,
                 curVertex, 0
             )
 
@@ -157,5 +194,58 @@ class EditorCanvasRenderer(
         }
 
         return projHelpingPlaneVertices
+    }
+
+    private suspend fun drawFaceSketch() = mFaceSketchMutex.withLock {
+        if (!mIsHelpingPlaneVisible) return@withLock
+        if (!mFaceSketchDrawing.isInitialized) mFaceSketchDrawing.init()
+
+        val faceSketchVertices = getFaceSketchVerticesByDots(mFaceSketchDotBuffer)
+        val faceSketchDrawingOrder = getFaceSketchDrawingOrderByVertices(faceSketchVertices)
+
+        mFaceSketchDrawing.setVertices(faceSketchVertices, faceSketchDrawingOrder)
+        mFaceSketchDrawing.draw(mVPMatrix)
+    }
+
+    private fun getFaceSketchVerticesByDots(faceSketchDots: List<Pair<Float, Float>>): FloatArray {
+        val halfWidth = mDeviceWidth / 2
+        val halfHeight = mDeviceHeight / 2
+        val normalizedZ = -1f + HELPING_PLANE_MODEL_GAP
+
+        val faceSketchVertices = FloatArray(faceSketchDots.size * GLDrawing.COORDS_PER_VERTEX)
+        var curFaceSketchIndex = 0
+
+        for (dot in faceSketchDots) {
+            val normalizedVertex = floatArrayOf(
+                dot.first / halfWidth - 1,
+                (2 - dot.second / halfHeight) - 1,
+                normalizedZ,
+                1f
+            )
+            val projVertex = FloatArray(normalizedVertex.size)
+
+            Matrix.multiplyMV(
+                projVertex, 0,
+                mProjWorldMatrix, 0,
+                normalizedVertex, 0
+            )
+
+            val normalizedProjVertex = projVertex.map { it / projVertex[3] }.toFloatArray()
+
+            normalizedProjVertex.copyInto(
+                faceSketchVertices, curFaceSketchIndex, 0, GLDrawing.COORDS_PER_VERTEX)
+
+            curFaceSketchIndex += GLDrawing.COORDS_PER_VERTEX
+        }
+
+        return faceSketchVertices
+    }
+
+    private fun getFaceSketchDrawingOrderByVertices(faceSketchVertices: FloatArray): ShortArray {
+        // todo: implement a custom figure drawing order composing..
+
+
+
+        return IntRange(0, faceSketchVertices.size / GLDrawing.COORDS_PER_VERTEX - 1).map { it.toShort() }.toShortArray()
     }
 }
