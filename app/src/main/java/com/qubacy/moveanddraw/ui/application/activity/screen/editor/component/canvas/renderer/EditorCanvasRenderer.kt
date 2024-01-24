@@ -3,10 +3,13 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.c
 import android.opengl.Matrix
 import android.util.Log
 import android.util.Range
+import com.qubacy.moveanddraw.domain._common.model.drawing._common.DrawingContext
+import com.qubacy.moveanddraw.domain._common.model.drawing.util.toVertexTripleArray
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.model.GLDrawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.CanvasRenderer
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.util.GL2Util
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.data.FaceSketch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -38,6 +41,9 @@ class EditorCanvasRenderer(
 
     val faceSketchDotBuffer: List<Pair<Float, Float>> get() = mFaceSketchDotBuffer
 
+    private var mLastFaceSketchVertexArray: FloatArray = floatArrayOf()
+    private var mLastFaceSketchDrawingOrder: ShortArray = shortArrayOf()
+
     private var mEditorRendererMode: EditorRendererMode = EditorRendererMode.VIEWING
     private var mIsHelpingPlaneVisible: Boolean = false
 
@@ -47,6 +53,54 @@ class EditorCanvasRenderer(
         for (i in faceSketchDotArray.indices step COORDS_PER_DOT) {
             mFaceSketchDotBuffer.add(Pair(faceSketchDotArray[i], faceSketchDotArray[i + 1]))
         }
+    }
+
+    suspend fun saveAndGetFaceSketch(): FaceSketch? {
+        val faceSketch = getLastFaceSketch() ?: return null
+
+        mFigureMutex.withLock {
+            if (mFigure == null) {
+                mFigure = generateFigure(mLastFaceSketchVertexArray, mLastFaceSketchDrawingOrder)
+
+            } else {
+                val finalVertexArray = mFigure!!.vertexArray.plus(mLastFaceSketchVertexArray)
+                val finalDrawingOrderArray = mFigure!!.vertexDrawingOrder
+                    ?.plus(mLastFaceSketchDrawingOrder) ?: mLastFaceSketchDrawingOrder
+
+                mFigure!!.setVertices(finalVertexArray, finalDrawingOrderArray)
+            }
+        }
+
+        resetFaceSketchData()
+
+        return faceSketch
+    }
+
+    private fun resetFaceSketchData() {
+        mFaceSketchDotBuffer.clear()
+
+        mLastFaceSketchVertexArray = floatArrayOf()
+        mLastFaceSketchDrawingOrder = shortArrayOf()
+    }
+
+    private fun generateFigure(vertexArray: FloatArray, drawingOrderArray: ShortArray): GLDrawing {
+        return GLDrawing(vertexArray, drawingOrderArray)
+    }
+
+    private suspend fun getLastFaceSketch(): FaceSketch? {
+        var faceSketch: FaceSketch? = null
+
+        mFaceSketchMutex.withLock {
+            if (mLastFaceSketchVertexArray.isEmpty()) return null
+
+            val vertexTripleArray = mLastFaceSketchVertexArray.toVertexTripleArray()
+            val face = mLastFaceSketchDrawingOrder
+                .map { Triple<Short, Short?, Short?>(it, null, null) }.toTypedArray()
+
+            faceSketch = FaceSketch(vertexTripleArray, face)
+        }
+
+        return faceSketch
     }
 
     fun setMode(mode: EditorRendererMode) {
@@ -102,6 +156,8 @@ class EditorCanvasRenderer(
     }
 
     suspend fun removeLastSketchFaceVertex() = mFaceSketchMutex.withLock {
+        if (mFaceSketchDotBuffer.isEmpty()) return@withLock
+
         mFaceSketchDotBuffer.removeLast()
     }
 
@@ -182,7 +238,7 @@ class EditorCanvasRenderer(
 
         val projHelpingPlaneVertices = FloatArray(helpingPlaneVertices.size)
 
-        for (i in helpingPlaneVertices.indices step GLDrawing.COORDS_PER_VERTEX) {
+        for (i in helpingPlaneVertices.indices step DrawingContext.COORDS_PER_VERTEX) {
             val curVertex = floatArrayOf(
                 helpingPlaneVertices[i], helpingPlaneVertices[i + 1], helpingPlaneVertices[i + 2], 1f
             )
@@ -197,7 +253,7 @@ class EditorCanvasRenderer(
             val normalizedProjVertex = projVertex.map { it / projVertex[3] }.toFloatArray()
 
             normalizedProjVertex.copyInto(
-                projHelpingPlaneVertices, i, 0, GLDrawing.COORDS_PER_VERTEX)
+                projHelpingPlaneVertices, i, 0, DrawingContext.COORDS_PER_VERTEX)
         }
 
         return projHelpingPlaneVertices
@@ -207,10 +263,10 @@ class EditorCanvasRenderer(
         if (!mIsHelpingPlaneVisible) return@withLock
         if (!mFaceSketchDrawing.isInitialized) mFaceSketchDrawing.init()
 
-        val faceSketchVertices = getFaceSketchVerticesByDots(mFaceSketchDotBuffer)
-        val faceSketchDrawingOrder = getFaceSketchDrawingOrderByVertices(faceSketchVertices)
+        mLastFaceSketchVertexArray = getFaceSketchVerticesByDots(mFaceSketchDotBuffer)
+        mLastFaceSketchDrawingOrder = getFaceSketchDrawingOrderByVertices(mLastFaceSketchVertexArray)
 
-        mFaceSketchDrawing.setVertices(faceSketchVertices, faceSketchDrawingOrder)
+        mFaceSketchDrawing.setVertices(mLastFaceSketchVertexArray, mLastFaceSketchDrawingOrder)
         mFaceSketchDrawing.draw(mVPMatrix)
     }
 
@@ -219,7 +275,7 @@ class EditorCanvasRenderer(
         val halfHeight = mDeviceHeight / 2
         val normalizedZ = -1f + HELPING_PLANE_MODEL_GAP / 2
 
-        val faceSketchVertices = FloatArray(faceSketchDots.size * GLDrawing.COORDS_PER_VERTEX)
+        val faceSketchVertices = FloatArray(faceSketchDots.size * DrawingContext.COORDS_PER_VERTEX)
         var curFaceSketchIndex = 0
 
         for (dot in faceSketchDots) {
@@ -240,16 +296,16 @@ class EditorCanvasRenderer(
             val normalizedProjVertex = projVertex.map { it / projVertex[3] }.toFloatArray()
 
             normalizedProjVertex.copyInto(
-                faceSketchVertices, curFaceSketchIndex, 0, GLDrawing.COORDS_PER_VERTEX)
+                faceSketchVertices, curFaceSketchIndex, 0, DrawingContext.COORDS_PER_VERTEX)
 
-            curFaceSketchIndex += GLDrawing.COORDS_PER_VERTEX
+            curFaceSketchIndex += DrawingContext.COORDS_PER_VERTEX
         }
 
         return faceSketchVertices
     }
 
     private fun getFaceSketchDrawingOrderByVertices(faceSketchVertices: FloatArray): ShortArray {
-        val vertexIdArray = IntRange(0, faceSketchVertices.size / GLDrawing.COORDS_PER_VERTEX - 1)
+        val vertexIdArray = IntRange(0, faceSketchVertices.size / DrawingContext.COORDS_PER_VERTEX - 1)
             .map { it.toShort() }.toShortArray()
 
         val vertexCount = vertexIdArray.size

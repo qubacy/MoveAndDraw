@@ -7,13 +7,16 @@ import com.qubacy.moveanddraw._common.util.struct.takequeue._common.TakeQueue
 import com.qubacy.moveanddraw.data.drawing.repository.DrawingDataRepository
 import com.qubacy.moveanddraw.data.drawing.repository.source.local.LocalDrawingDataSource
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
-import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
+import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.domain._common.usecase._common.result._common.Result
 import com.qubacy.moveanddraw.domain.editor.EditorUseCase
+import com.qubacy.moveanddraw.domain.editor.result.AddNewFaceToDrawingResult
 import com.qubacy.moveanddraw.domain.editor.result.RemoveLastFaceFromDrawingResult
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.DrawingViewModel
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.data.FaceSketch
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.EditorUiState
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.operation.face.added.NewFaceAddedToDrawingUiOperation
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -63,12 +66,19 @@ open class EditorViewModel @Inject constructor(
         return when (result::class) {
             RemoveLastFaceFromDrawingResult::class ->
                 processRemoveLastFaceResult(result as RemoveLastFaceFromDrawingResult)
+            AddNewFaceToDrawingResult::class ->
+                processAddNewFaceToDrawingResult(result as AddNewFaceToDrawingResult)
             else -> null
         }
     }
 
     private fun processRemoveLastFaceResult(result: RemoveLastFaceFromDrawingResult): EditorUiState {
         return generateDrawingUiState(drawing = result.drawing, isLoading = false)
+    }
+
+    private fun processAddNewFaceToDrawingResult(result: AddNewFaceToDrawingResult): EditorUiState {
+        return generateDrawingUiState(drawing = result.drawing, isLoading = false,
+            pendingOperations = TakeQueue(NewFaceAddedToDrawingUiOperation()))
     }
 
     fun removeLastFace() {
@@ -79,20 +89,12 @@ open class EditorViewModel @Inject constructor(
         mEditorUseCase.removeLastFaceFromDrawing(mUiState.value!!.drawing!!)
     }
 
-//    fun setConstantOffsets(xOffset: Float, yOffset: Float, zOffset: Float) {
-//        mXConstOffset = xOffset
-//        mYConstOffset = yOffset
-//        mZConstOffset = zOffset
-//    }
+    fun saveFaceSketch(faceSketch: FaceSketch) {
+        mUiState.value = generateDrawingUiState(isLoading = true)
 
-//    private fun changeDevicePos(devicePos: FloatArray) {
-//        mUiState.value = EditorUiState(
-//            devicePos = devicePos,
-//            drawing = mUiState.value?.drawing,
-//            isLoading = mUiState.value?.isLoading ?: false,
-//            pendingOperations = mUiState.value?.pendingOperations ?: TakeQueue()
-//        )
-//    }
+        mEditorUseCase.addNewFaceToDrawing(
+            mUiState.value!!.drawing, faceSketch.vertexArray, faceSketch.face)
+    }
 }
 
 class EditorViewModelFactory(

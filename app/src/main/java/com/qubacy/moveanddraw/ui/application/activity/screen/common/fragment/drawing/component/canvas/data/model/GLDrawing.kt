@@ -2,6 +2,7 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.dr
 
 import android.opengl.GLES20
 import com.qubacy.moveanddraw._common.util.struct.array.toNativeBuffer
+import com.qubacy.moveanddraw.domain._common.model.drawing._common.DrawingContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.util.GL2Util
 import kotlinx.coroutines.runBlocking
@@ -17,7 +18,7 @@ open class GLDrawing (
     color: FloatArray = floatArrayOf(1f, 1f, 1f, 1f)
 ) {
     companion object {
-        const val COORDS_PER_VERTEX = 3
+
     }
 
     protected open val mVertexShaderCode =
@@ -58,7 +59,7 @@ open class GLDrawing (
     val vertexDrawingOrder get() = mVertexDrawingOrder
 
     protected val mMutex: Mutex = Mutex(false)
-    protected val mVertexCount get() = vertexArray.size / COORDS_PER_VERTEX
+    protected val mVertexCount get() = vertexArray.size / DrawingContext.COORDS_PER_VERTEX
 
     @Volatile
     private var mColor: FloatArray = color
@@ -112,10 +113,10 @@ open class GLDrawing (
                 GLES20.glEnableVertexAttribArray(it)
                 GLES20.glVertexAttribPointer(
                     it,
-                    COORDS_PER_VERTEX,
+                    DrawingContext.COORDS_PER_VERTEX,
                     GLES20.GL_FLOAT,
                     false,
-                    COORDS_PER_VERTEX * Float.SIZE_BYTES,
+                    DrawingContext.COORDS_PER_VERTEX * Float.SIZE_BYTES,
                     mVertexBuffer
                 )
                 GLES20.glGetUniformLocation(mProgram, "vColor").also { colorHandle ->

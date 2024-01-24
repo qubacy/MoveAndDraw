@@ -14,7 +14,7 @@ import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw._common.error.ErrorEnum
 import com.qubacy.moveanddraw._common.util.context.getFileNameByUri
-import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
+import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.MainActivity
 import com.qubacy.moveanddraw.ui.application.activity.file.picker.GetFileUriCallback
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.base.BaseFragment

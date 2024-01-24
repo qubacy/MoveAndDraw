@@ -22,7 +22,8 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.transition.MaterialSharedAxis
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw.databinding.FragmentEditorBinding
-import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
+import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.transition.DefaultSharedAxisTransitionGenerator
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.DrawingFragment
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
@@ -30,6 +31,7 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.ca
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.EditorViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.EditorViewModelFactoryQualifier
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.EditorUiState
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.operation.face.added.NewFaceAddedToDrawingUiOperation
 import com.skydoves.colorpickerview.ColorPickerDialog
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 import dagger.hilt.android.AndroidEntryPoint
@@ -151,6 +153,20 @@ class EditorFragment(
         // ??
     }
 
+    override fun processUiOperation(uiOperation: UiOperation) {
+        super.processUiOperation(uiOperation)
+
+        when (uiOperation::class) {
+            NewFaceAddedToDrawingUiOperation::class -> onNewFaceSaved()
+        }
+    }
+
+    private fun onNewFaceSaved() {
+        // todo: changing the bottom menu appearance if the operation went OK..
+
+        setEditorMode(EditorMode.MAIN)
+    }
+
     override fun setCanvasDrawing(drawing: Drawing) {
         lifecycleScope.launch(Dispatchers.IO) {
             mCanvasView.setFigure(drawing, mDrawingMode)
@@ -160,7 +176,7 @@ class EditorFragment(
     private fun onMainActionClicked() {
         when (mEditorMode) {
             EditorMode.MAIN -> onAddFaceClicked()
-            EditorMode.FACE -> onCancelClicked()
+            EditorMode.FACE -> onSaveFaceClicked()
         }
     }
 
@@ -170,13 +186,18 @@ class EditorFragment(
         setEditorMode(EditorMode.FACE)
     }
 
-    private fun onSaveFaceClicked() {
-        // todo: saving a new face...
+    private fun onSaveFaceClicked() = lifecycleScope.launch(Dispatchers.IO) {
+        val faceSketch = mCanvasView.saveAndGetFaceSketch()
 
+        if (faceSketch == null) {
+            // todo: output an error message..
 
-        // todo: changing the bottom menu appearance if the operation went OK..
+            return@launch
+        }
 
-        setEditorMode(EditorMode.MAIN)
+        launch(Dispatchers.Main) {
+            mModel.saveFaceSketch(faceSketch)
+        }
     }
 
     private fun setEditorMode(mode: EditorMode) {

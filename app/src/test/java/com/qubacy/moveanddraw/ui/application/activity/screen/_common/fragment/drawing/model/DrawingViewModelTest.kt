@@ -6,7 +6,7 @@ import com.qubacy.moveanddraw._common.error.Error
 import com.qubacy.moveanddraw._common.util.mock.AnyMockUtil
 import com.qubacy.moveanddraw._common.util.mock.UriMockUtil
 import com.qubacy.moveanddraw._common.util.rule.MainCoroutineRule
-import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
+import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.domain._common.usecase.drawing.DrawingUseCase
 import com.qubacy.moveanddraw.domain._common.usecase.drawing.result.LoadDrawingResult
 import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.model.BusinessViewModelTest

@@ -1,20 +1,15 @@
 package com.qubacy.moveanddraw.domain.editor
 
 import android.net.Uri
-import androidx.lifecycle.viewModelScope
 import com.qubacy.moveanddraw._common.exception.error.MADErrorException
-import com.qubacy.moveanddraw._common.util.struct.takequeue._common.TakeQueue
-import com.qubacy.moveanddraw.data.drawing.model.toDrawing
 import com.qubacy.moveanddraw.data.drawing.repository.DrawingDataRepository
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
-import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
-import com.qubacy.moveanddraw.domain._common.model.drawing.toDataDrawing
+import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
+import com.qubacy.moveanddraw.domain._common.model.drawing._common.toDataDrawing
 import com.qubacy.moveanddraw.domain._common.usecase.drawing.DrawingUseCase
-import com.qubacy.moveanddraw.domain._common.usecase.drawing.result.LoadDrawingResult
+import com.qubacy.moveanddraw.domain.editor.result.AddNewFaceToDrawingResult
 import com.qubacy.moveanddraw.domain.editor.result.RemoveLastFaceFromDrawingResult
 import com.qubacy.moveanddraw.domain.editor.result.SaveDrawingResult
-import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.EditorUiState
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -63,6 +58,28 @@ class EditorUseCase @Inject constructor(
             )
 
             mResultFlow.emit(RemoveLastFaceFromDrawingResult(editedDrawing))
+        }
+    }
+
+    open fun addNewFaceToDrawing(
+        drawing: Drawing? = null,
+        faceVertexTripleArray: Array<Triple<Float, Float, Float>>,
+        face: Array<Triple<Short, Short?, Short?>>
+    ) {
+        mCoroutineScope.launch(mCoroutineDispatcher) {
+            val finalVertexArray = drawing?.vertexArray?.plus(faceVertexTripleArray)
+                ?: faceVertexTripleArray
+            val finalFaceArray = drawing?.faceArray?.plus(face) ?: arrayOf(face)
+
+            val drawing = Drawing(
+                drawing?.uri,
+                finalVertexArray,
+                drawing?.normalArray ?: floatArrayOf(),
+                drawing?.textureArray ?: floatArrayOf(),
+                finalFaceArray
+            )
+
+            mResultFlow.emit(AddNewFaceToDrawingResult(drawing))
         }
     }
 }

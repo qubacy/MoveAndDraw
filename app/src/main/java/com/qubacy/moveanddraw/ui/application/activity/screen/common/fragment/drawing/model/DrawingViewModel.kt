@@ -2,7 +2,7 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.dr
 
 import android.net.Uri
 import com.qubacy.moveanddraw._common.util.struct.takequeue._common.TakeQueue
-import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
+import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.domain._common.usecase._common.result._common.Result
 import com.qubacy.moveanddraw.domain._common.usecase._common.result.error.ErrorResult
 import com.qubacy.moveanddraw.domain._common.usecase.drawing.DrawingUseCase

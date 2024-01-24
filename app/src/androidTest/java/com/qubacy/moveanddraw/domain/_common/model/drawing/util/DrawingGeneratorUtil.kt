@@ -1,7 +1,7 @@
 package com.qubacy.moveanddraw.domain._common.model.drawing.util
 
 import android.net.Uri
-import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
+import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 
 object DrawingGeneratorUtil {
     fun generateSquareDrawing(): Drawing {

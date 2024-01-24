@@ -59,7 +59,7 @@ open class CanvasRenderer(
     private var mCurScaleFactor = 1f
 
     protected var mFigure: GLDrawing? = null
-    protected val mIsFigureBlocked = Mutex(false)
+    protected val mFigureMutex = Mutex(false)
 
     @Volatile
     private var mIsCameraLocationInitialized = false
@@ -131,7 +131,7 @@ open class CanvasRenderer(
         mFigure?.setDrawingMode(drawingMode)
     }
 
-    suspend fun setFigure(figure: GLDrawing) = mIsFigureBlocked.withLock {
+    suspend fun setFigure(figure: GLDrawing) = mFigureMutex.withLock {
         mFigure = figure.apply {
             setColor(mDefaultModelColor)
         }
@@ -254,7 +254,7 @@ open class CanvasRenderer(
     override fun onDrawFrame(gl: GL10?): Unit = runBlocking {
         executePendingRenderCommands()
 
-        mIsFigureBlocked.withLock {
+        mFigureMutex.withLock {
             GLES20.glEnable(GLES20.GL_DEPTH_TEST)
             GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA)
             GLES20.glEnable(GLES20.GL_BLEND)

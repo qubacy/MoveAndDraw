@@ -1,4 +1,4 @@
-package com.qubacy.moveanddraw.domain._common.model.drawing
+package com.qubacy.moveanddraw.domain._common.model.drawing._common
 
 import android.net.Uri
 import com.qubacy.moveanddraw.data.drawing.model.DataDrawing

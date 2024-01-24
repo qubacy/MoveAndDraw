@@ -8,7 +8,10 @@ import android.util.Log
 import android.view.AbsSavedState
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
+import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.view.CanvasView
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.data.FaceSketch
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.renderer.EditorCanvasRenderer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,6 +35,8 @@ class EditorCanvasView(
     private var mIsInEditorMode: Boolean = false
     private var mIsLongAction = false
 
+    private var mIsSavingSketch: Boolean = false
+
     fun enableEditorMode(isEnabled: Boolean) {
         mIsInEditorMode = isEnabled
 
@@ -46,6 +51,28 @@ class EditorCanvasView(
     suspend fun removeLastSketchVertex() {
         mRenderer.removeLastSketchFaceVertex()
         requestRender()
+    }
+
+    suspend fun saveAndGetFaceSketch(): FaceSketch? {
+        val faceSketch = mRenderer.saveAndGetFaceSketch()
+
+        if (faceSketch != null) mIsSavingSketch = true
+
+        return faceSketch
+    }
+
+    /**
+     It's supposed that the Sketch Face saving has to be ended by calling setFigure(..) method
+     with a renewed Drawing as an argument;
+     */
+    override suspend fun setFigure(figure: Drawing, drawingMode: GLContext.DrawingMode?) {
+        if (mIsSavingSketch) {
+            mIsSavingSketch = false
+
+            return
+        }
+
+        super.setFigure(figure, drawingMode)
     }
 
     override fun processMoveTouchEventAction(e: MotionEvent): Boolean {

@@ -1,7 +1,7 @@
 package com.qubacy.moveanddraw.data.drawing.model
 
 import android.net.Uri
-import com.qubacy.moveanddraw.domain._common.model.drawing.Drawing
+import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 
 data class DataDrawing(
     val vertexArray: FloatArray,
