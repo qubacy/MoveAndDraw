@@ -69,6 +69,11 @@ class EditorCanvasRenderer(
 
                 mFigure!!.setVertices(finalVertexArray, finalDrawingOrderArray)
             }
+
+            // todo: rework this:
+
+            mViewCenterLocation = getFigureCenterPoint(mFigure!!)
+            mCameraCenterLocation = floatArrayOf(0f, 0f, mViewCenterLocation[2])
         }
 
         resetFaceSketchData()

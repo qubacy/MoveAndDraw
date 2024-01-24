@@ -44,9 +44,9 @@ open class CanvasRenderer(
     protected var mCameraNear = DEFAULT_CAMERA_NEAR
 
     @Volatile
-    private var mCameraCenterLocation = floatArrayOf(0f, 0f, 0f)
+    protected var mCameraCenterLocation = floatArrayOf(0f, 0f, 0f)
     @Volatile
-    private var mViewCenterLocation = floatArrayOf(0f, 0f, 0f)
+    protected var mViewCenterLocation = floatArrayOf(0f, 0f, 0f)
     @Volatile
     private var mCameraLocation = floatArrayOf(mCameraRadius, 0f, mCameraCenterLocation[2])
     @Volatile
@@ -73,7 +73,7 @@ open class CanvasRenderer(
 
     private var mRenderCommandQueue = MutableTakeQueue<RenderCommand>()
 
-    private fun getFigureCenterPoint(figure: GLDrawing): FloatArray {
+    protected fun getFigureCenterPoint(figure: GLDrawing): FloatArray {
         var minX = figure.vertexArray[0]
         var maxX = figure.vertexArray[0]
 
