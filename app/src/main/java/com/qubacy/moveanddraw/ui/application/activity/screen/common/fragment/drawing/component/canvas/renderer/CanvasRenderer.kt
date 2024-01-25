@@ -5,6 +5,7 @@ import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import androidx.annotation.FloatRange
 import com.qubacy.moveanddraw._common.util.struct.takequeue.mutable.MutableTakeQueue
+import com.qubacy.moveanddraw.domain._common.model.drawing._common.DrawingContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.model.GLDrawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.command._common.RenderCommand
@@ -48,15 +49,15 @@ open class CanvasRenderer(
     @Volatile
     protected var mViewCenterLocation = floatArrayOf(0f, 0f, 0f)
     @Volatile
-    private var mCameraLocation = floatArrayOf(mCameraRadius, 0f, mCameraCenterLocation[2])
+    protected var mCameraLocation = floatArrayOf(mCameraRadius, 0f, mCameraCenterLocation[2])
     @Volatile
-    private var mCameraMadeWayHorizontal = 0f
+    protected var mCameraMadeWayHorizontal = 0f
     @Volatile
-    private var mCameraMadeWayVertical = 0f
+    protected var mCameraMadeWayVertical = 0f
     @Volatile
-    private var mViewportRatio = 1f
+    protected var mViewportRatio = 1f
     @Volatile
-    private var mCurScaleFactor = 1f
+    protected var mCurScaleFactor = 1f
 
     protected var mFigure: GLDrawing? = null
     protected val mFigureMutex = Mutex(false)
@@ -83,7 +84,7 @@ open class CanvasRenderer(
         var minZ = figure.vertexArray[2]
         var maxZ = figure.vertexArray[2]
 
-        for (i in 0 until figure.vertexArray.size - 2 step (3)) {
+        for (i in figure.vertexArray.indices step DrawingContext.COORDS_PER_VERTEX) {
             if (figure.vertexArray[i + 0] < minX) minX = figure.vertexArray[i + 0]
             if (figure.vertexArray[i + 0] > maxX) maxX = figure.vertexArray[i + 0]
 
@@ -132,15 +133,7 @@ open class CanvasRenderer(
     }
 
     suspend fun setFigure(figure: GLDrawing) = mFigureMutex.withLock {
-        mFigure = figure.apply {
-            setColor(mDefaultModelColor)
-        }
-
-        mSphereRadius = mFigure!!.vertexArray.map { abs(it) }.max() + DEFAULT_SPHERE_RADIUS
-        mCameraRadius = mSphereRadius
-
-        mViewCenterLocation = getFigureCenterPoint(figure)
-        mCameraCenterLocation = floatArrayOf(0f, 0f, mViewCenterLocation[2])
+        prepareForFigure(figure)
 
         mCameraMadeWayHorizontal = 0f
         mCameraMadeWayVertical = 0f
@@ -153,6 +146,29 @@ open class CanvasRenderer(
         mIsCameraLocationInitialized = true
     }
 
+    /**
+     * Note: this method should be called DURING mFigureMutex LOCKING!
+     */
+    protected fun prepareForFigure(figure: GLDrawing) {
+        mFigure = figure.apply {
+            setColor(mDefaultModelColor)
+        }
+
+        mSphereRadius = mFigure!!.vertexArray.map { abs(it) }.max() + DEFAULT_SPHERE_RADIUS
+        mCameraRadius = mSphereRadius
+
+        mViewCenterLocation = getFigureCenterPoint(figure)
+        mCameraCenterLocation = mViewCenterLocation
+    }
+
+    protected fun getVerticalCameraWayLength(): Float {
+        return (0.8 * PI * mSphereRadius / 2).toFloat()
+    }
+
+    protected fun getHorizontalCameraWayLength(): Float {
+        return (2 * PI * mCameraRadius).toFloat()
+    }
+
     private fun getTranslatedCameraLocation(dx: Float, dy: Float): FloatArray {
         val signedDX = dx * -1
         val signedDY = dy * 1
@@ -162,7 +178,7 @@ open class CanvasRenderer(
         var newZ = mCameraLocation[2]
 
         if (abs(signedDX) >= abs(signedDY)) {
-            val cameraWayLength = (2 * PI * mCameraRadius).toFloat()
+            val cameraWayLength = getHorizontalCameraWayLength()
             val cameraMadeWay = (signedDX + mCameraMadeWayHorizontal) % cameraWayLength
             val cameraMadeWayNormalized =
                 if (cameraMadeWay < 0) cameraMadeWay + cameraWayLength
@@ -176,7 +192,7 @@ open class CanvasRenderer(
             mCameraMadeWayHorizontal = cameraMadeWayNormalized
 
         } else {
-            val cameraWayLength = (0.8 * PI * mSphereRadius / 2).toFloat()
+            val cameraWayLength = getVerticalCameraWayLength()
             val cameraMadeWayNormalized = signedDY + mCameraMadeWayVertical
 
             if (abs(cameraMadeWayNormalized) >= cameraWayLength) return mCameraLocation
@@ -223,6 +239,9 @@ open class CanvasRenderer(
         )
     }
 
+    /**
+     * Note: an angle between X & Camera trajectory is 45 deg;
+     */
     private fun setDefaultCameraLocation() {
         if (mIsCameraLocationInitialized) return
 

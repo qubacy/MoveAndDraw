@@ -67,11 +67,16 @@ class EditorUseCase @Inject constructor(
         face: Array<Triple<Short, Short?, Short?>>
     ) {
         mCoroutineScope.launch(mCoroutineDispatcher) {
+            val vertexIndexShift = drawing?.vertexArray?.size
+            val shiftedFace = face.map {
+                Triple((it.first + vertexIndexShift!!).toShort(), it.second, it.third)
+            }.toTypedArray()
+
             val finalVertexArray = drawing?.vertexArray?.plus(faceVertexTripleArray)
                 ?: faceVertexTripleArray
-            val finalFaceArray = drawing?.faceArray?.plus(face) ?: arrayOf(face)
+            val finalFaceArray = drawing?.faceArray?.plus(shiftedFace) ?: arrayOf(face)
 
-            val drawing = Drawing(
+            val renewedDrawing = Drawing(
                 drawing?.uri,
                 finalVertexArray,
                 drawing?.normalArray ?: floatArrayOf(),
@@ -79,7 +84,7 @@ class EditorUseCase @Inject constructor(
                 finalFaceArray
             )
 
-            mResultFlow.emit(AddNewFaceToDrawingResult(drawing))
+            mResultFlow.emit(AddNewFaceToDrawingResult(renewedDrawing))
         }
     }
 }

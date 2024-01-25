@@ -2,7 +2,6 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.c
 
 import android.opengl.Matrix
 import android.util.Log
-import android.util.Range
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.DrawingContext
 import com.qubacy.moveanddraw.domain._common.model.drawing.util.toVertexTripleArray
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
@@ -15,6 +14,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
+import kotlin.math.acos
+import kotlin.math.sqrt
 
 class EditorCanvasRenderer(
 
@@ -70,15 +71,72 @@ class EditorCanvasRenderer(
                 mFigure!!.setVertices(finalVertexArray, finalDrawingOrderArray)
             }
 
-            // todo: rework this:
-
-            mViewCenterLocation = getFigureCenterPoint(mFigure!!)
-            mCameraCenterLocation = floatArrayOf(0f, 0f, mViewCenterLocation[2])
+            prepareForFigure(mFigure!!)
+            updateCameraContext()
         }
 
         resetFaceSketchData()
 
         return faceSketch
+    }
+
+    private fun updateCameraContext() {
+        mCameraCenterLocation = floatArrayOf(
+            mViewCenterLocation[0], mViewCenterLocation[1], mCameraLocation[2])
+        mCameraRadius = getDistanceBetweenTwoDots(mCameraCenterLocation, mCameraLocation)
+
+        val horizontalWayAngle = getCameraHorizontalWayAngleInRad()
+        val verticalWayAngle = getCameraVerticalWayAngleInRad()
+
+        mCameraMadeWayHorizontal = getHorizontalCameraWayLength() * horizontalWayAngle
+        mCameraMadeWayVertical = getVerticalCameraWayLength() * verticalWayAngle
+    }
+
+    private fun getCameraVerticalWayAngleInRad(): Float {
+        val verticalWayVector = floatArrayOf(
+            mCameraLocation[0] - mCameraCenterLocation[0],
+            mCameraLocation[1] - mCameraCenterLocation[1],
+            mCameraLocation[2]
+        )
+        val verticalIdleVector = floatArrayOf(
+            mCameraLocation[0] - mCameraCenterLocation[0],
+            mCameraLocation[1] - mCameraCenterLocation[1],
+            mViewCenterLocation[2]
+        )
+
+        return getAngleBetweenTwoVectorsOnPlaneInRad(verticalWayVector, verticalIdleVector)
+    }
+
+    private fun getCameraHorizontalWayAngleInRad(): Float {
+        val horizontalWayVector = floatArrayOf(
+            mCameraLocation[0] - mCameraCenterLocation[0],
+            mCameraLocation[1] - mCameraCenterLocation[1],
+            mCameraLocation[2]
+        )
+        val horizontalIdleVector = floatArrayOf(
+            mCameraRadius - mCameraCenterLocation[0],
+            0 - mCameraCenterLocation[1],
+            mCameraLocation[2]
+        )
+
+        return getAngleBetweenTwoVectorsOnPlaneInRad(horizontalWayVector, horizontalIdleVector)
+    }
+
+    private fun getAngleBetweenTwoVectorsOnPlaneInRad(v1: FloatArray, v2: FloatArray): Float {
+        val v1Module = sqrt(v1[0] * v1[0] + v1[1] * v1[1] + v1[2] * v1[2])
+        val v2Module = sqrt(v2[0] * v2[0] + v2[1] * v2[1] + v2[2] * v2[2])
+
+        val vectorMultiplication = v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2]
+
+        return acos(vectorMultiplication / (v1Module * v2Module))
+    }
+
+    private fun getDistanceBetweenTwoDots(d1: FloatArray, d2: FloatArray): Float {
+        return sqrt(
+            (d2[0] - d1[0]) * (d2[0] - d1[0]) +
+               (d2[1] - d1[1]) * (d2[1] - d1[1]) +
+               (d2[2] - d1[2]) * (d2[2] - d1[2])
+        )
     }
 
     private fun resetFaceSketchData() {
