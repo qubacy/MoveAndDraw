@@ -3,12 +3,14 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.dr
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
+import android.util.Log
 import androidx.annotation.FloatRange
 import com.qubacy.moveanddraw._common.util.struct.takequeue.mutable.MutableTakeQueue
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.DrawingContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.model.GLDrawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.command._common.RenderCommand
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.util.GL2Util
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -26,21 +28,23 @@ open class CanvasRenderer(
     companion object {
         const val TAG = "CANVAS_RENDERER"
 
-        private val CENTER_POSITION = floatArrayOf(0f, 0f, 0f)
-        const val DEFAULT_SPHERE_RADIUS = 2f
+        val CENTER_POSITION = floatArrayOf(0f, 0f, 0f)
+        const val DEFAULT_SPHERE_RADIUS = 1f
+        const val DEFAULT_SPHERE_RADIUS_COEF = 3f
 
-        private const val MIN_SCALE_FACTOR = 0.25f
-        private const val MAX_SCALE_FACTOR = 100f
+        const val MIN_SCALE_FACTOR = 0.25f
+        const val MAX_SCALE_FACTOR = 100f
 
         const val DEFAULT_CAMERA_NEAR = 0.01f
+        const val CAMERA_NEAR_DRAWING_GAP = 0.001f
         private const val CAMERA_FOV = 60f
     }
 
-    protected val mVPMatrix = FloatArray(16)
     protected val mProjectionMatrix = FloatArray(16)
     protected val mViewMatrix = FloatArray(16)
+    protected val mVPMatrix = FloatArray(16)
 
-    protected var mSphereRadius = DEFAULT_SPHERE_RADIUS
+    protected var mSphereRadius: Float = DEFAULT_SPHERE_RADIUS
     protected var mCameraRadius = mSphereRadius
     protected var mCameraNear = DEFAULT_CAMERA_NEAR
 
@@ -58,12 +62,12 @@ open class CanvasRenderer(
     protected var mViewportRatio = 1f
     @Volatile
     protected var mCurScaleFactor = 1f
+    @Volatile
+    protected var mFigureVolumeCoef = 1f
 
     protected var mFigure: GLDrawing? = null
     protected val mFigureMutex = Mutex(false)
 
-    @Volatile
-    private var mIsCameraLocationInitialized = false
     @Volatile
     private var mBackgroundColor: FloatArray = floatArrayOf(0.0f, 0.0f, 0.0f, 1.0f)
     @Volatile
@@ -73,34 +77,6 @@ open class CanvasRenderer(
     protected var mDeviceHeight: Int = 0
 
     private var mRenderCommandQueue = MutableTakeQueue<RenderCommand>()
-
-    protected fun getFigureCenterPoint(figure: GLDrawing): FloatArray {
-        var minX = figure.vertexArray[0]
-        var maxX = figure.vertexArray[0]
-
-        var minY = figure.vertexArray[1]
-        var maxY = figure.vertexArray[1]
-
-        var minZ = figure.vertexArray[2]
-        var maxZ = figure.vertexArray[2]
-
-        for (i in figure.vertexArray.indices step DrawingContext.COORDS_PER_VERTEX) {
-            if (figure.vertexArray[i + 0] < minX) minX = figure.vertexArray[i + 0]
-            if (figure.vertexArray[i + 0] > maxX) maxX = figure.vertexArray[i + 0]
-
-            if (figure.vertexArray[i + 1] < minY) minY = figure.vertexArray[i + 1]
-            if (figure.vertexArray[i + 1] > maxY) maxY = figure.vertexArray[i + 1]
-
-            if (figure.vertexArray[i + 2] < minZ) minZ = figure.vertexArray[i + 2]
-            if (figure.vertexArray[i + 2] > maxZ) maxZ = figure.vertexArray[i + 2]
-        }
-
-        return floatArrayOf(
-            (minX + maxX) / 2,
-            (minY + maxY) / 2,
-            (minZ + maxZ) / 2
-        )
-    }
 
      protected suspend fun addRenderCommand(renderCommand: RenderCommand) {
         mRenderCommandQueue.put(renderCommand)
@@ -133,17 +109,18 @@ open class CanvasRenderer(
     }
 
     suspend fun setFigure(figure: GLDrawing) = mFigureMutex.withLock {
+        setFigureData(figure)
+    }
+
+    protected fun setFigureData(figure: GLDrawing) {
         prepareForFigure(figure)
 
         mCameraMadeWayHorizontal = 0f
         mCameraMadeWayVertical = 0f
         mCurScaleFactor = 1f
-        mIsCameraLocationInitialized = false
 
         setDefaultCameraLocation()
         setPerspective()
-
-        mIsCameraLocationInitialized = true
     }
 
     /**
@@ -154,11 +131,44 @@ open class CanvasRenderer(
             setColor(mDefaultModelColor)
         }
 
-        mSphereRadius = mFigure!!.vertexArray.map { abs(it) }.max() + DEFAULT_SPHERE_RADIUS
+        val usedVertexArray = if (mFigure!!.vertexDrawingOrder != null) {
+            val vertexIndices = mFigure!!.vertexDrawingOrder!!.toSet().toShortArray()
+
+            GL2Util.filterVertexArrayWithIndices(mFigure!!.vertexArray, vertexIndices)
+
+        } else {
+            mFigure!!.vertexArray
+        }
+
+        mViewCenterLocation = GL2Util.getVertexCenterPoint(usedVertexArray)
+
+        val sphereRadiusFromDistance =
+            GL2Util.getMaxDistanceFromDot(usedVertexArray, mViewCenterLocation)
+        val minSphereRadius = DEFAULT_CAMERA_NEAR + CAMERA_NEAR_DRAWING_GAP
+        val sphereRadius =
+            if (sphereRadiusFromDistance > minSphereRadius) sphereRadiusFromDistance
+            else minSphereRadius
+
+        mSphereRadius = sphereRadius * DEFAULT_SPHERE_RADIUS_COEF
         mCameraRadius = mSphereRadius
 
-        mViewCenterLocation = getFigureCenterPoint(figure)
         mCameraCenterLocation = mViewCenterLocation
+        mFigureVolumeCoef = getFigureVolumeCoefBySphereRadiusAndMaxDistance(
+            mSphereRadius, sphereRadiusFromDistance)
+
+        Log.d(TAG, "prepareForFigure(): sphereRadiusFromDistance = $sphereRadiusFromDistance;")
+        Log.d(TAG, "prepareForFigure(): mSphereRadius = $mSphereRadius; mFigureVolumeCoef = $mFigureVolumeCoef;")
+        Log.d(TAG, "prepareForFigure(): mViewCenterLocation = ${mViewCenterLocation.joinToString()};")
+    }
+
+    protected fun getFigureVolumeCoefBySphereRadiusAndMaxDistance(
+        sphereRadius: Float,
+        maxDistance: Float
+    ): Float {
+        return if (sphereRadius < 1f)
+            maxDistance  / ((-10 * maxDistance + 10) * sphereRadius)
+        else
+            maxDistance / sphereRadius
     }
 
     protected fun getVerticalCameraWayLength(): Float {
@@ -170,16 +180,16 @@ open class CanvasRenderer(
     }
 
     private fun getTranslatedCameraLocation(dx: Float, dy: Float): FloatArray {
-        val signedDX = dx * -1
-        val signedDY = dy * 1
+        val preparedDX = dx * -1 * mFigureVolumeCoef * (1 / mCurScaleFactor)
+        val preparedDY = dy * 1 * mFigureVolumeCoef * (1 / mCurScaleFactor)
 
         var newX = mCameraLocation[0]
         var newY = mCameraLocation[1]
         var newZ = mCameraLocation[2]
 
-        if (abs(signedDX) >= abs(signedDY)) {
+        if (abs(preparedDX) >= abs(preparedDY)) {
             val cameraWayLength = getHorizontalCameraWayLength()
-            val cameraMadeWay = (signedDX + mCameraMadeWayHorizontal) % cameraWayLength
+            val cameraMadeWay = (preparedDX + mCameraMadeWayHorizontal) % cameraWayLength
             val cameraMadeWayNormalized =
                 if (cameraMadeWay < 0) cameraMadeWay + cameraWayLength
                 else cameraMadeWay
@@ -193,7 +203,7 @@ open class CanvasRenderer(
 
         } else {
             val cameraWayLength = getVerticalCameraWayLength()
-            val cameraMadeWayNormalized = signedDY + mCameraMadeWayVertical
+            val cameraMadeWayNormalized = preparedDY + mCameraMadeWayVertical
 
             if (abs(cameraMadeWayNormalized) >= cameraWayLength) return mCameraLocation
 
@@ -225,15 +235,20 @@ open class CanvasRenderer(
 
         if (newScaleFactor !in MIN_SCALE_FACTOR..MAX_SCALE_FACTOR) return
 
+        Log.d(TAG, "handleScale(): newScaleFactor = $newScaleFactor")
+
         mCurScaleFactor = newScaleFactor
 
         setPerspective()
     }
 
     protected fun setPerspective() {
+        val scaledFOV = CAMERA_FOV / (mCurScaleFactor)
+
         Matrix.perspectiveM(
             mProjectionMatrix, 0,
-            CAMERA_FOV, mViewportRatio,
+            scaledFOV,
+            mViewportRatio,
             mCameraNear,
             mSphereRadius * 2
         )
@@ -242,13 +257,14 @@ open class CanvasRenderer(
     /**
      * Note: an angle between X & Camera trajectory is 45 deg;
      */
-    private fun setDefaultCameraLocation() {
-        if (mIsCameraLocationInitialized) return
+    protected fun setDefaultCameraLocation() {
+        //val initCameraVerticalMadeWay = PI * mSphereRadius / 4f // todo: think about this;
 
-        val initCameraVerticalMadeWay = PI * mSphereRadius / 4f
+        mCameraLocation = floatArrayOf(
+            mViewCenterLocation[0] + mCameraRadius, mViewCenterLocation[1], mViewCenterLocation[2])
+        //mCameraLocation = getTranslatedCameraLocation(0f, initCameraVerticalMadeWay.toFloat())
 
-        mCameraLocation = floatArrayOf(mCameraRadius, 0f, mCameraCenterLocation[2])
-        mCameraLocation = getTranslatedCameraLocation(0f, initCameraVerticalMadeWay.toFloat())
+        Log.d(TAG, "setDefaultCameraLocation(): mCameraLocation = (${mCameraLocation.joinToString()});")
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
@@ -281,9 +297,9 @@ open class CanvasRenderer(
 
             Matrix.setLookAtM(
                 mViewMatrix, 0,
-                mCameraLocation[0] * (1 / mCurScaleFactor),
-                mCameraLocation[1] * (1 / mCurScaleFactor),
-                mCameraLocation[2] * (1 / mCurScaleFactor),
+                mCameraLocation[0],
+                mCameraLocation[1],
+                mCameraLocation[2],
                 mViewCenterLocation[0], mViewCenterLocation[1], mViewCenterLocation[2],
                 0f, 0f, 1.0f
             )

@@ -60,19 +60,29 @@ class EditorCanvasRenderer(
         val faceSketch = getLastFaceSketch() ?: return null
 
         mFigureMutex.withLock {
-            if (mFigure == null) {
-                mFigure = generateFigure(mLastFaceSketchVertexArray, mLastFaceSketchDrawingOrder)
+            val figure = if (mFigure == null) {
+                generateFigure(mLastFaceSketchVertexArray, mLastFaceSketchDrawingOrder)
 
             } else {
-                val finalVertexArray = mFigure!!.vertexArray.plus(mLastFaceSketchVertexArray)
-                val finalDrawingOrderArray = mFigure!!.vertexDrawingOrder
-                    ?.plus(mLastFaceSketchDrawingOrder) ?: mLastFaceSketchDrawingOrder
+                val editedFigure = mFigure
 
-                mFigure!!.setVertices(finalVertexArray, finalDrawingOrderArray)
+                val finalVertexArray = editedFigure!!.vertexArray.plus(mLastFaceSketchVertexArray)
+                val vertexShift = editedFigure.vertexArray.size / DrawingContext.COORDS_PER_VERTEX
+
+                val finalDrawingOrderArray =
+                    if (editedFigure.vertexDrawingOrder != null) {
+                        editedFigure.vertexDrawingOrder!!.plus(mLastFaceSketchDrawingOrder
+                            .map { (it + vertexShift).toShort() })
+                    } else {
+                        mLastFaceSketchDrawingOrder
+                    }
+
+                editedFigure.setVertices(finalVertexArray, finalDrawingOrderArray)
+
+                editedFigure
             }
 
-            prepareForFigure(mFigure!!)
-            updateCameraContext()
+            setFigureData(figure)
         }
 
         resetFaceSketchData()
@@ -81,15 +91,33 @@ class EditorCanvasRenderer(
     }
 
     private fun updateCameraContext() {
-        mCameraCenterLocation = floatArrayOf(
-            mViewCenterLocation[0], mViewCenterLocation[1], mCameraLocation[2])
-        mCameraRadius = getDistanceBetweenTwoDots(mCameraCenterLocation, mCameraLocation)
+//        mCameraCenterLocation = mViewCenterLocation
+//
+//        val cameraRadius = getDistanceBetweenTwoDots(mCameraCenterLocation, mCameraLocation)
+//
+//        mCameraRadius = if (cameraRadius >= DEFAULT_CAMERA_NEAR) cameraRadius else DEFAULT_CAMERA_NEAR
 
-        val horizontalWayAngle = getCameraHorizontalWayAngleInRad()
-        val verticalWayAngle = getCameraVerticalWayAngleInRad()
+        //val horizontalWayAngle = getCameraHorizontalWayAngleInRad()
+        //val verticalWayAngle = getCameraVerticalWayAngleInRad()
 
-        mCameraMadeWayHorizontal = getHorizontalCameraWayLength() * horizontalWayAngle
-        mCameraMadeWayVertical = getVerticalCameraWayLength() * verticalWayAngle
+        //mCameraMadeWayHorizontal = getHorizontalCameraWayLength() * horizontalWayAngle
+        //mCameraMadeWayVertical = getVerticalCameraWayLength() * verticalWayAngle
+
+        // todo: camera location should be moved next to the figure..
+
+//        mCurScaleFactor = MAX_SCALE_FACTOR
+//        mCameraLocation = floatArrayOf(
+//            mCameraLocation[0] //* MAX_SCALE_FACTOR,
+//            mCameraLocation[1] //* MAX_SCALE_FACTOR,
+//            mCameraLocation[2] //* MAX_SCALE_FACTOR
+//        )
+
+        setDefaultCameraLocation()
+        setPerspective()
+
+        Log.d(TAG, "updateCameraContext(): mCameraMadeWayHorizontal = $mCameraMadeWayHorizontal;" +
+                " mCameraMadeWayVertical = $mCameraMadeWayVertical;"
+        )
     }
 
     private fun getCameraVerticalWayAngleInRad(): Float {
@@ -128,7 +156,12 @@ class EditorCanvasRenderer(
 
         val vectorMultiplication = v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2]
 
-        return acos(vectorMultiplication / (v1Module * v2Module))
+        val angleInRad = acos(vectorMultiplication / (v1Module * v2Module))
+
+        Log.d(TAG, "getAngleBetweenTwoVectorsOnPlaneInRad(): v1Module = $v1Module; v2Module = $v2Module;")
+        Log.d(TAG, "getAngleBetweenTwoVectorsOnPlaneInRad(): vectorMultiplication = $vectorMultiplication; angleInRad = $angleInRad;")
+
+        return angleInRad
     }
 
     private fun getDistanceBetweenTwoDots(d1: FloatArray, d2: FloatArray): Float {
@@ -327,7 +360,8 @@ class EditorCanvasRenderer(
         if (!mFaceSketchDrawing.isInitialized) mFaceSketchDrawing.init()
 
         mLastFaceSketchVertexArray = getFaceSketchVerticesByDots(mFaceSketchDotBuffer)
-        mLastFaceSketchDrawingOrder = getFaceSketchDrawingOrderByVertices(mLastFaceSketchVertexArray)
+        mLastFaceSketchDrawingOrder = getFaceSketchDrawingOrderByVertices(
+            mLastFaceSketchVertexArray)
 
         mFaceSketchDrawing.setVertices(mLastFaceSketchVertexArray, mLastFaceSketchDrawingOrder)
         mFaceSketchDrawing.draw(mVPMatrix)
@@ -367,9 +401,13 @@ class EditorCanvasRenderer(
         return faceSketchVertices
     }
 
-    private fun getFaceSketchDrawingOrderByVertices(faceSketchVertices: FloatArray): ShortArray {
-        val vertexIdArray = IntRange(0, faceSketchVertices.size / DrawingContext.COORDS_PER_VERTEX - 1)
-            .map { it.toShort() }.toShortArray()
+    private fun getFaceSketchDrawingOrderByVertices(
+        faceSketchVertices: FloatArray
+    ): ShortArray {
+        val vertexIdArray = IntRange(
+            0,
+            faceSketchVertices.size / DrawingContext.COORDS_PER_VERTEX - 1
+        ).map { it.toShort() }.toShortArray()
 
         val vertexCount = vertexIdArray.size
 
