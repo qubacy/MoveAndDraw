@@ -60,7 +60,7 @@ abstract class DrawingViewModelTest<
     fun loadDrawingTest() = runTest {
         val drawingToLoadUri = UriMockUtil.getMockedUri()
         val loadedDrawing = Drawing(
-            drawingToLoadUri, floatArrayOf(), floatArrayOf(), floatArrayOf(), arrayOf())
+            drawingToLoadUri, arrayOf(), floatArrayOf(), floatArrayOf(), arrayOf())
 
         initViewModel(useCaseMockInitData = DrawingMockUseCaseInitData(loadedDrawing))
 

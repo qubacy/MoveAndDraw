@@ -1,6 +1,5 @@
 package com.qubacy.moveanddraw.domain._common.usecase.drawing
 
-import android.net.Uri
 import app.cash.turbine.test
 import com.qubacy.moveanddraw._common.util.mock.AnyMockUtil
 import com.qubacy.moveanddraw._common.util.mock.UriMockUtil
