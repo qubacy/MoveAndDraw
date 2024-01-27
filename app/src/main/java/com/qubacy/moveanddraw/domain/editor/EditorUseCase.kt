@@ -6,6 +6,7 @@ import com.qubacy.moveanddraw.data.drawing.repository.DrawingDataRepository
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.toDataDrawing
+import com.qubacy.moveanddraw.domain._common.model.drawing.util.DrawingUtil
 import com.qubacy.moveanddraw.domain._common.usecase.drawing.DrawingUseCase
 import com.qubacy.moveanddraw.domain.editor.result.AddNewFaceToDrawingResult
 import com.qubacy.moveanddraw.domain.editor.result.RemoveLastFaceFromDrawingResult
@@ -46,15 +47,17 @@ class EditorUseCase @Inject constructor(
 
     open fun removeLastFaceFromDrawing(drawing: Drawing) {
         mCoroutineScope.launch(mCoroutineDispatcher) {
-            val faces = drawing.faceArray.filterIndexed {
-                index, face -> index != drawing.faceArray.size - 1
-            }
+            val faces = drawing.faceArray.sliceArray(0 until drawing.faceArray.size - 1)
+//            val usedVertices =
+
+            val verticesFacesPair = DrawingUtil.filterVertexArrayWithFaces(drawing.vertexArray, faces)
+
             val editedDrawing = Drawing(
                 drawing.uri,
-                drawing.vertexArray,
+                verticesFacesPair.first,
                 drawing.normalArray,
                 drawing.textureArray,
-                faces.toTypedArray()
+                verticesFacesPair.second
             )
 
             mResultFlow.emit(RemoveLastFaceFromDrawingResult(editedDrawing))

@@ -131,19 +131,19 @@ open class CanvasRenderer(
             setColor(mDefaultModelColor)
         }
 
-        val usedVertexArray = if (mFigure!!.vertexDrawingOrder != null) {
-            val vertexIndices = mFigure!!.vertexDrawingOrder!!.toSet().toShortArray()
+//        val usedVertexArray = if (mFigure!!.vertexDrawingOrder != null) {
+//            val vertexIndices = mFigure!!.vertexDrawingOrder!!.toSet().toShortArray()
+//
+//            GL2Util.filterVertexArrayWithIndices(mFigure!!.vertexArray, vertexIndices)
+//
+//        } else {
+//            mFigure!!.vertexArray
+//        }
 
-            GL2Util.filterVertexArrayWithIndices(mFigure!!.vertexArray, vertexIndices)
-
-        } else {
-            mFigure!!.vertexArray
-        }
-
-        mViewCenterLocation = GL2Util.getVertexCenterPoint(usedVertexArray)
+        mViewCenterLocation = GL2Util.getVertexCenterPoint(mFigure!!.vertexArray)//usedVertexArray)
 
         val sphereRadiusFromDistance =
-            GL2Util.getMaxDistanceFromDot(usedVertexArray, mViewCenterLocation)
+            GL2Util.getMaxDistanceFromDot(mFigure!!.vertexArray, mViewCenterLocation)//usedVertexArray, mViewCenterLocation)
         val minSphereRadius = DEFAULT_CAMERA_NEAR + CAMERA_NEAR_DRAWING_GAP
         val sphereRadius =
             if (sphereRadiusFromDistance > minSphereRadius) sphereRadiusFromDistance

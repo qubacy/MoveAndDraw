@@ -31,23 +31,6 @@ object GL2Util {
         return trianglesVertices
     }
 
-    fun filterVertexArrayWithIndices(
-        vertices: FloatArray,
-        indices: ShortArray
-    ): FloatArray {
-        val resultVertexList = mutableListOf<Float>()
-
-        for (i in indices) {
-            val vertexIndex = i * DrawingContext.COORDS_PER_VERTEX
-
-            resultVertexList.add(vertices[vertexIndex])
-            resultVertexList.add(vertices[vertexIndex + 1])
-            resultVertexList.add(vertices[vertexIndex + 2])
-        }
-
-        return resultVertexList.toFloatArray()
-    }
-
     fun getMaxDistanceFromDot(vertices: FloatArray, centerDot: FloatArray): Float {
         var maxDistance = 0f
 

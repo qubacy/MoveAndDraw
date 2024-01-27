@@ -78,7 +78,6 @@ class EditorCanvasRenderer(
                     }
 
                 editedFigure.setVertices(finalVertexArray, finalDrawingOrderArray)
-
                 editedFigure
             }
 
@@ -90,87 +89,35 @@ class EditorCanvasRenderer(
         return faceSketch
     }
 
-    private fun updateCameraContext() {
-//        mCameraCenterLocation = mViewCenterLocation
+//    private fun updateCameraContext() {
+////        mCameraCenterLocation = mViewCenterLocation
+////
+////        val cameraRadius = getDistanceBetweenTwoDots(mCameraCenterLocation, mCameraLocation)
+////
+////        mCameraRadius = if (cameraRadius >= DEFAULT_CAMERA_NEAR) cameraRadius else DEFAULT_CAMERA_NEAR
 //
-//        val cameraRadius = getDistanceBetweenTwoDots(mCameraCenterLocation, mCameraLocation)
+//        //val horizontalWayAngle = getCameraHorizontalWayAngleInRad()
+//        //val verticalWayAngle = getCameraVerticalWayAngleInRad()
 //
-//        mCameraRadius = if (cameraRadius >= DEFAULT_CAMERA_NEAR) cameraRadius else DEFAULT_CAMERA_NEAR
-
-        //val horizontalWayAngle = getCameraHorizontalWayAngleInRad()
-        //val verticalWayAngle = getCameraVerticalWayAngleInRad()
-
-        //mCameraMadeWayHorizontal = getHorizontalCameraWayLength() * horizontalWayAngle
-        //mCameraMadeWayVertical = getVerticalCameraWayLength() * verticalWayAngle
-
-        // todo: camera location should be moved next to the figure..
-
-//        mCurScaleFactor = MAX_SCALE_FACTOR
-//        mCameraLocation = floatArrayOf(
-//            mCameraLocation[0] //* MAX_SCALE_FACTOR,
-//            mCameraLocation[1] //* MAX_SCALE_FACTOR,
-//            mCameraLocation[2] //* MAX_SCALE_FACTOR
+//        //mCameraMadeWayHorizontal = getHorizontalCameraWayLength() * horizontalWayAngle
+//        //mCameraMadeWayVertical = getVerticalCameraWayLength() * verticalWayAngle
+//
+//        // todo: camera location should be moved next to the figure..
+//
+////        mCurScaleFactor = MAX_SCALE_FACTOR
+////        mCameraLocation = floatArrayOf(
+////            mCameraLocation[0] //* MAX_SCALE_FACTOR,
+////            mCameraLocation[1] //* MAX_SCALE_FACTOR,
+////            mCameraLocation[2] //* MAX_SCALE_FACTOR
+////        )
+//
+//        setDefaultCameraLocation()
+//        setPerspective()
+//
+//        Log.d(TAG, "updateCameraContext(): mCameraMadeWayHorizontal = $mCameraMadeWayHorizontal;" +
+//                " mCameraMadeWayVertical = $mCameraMadeWayVertical;"
 //        )
-
-        setDefaultCameraLocation()
-        setPerspective()
-
-        Log.d(TAG, "updateCameraContext(): mCameraMadeWayHorizontal = $mCameraMadeWayHorizontal;" +
-                " mCameraMadeWayVertical = $mCameraMadeWayVertical;"
-        )
-    }
-
-    private fun getCameraVerticalWayAngleInRad(): Float {
-        val verticalWayVector = floatArrayOf(
-            mCameraLocation[0] - mCameraCenterLocation[0],
-            mCameraLocation[1] - mCameraCenterLocation[1],
-            mCameraLocation[2]
-        )
-        val verticalIdleVector = floatArrayOf(
-            mCameraLocation[0] - mCameraCenterLocation[0],
-            mCameraLocation[1] - mCameraCenterLocation[1],
-            mViewCenterLocation[2]
-        )
-
-        return getAngleBetweenTwoVectorsOnPlaneInRad(verticalWayVector, verticalIdleVector)
-    }
-
-    private fun getCameraHorizontalWayAngleInRad(): Float {
-        val horizontalWayVector = floatArrayOf(
-            mCameraLocation[0] - mCameraCenterLocation[0],
-            mCameraLocation[1] - mCameraCenterLocation[1],
-            mCameraLocation[2]
-        )
-        val horizontalIdleVector = floatArrayOf(
-            mCameraRadius - mCameraCenterLocation[0],
-            0 - mCameraCenterLocation[1],
-            mCameraLocation[2]
-        )
-
-        return getAngleBetweenTwoVectorsOnPlaneInRad(horizontalWayVector, horizontalIdleVector)
-    }
-
-    private fun getAngleBetweenTwoVectorsOnPlaneInRad(v1: FloatArray, v2: FloatArray): Float {
-        val v1Module = sqrt(v1[0] * v1[0] + v1[1] * v1[1] + v1[2] * v1[2])
-        val v2Module = sqrt(v2[0] * v2[0] + v2[1] * v2[1] + v2[2] * v2[2])
-
-        val vectorMultiplication = v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2]
-
-        val angleInRad = acos(vectorMultiplication / (v1Module * v2Module))
-
-        Log.d(TAG, "getAngleBetweenTwoVectorsOnPlaneInRad(): v1Module = $v1Module; v2Module = $v2Module;")
-        Log.d(TAG, "getAngleBetweenTwoVectorsOnPlaneInRad(): vectorMultiplication = $vectorMultiplication; angleInRad = $angleInRad;")
-
-        return angleInRad
-    }
-
-    private fun getDistanceBetweenTwoDots(d1: FloatArray, d2: FloatArray): Float {
-        return sqrt(
-            (d2[0] - d1[0]) * (d2[0] - d1[0]) +
-               (d2[1] - d1[1]) * (d2[1] - d1[1]) +
-               (d2[2] - d1[2]) * (d2[2] - d1[2])
-        )
-    }
+//    }
 
     private fun resetFaceSketchData() {
         mFaceSketchDotBuffer.clear()
@@ -222,13 +169,6 @@ class EditorCanvasRenderer(
             EditorRendererMode.CREATING_FACE -> true
         }
     }
-
-//    fun setHelpingPlaneDistance(distance: Float) {
-//        if (distance !in MIN_HELPING_PLANE_DISTANCE..(mSphereRadius * 2))
-//            return
-//
-//        mHelpingPlaneDistance = distance
-//    }
 
     override fun handleScale(scaleFactor: Float) {
         when (mEditorRendererMode) {
