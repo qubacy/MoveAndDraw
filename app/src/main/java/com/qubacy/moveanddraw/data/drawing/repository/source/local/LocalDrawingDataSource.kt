@@ -13,7 +13,7 @@ import java.io.OutputStream
 import java.lang.Exception
 import javax.inject.Inject
 
-class LocalDrawingDataSource @Inject constructor(
+open class LocalDrawingDataSource @Inject constructor(
     val context: Context
 ) : DataSource {
     companion object {
@@ -24,7 +24,7 @@ class LocalDrawingDataSource @Inject constructor(
     private val mDrawingParser = OBJDrawingParser()
     private val mDrawingSerializer = OBJDrawingSerializer()
 
-    fun load(drawingUri: Uri): DataDrawing {
+    open fun load(drawingUri: Uri): DataDrawing {
         var stream: InputStream? = null
 
         try {
@@ -50,7 +50,7 @@ class LocalDrawingDataSource @Inject constructor(
         return FileOutputStream(drawingUri.path, false)
     }
 
-    fun saveChanges(drawing: DataDrawing, drawingUri: Uri): String {
+    open fun saveChanges(drawing: DataDrawing, drawingUri: Uri): String {
         var stream: OutputStream? = null
 
         try {
@@ -78,8 +78,8 @@ class LocalDrawingDataSource @Inject constructor(
         }
     }
 
-    fun saveNewFile(drawing: DataDrawing, filename: String): String {
-        var stream: OutputStream? = null
+    open fun saveNewFile(drawing: DataDrawing, filename: String): String {
+        var fileStream: FileOutputStream? = null
 
         try {
             val filesDir = context.filesDir
@@ -87,7 +87,8 @@ class LocalDrawingDataSource @Inject constructor(
 
             drawingFile.createNewFile()
 
-            val fileStream = FileOutputStream(drawingFile)
+            fileStream = FileOutputStream(drawingFile)
+
             val serializedDrawing = mDrawingSerializer.serialize(drawing).toByteArray()
 
             fileStream.write(serializedDrawing)
@@ -100,7 +101,7 @@ class LocalDrawingDataSource @Inject constructor(
             throw e
 
         } finally {
-            stream?.close()
+            fileStream?.close()
         }
     }
 }

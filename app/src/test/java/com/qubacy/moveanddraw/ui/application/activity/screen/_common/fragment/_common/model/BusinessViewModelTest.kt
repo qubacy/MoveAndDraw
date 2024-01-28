@@ -1,10 +1,10 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.model
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.qubacy.moveanddraw._common.data.InitData
+import com.qubacy.moveanddraw._common._test.data.InitData
 import com.qubacy.moveanddraw._common.error.Error
-import com.qubacy.moveanddraw._common.util.livedata.getOrAwaitValue
-import com.qubacy.moveanddraw._common.util.rule.MainCoroutineRule
+import com.qubacy.moveanddraw._common._test.util.livedata.getOrAwaitValue
+import com.qubacy.moveanddraw._common._test.util.rule.MainCoroutineRule
 import com.qubacy.moveanddraw.domain._common.usecase._common.UseCase
 import com.qubacy.moveanddraw.domain._common.usecase._common.result._common.Result
 import com.qubacy.moveanddraw.domain._common.usecase._common.result.error.ErrorResult

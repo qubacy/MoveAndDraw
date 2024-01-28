@@ -14,8 +14,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
-import kotlin.math.acos
-import kotlin.math.sqrt
 
 class EditorCanvasRenderer(
 
@@ -88,36 +86,6 @@ class EditorCanvasRenderer(
 
         return faceSketch
     }
-
-//    private fun updateCameraContext() {
-////        mCameraCenterLocation = mViewCenterLocation
-////
-////        val cameraRadius = getDistanceBetweenTwoDots(mCameraCenterLocation, mCameraLocation)
-////
-////        mCameraRadius = if (cameraRadius >= DEFAULT_CAMERA_NEAR) cameraRadius else DEFAULT_CAMERA_NEAR
-//
-//        //val horizontalWayAngle = getCameraHorizontalWayAngleInRad()
-//        //val verticalWayAngle = getCameraVerticalWayAngleInRad()
-//
-//        //mCameraMadeWayHorizontal = getHorizontalCameraWayLength() * horizontalWayAngle
-//        //mCameraMadeWayVertical = getVerticalCameraWayLength() * verticalWayAngle
-//
-//        // todo: camera location should be moved next to the figure..
-//
-////        mCurScaleFactor = MAX_SCALE_FACTOR
-////        mCameraLocation = floatArrayOf(
-////            mCameraLocation[0] //* MAX_SCALE_FACTOR,
-////            mCameraLocation[1] //* MAX_SCALE_FACTOR,
-////            mCameraLocation[2] //* MAX_SCALE_FACTOR
-////        )
-//
-//        setDefaultCameraLocation()
-//        setPerspective()
-//
-//        Log.d(TAG, "updateCameraContext(): mCameraMadeWayHorizontal = $mCameraMadeWayHorizontal;" +
-//                " mCameraMadeWayVertical = $mCameraMadeWayVertical;"
-//        )
-//    }
 
     private fun resetFaceSketchData() {
         mFaceSketchDotBuffer.clear()

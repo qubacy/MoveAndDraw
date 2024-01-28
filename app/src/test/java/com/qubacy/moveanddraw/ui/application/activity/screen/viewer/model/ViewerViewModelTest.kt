@@ -1,6 +1,6 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model
 
-import com.qubacy.moveanddraw._common.data.InitData
+import com.qubacy.moveanddraw._common._test.data.InitData
 import com.qubacy.moveanddraw.domain.viewer.ViewerUseCase
 import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment.drawing.model.DrawingViewModelTest
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.state.ViewerUiState

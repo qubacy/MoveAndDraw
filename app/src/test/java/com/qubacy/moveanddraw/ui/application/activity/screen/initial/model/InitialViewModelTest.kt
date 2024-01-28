@@ -1,13 +1,13 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.initial.model
 
-import com.qubacy.moveanddraw._common.data.InitData
+import com.qubacy.moveanddraw._common._test.data.InitData
 import com.qubacy.moveanddraw._common.error.Error
-import com.qubacy.moveanddraw._common.util.livedata.getOrAwaitValue
-import com.qubacy.moveanddraw._common.util.mock.UriMockUtil
+import com.qubacy.moveanddraw._common._test.util.livedata.getOrAwaitValue
+import com.qubacy.moveanddraw._common._test.util.mock.UriMockUtil
 import com.qubacy.moveanddraw.domain.initial.InitialUseCase
 import com.qubacy.moveanddraw.domain.initial.result.GetExamplePreviewsResult
 import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.model.BusinessViewModelTest
-import com.qubacy.moveanddraw.ui.application.activity.screen.initial.model.data.InitialUseCaseMockInitData
+import com.qubacy.moveanddraw.ui.application.activity.screen.initial.model._test.data.InitialUseCaseMockInitData
 import com.qubacy.moveanddraw.ui.application.activity.screen.initial.model.state.InitialUiState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch

@@ -5,11 +5,8 @@ import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import android.util.Log
 import androidx.annotation.FloatRange
-import com.qubacy.moveanddraw._common.util.struct.takequeue.mutable.MutableTakeQueue
-import com.qubacy.moveanddraw.domain._common.model.drawing._common.DrawingContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.model.GLDrawing
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.command._common.RenderCommand
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.util.GL2Util
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -76,12 +73,6 @@ open class CanvasRenderer(
     protected var mDeviceWidth: Int = 0
     protected var mDeviceHeight: Int = 0
 
-    private var mRenderCommandQueue = MutableTakeQueue<RenderCommand>()
-
-     protected suspend fun addRenderCommand(renderCommand: RenderCommand) {
-        mRenderCommandQueue.put(renderCommand)
-    }
-
     fun setModelColor(
         @FloatRange(0.0, 1.0) r: Float,
         @FloatRange(0.0, 1.0) g: Float,
@@ -131,19 +122,10 @@ open class CanvasRenderer(
             setColor(mDefaultModelColor)
         }
 
-//        val usedVertexArray = if (mFigure!!.vertexDrawingOrder != null) {
-//            val vertexIndices = mFigure!!.vertexDrawingOrder!!.toSet().toShortArray()
-//
-//            GL2Util.filterVertexArrayWithIndices(mFigure!!.vertexArray, vertexIndices)
-//
-//        } else {
-//            mFigure!!.vertexArray
-//        }
-
-        mViewCenterLocation = GL2Util.getVertexCenterPoint(mFigure!!.vertexArray)//usedVertexArray)
+        mViewCenterLocation = GL2Util.getVertexCenterPoint(mFigure!!.vertexArray)
 
         val sphereRadiusFromDistance =
-            GL2Util.getMaxDistanceFromDot(mFigure!!.vertexArray, mViewCenterLocation)//usedVertexArray, mViewCenterLocation)
+            GL2Util.getMaxDistanceFromDot(mFigure!!.vertexArray, mViewCenterLocation)
         val minSphereRadius = DEFAULT_CAMERA_NEAR + CAMERA_NEAR_DRAWING_GAP
         val sphereRadius =
             if (sphereRadiusFromDistance > minSphereRadius) sphereRadiusFromDistance
@@ -287,8 +269,6 @@ open class CanvasRenderer(
     }
 
     override fun onDrawFrame(gl: GL10?): Unit = runBlocking {
-        executePendingRenderCommands()
-
         mFigureMutex.withLock {
             GLES20.glEnable(GLES20.GL_DEPTH_TEST)
             GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA)
@@ -317,23 +297,5 @@ open class CanvasRenderer(
         if (mFigure?.isInitialized == false) mFigure!!.init()
 
         mFigure?.draw(mVPMatrix)
-    }
-
-    private suspend fun executePendingRenderCommands() {
-        while (true) {
-            val command = mRenderCommandQueue.take() ?: break
-
-            executeRenderCommand(command)
-        }
-    }
-
-    private fun executeRenderCommand(renderCommand: RenderCommand) {
-        when (renderCommand::class) {
-            else -> processRenderCommand(renderCommand)
-        }
-    }
-
-    protected open fun processRenderCommand(command: RenderCommand) {
-
     }
 }

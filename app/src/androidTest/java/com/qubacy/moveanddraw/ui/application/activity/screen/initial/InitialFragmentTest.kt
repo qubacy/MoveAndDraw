@@ -18,11 +18,11 @@ import com.google.android.material.textview.MaterialTextView
 import org.junit.Before
 import org.junit.Test
 import com.qubacy.moveanddraw.R
-import com.qubacy.moveanddraw._common.util.launcher.launchFragmentInHiltContainer
-import com.qubacy.moveanddraw.ui._common.util.view.action.drag.DragViewAction
-import com.qubacy.moveanddraw.ui._common.util.view.action.drag.DragViewActionUtil
-import com.qubacy.moveanddraw.ui._common.util.view.action.swipe.SwipeViewActionUtil
-import com.qubacy.moveanddraw.ui._common.util.view.action.wait.WaitViewAction
+import com.qubacy.moveanddraw._common._test.util.launcher.launchFragmentInHiltContainer
+import com.qubacy.moveanddraw.ui._common._test.view.util.action.drag.DragViewAction
+import com.qubacy.moveanddraw.ui._common._test.view.util.action.drag.DragViewActionUtil
+import com.qubacy.moveanddraw.ui._common._test.view.util.action.swipe.SwipeViewActionUtil
+import com.qubacy.moveanddraw.ui._common._test.view.util.action.wait.WaitViewAction
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.component.button.draggable.view.DraggableButton
 import com.qubacy.moveanddraw.ui.application.activity.screen.initial.component.chooser.view.OptionChooserComponent
 import com.qubacy.moveanddraw.ui.application.activity.screen.initial.model.InitialViewModelModule

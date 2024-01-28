@@ -12,10 +12,10 @@ import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.qubacy.moveanddraw.R
-import com.qubacy.moveanddraw._common.util.launcher.launchFragmentInHiltContainer
-import com.qubacy.moveanddraw.domain._common.model.drawing.util.DrawingGeneratorUtil
-import com.qubacy.moveanddraw.ui._common.util.view.action.wait.WaitViewAction
-import com.qubacy.moveanddraw.ui._common.util.view.matcher.button.navigation.NavigationButtonViewMatcher
+import com.qubacy.moveanddraw._common._test.util.launcher.launchFragmentInHiltContainer
+import com.qubacy.moveanddraw.domain._common.model.drawing._test.util.DrawingGeneratorUtil
+import com.qubacy.moveanddraw.ui._common._test.view.util.action.wait.WaitViewAction
+import com.qubacy.moveanddraw.ui._common._test.view.util.matcher.button.navigation.NavigationButtonViewMatcher
 import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.StatefulFragmentTest
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.ViewerViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.ViewerViewModelFactoryModule

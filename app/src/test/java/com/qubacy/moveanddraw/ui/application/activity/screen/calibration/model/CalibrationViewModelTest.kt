@@ -1,7 +1,7 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model
 
-import com.qubacy.moveanddraw._common.data.InitData
-import com.qubacy.moveanddraw._common.util.livedata.getOrAwaitValue
+import com.qubacy.moveanddraw._common._test.data.InitData
+import com.qubacy.moveanddraw._common._test.util.livedata.getOrAwaitValue
 import com.qubacy.moveanddraw.domain.calibration.CalibrationUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert

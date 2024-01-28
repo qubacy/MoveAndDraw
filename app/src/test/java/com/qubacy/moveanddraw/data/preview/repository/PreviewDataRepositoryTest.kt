@@ -1,7 +1,7 @@
 package com.qubacy.moveanddraw.data.preview.repository
 
 import android.net.Uri
-import com.qubacy.moveanddraw._common.util.mock.UriMockUtil
+import com.qubacy.moveanddraw._common._test.util.mock.UriMockUtil
 import com.qubacy.moveanddraw.data.preview.repository.source.local.LocalPreviewDataSource
 import org.junit.Assert
 import org.junit.Before

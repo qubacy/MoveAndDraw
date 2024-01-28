@@ -109,7 +109,7 @@ class EditorCanvasView(
         return true
     }
 
-    // todo: rethink the following:
+    // todo: rethink the following (actually isn't working at the time):
     override fun onRestoreInstanceState(state: Parcelable?) = runBlocking {
         val bundle = state as Bundle
         val superState = bundle.getParcelable<AbsSavedState>(SUPER_STATE_KEY)

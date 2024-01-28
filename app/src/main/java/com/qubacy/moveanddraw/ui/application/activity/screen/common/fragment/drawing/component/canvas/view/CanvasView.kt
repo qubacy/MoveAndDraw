@@ -70,7 +70,7 @@ open class CanvasView(
         setCanvasBackgroundColor(mCanvasBackgroundColor)
         setCanvasModelColor(mCanvasModelColor)
 
-        renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
+        renderMode = RENDERMODE_WHEN_DIRTY
     }
 
     @SuppressLint("Recycle", "ResourceType")

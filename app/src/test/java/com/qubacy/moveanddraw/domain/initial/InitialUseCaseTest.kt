@@ -2,8 +2,8 @@ package com.qubacy.moveanddraw.domain.initial
 
 import android.net.Uri
 import app.cash.turbine.test
-import com.qubacy.moveanddraw._common.util.mock.UriMockUtil
-import com.qubacy.moveanddraw._common.util.rule.MainCoroutineRule
+import com.qubacy.moveanddraw._common._test.util.mock.UriMockUtil
+import com.qubacy.moveanddraw._common._test.util.rule.MainCoroutineRule
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
 import com.qubacy.moveanddraw.data.preview.repository.PreviewDataRepository
 import com.qubacy.moveanddraw.data.preview.repository.source.local.LocalPreviewDataSource

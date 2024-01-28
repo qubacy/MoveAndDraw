@@ -1,16 +1,16 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment.drawing.model
 
 import app.cash.turbine.test
-import com.qubacy.moveanddraw._common.data.InitData
+import com.qubacy.moveanddraw._common._test.data.InitData
 import com.qubacy.moveanddraw._common.error.Error
-import com.qubacy.moveanddraw._common.util.mock.AnyMockUtil
-import com.qubacy.moveanddraw._common.util.mock.UriMockUtil
-import com.qubacy.moveanddraw._common.util.rule.MainCoroutineRule
+import com.qubacy.moveanddraw._common._test.util.mock.AnyMockUtil
+import com.qubacy.moveanddraw._common._test.util.mock.UriMockUtil
+import com.qubacy.moveanddraw._common._test.util.rule.MainCoroutineRule
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.domain._common.usecase.drawing.DrawingUseCase
 import com.qubacy.moveanddraw.domain._common.usecase.drawing.result.LoadDrawingResult
 import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.model.BusinessViewModelTest
-import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment.drawing.model.data.DrawingMockUseCaseInitData
+import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment.drawing.model._test.data.DrawingMockUseCaseInitData
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.DrawingViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.DrawingUiState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -39,14 +39,14 @@ abstract class DrawingViewModelTest<
     ) {
         super.initViewModel(error, useCaseMockInitData)
 
-        val drawingUseCaseMockInitData = useCaseMockInitData as DrawingMockUseCaseInitData
+        useCaseMockInitData as DrawingMockUseCaseInitData
 
         Mockito.`when`(mUseCaseMock.loadDrawing(AnyMockUtil.anyObject()))
             .thenAnswer {
                 mainCoroutineRule.launch {
                     System.out.println("emit(): thread.id = ${Thread.currentThread().id}")
 
-                    mResultFlow.emit(LoadDrawingResult(drawingUseCaseMockInitData.loadedDrawing))
+                    mResultFlow.emit(LoadDrawingResult(useCaseMockInitData.loadedDrawing))
                 }
             }
     }

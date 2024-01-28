@@ -1,14 +1,14 @@
 package com.qubacy.moveanddraw.domain._common.usecase.drawing
 
 import app.cash.turbine.test
-import com.qubacy.moveanddraw._common.util.mock.AnyMockUtil
-import com.qubacy.moveanddraw._common.util.mock.UriMockUtil
-import com.qubacy.moveanddraw._common.util.rule.MainCoroutineRule
+import com.qubacy.moveanddraw._common._test.util.mock.AnyMockUtil
+import com.qubacy.moveanddraw._common._test.util.mock.UriMockUtil
+import com.qubacy.moveanddraw._common._test.util.rule.MainCoroutineRule
 import com.qubacy.moveanddraw.data.drawing.model.DataDrawing
 import com.qubacy.moveanddraw.data.drawing.model.toDrawing
 import com.qubacy.moveanddraw.data.drawing.repository.DrawingDataRepository
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
-import com.qubacy.moveanddraw._common.data.InitData
+import com.qubacy.moveanddraw._common._test.data.InitData
 import com.qubacy.moveanddraw.domain._common.usecase.drawing.result.LoadDrawingResult
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -27,7 +27,7 @@ abstract class DrawingUseCaseTest<UseCaseType : DrawingUseCase> {
     @get:Rule
     val mainCoroutineRule = MainCoroutineRule(Dispatchers.IO)
 
-    protected lateinit var mDrawingUseCase: DrawingUseCase
+    protected open lateinit var mDrawingUseCase: UseCaseType
 
     protected abstract fun generateDrawingUseCase(
         errorDataRepositoryMock: ErrorDataRepository,

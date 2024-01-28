@@ -16,7 +16,7 @@ data class Drawing(
 
         other as Drawing
 
-        if (uri != other) return false
+        if (uri != other.uri) return false
         if (!vertexArray.contentEquals(other.vertexArray)) return false
         if (!normalArray.contentEquals(other.normalArray)) return false
         if (!textureArray.contentEquals(other.textureArray)) return false

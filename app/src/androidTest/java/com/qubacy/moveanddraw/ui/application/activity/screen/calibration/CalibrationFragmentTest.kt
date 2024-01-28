@@ -7,8 +7,8 @@ import androidx.test.espresso.assertion.ViewAssertions
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.qubacy.moveanddraw.R
-import com.qubacy.moveanddraw._common.util.launcher.launchFragmentInHiltContainer
-import com.qubacy.moveanddraw.ui._common.util.view.action.click.SimpleClickViewAction
+import com.qubacy.moveanddraw._common._test.util.launcher.launchFragmentInHiltContainer
+import com.qubacy.moveanddraw.ui._common._test.view.util.action.click.SimpleClickViewAction
 import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.StatefulFragmentTest
 import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.CalibrationViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.CalibrationViewModelFactoryModule

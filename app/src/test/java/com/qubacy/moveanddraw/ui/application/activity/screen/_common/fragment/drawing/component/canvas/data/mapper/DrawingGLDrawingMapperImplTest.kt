@@ -1,6 +1,6 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment.drawing.component.canvas.data.mapper
 
-import com.qubacy.moveanddraw._common.util.mock.UriMockUtil
+import com.qubacy.moveanddraw._common._test.util.mock.UriMockUtil
 import com.qubacy.moveanddraw.domain._common.model.drawing._test.util.DrawingGeneratorUtil
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.mapper.DrawingGLDrawingMapperImpl
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.model.GLDrawing

@@ -48,8 +48,6 @@ class EditorUseCase @Inject constructor(
     open fun removeLastFaceFromDrawing(drawing: Drawing) {
         mCoroutineScope.launch(mCoroutineDispatcher) {
             val faces = drawing.faceArray.sliceArray(0 until drawing.faceArray.size - 1)
-//            val usedVertices =
-
             val verticesFacesPair = DrawingUtil.filterVertexArrayWithFaces(drawing.vertexArray, faces)
 
             val editedDrawing = Drawing(
