@@ -12,11 +12,13 @@ import com.qubacy.moveanddraw.domain._common.usecase._common.result._common.Resu
 import com.qubacy.moveanddraw.domain.editor.EditorUseCase
 import com.qubacy.moveanddraw.domain.editor.result.AddNewFaceToDrawingResult
 import com.qubacy.moveanddraw.domain.editor.result.RemoveLastFaceFromDrawingResult
+import com.qubacy.moveanddraw.domain.editor.result.SaveDrawingResult
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.DrawingViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.data.FaceSketch
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.EditorUiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.operation.face.added.NewFaceAddedToDrawingUiOperation
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.operation.saved.DrawingSavedUiOperation
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -68,6 +70,8 @@ open class EditorViewModel @Inject constructor(
                 processRemoveLastFaceResult(result as RemoveLastFaceFromDrawingResult)
             AddNewFaceToDrawingResult::class ->
                 processAddNewFaceToDrawingResult(result as AddNewFaceToDrawingResult)
+            SaveDrawingResult::class ->
+                processSaveDrawingResult(result as SaveDrawingResult)
             else -> null
         }
     }
@@ -81,12 +85,15 @@ open class EditorViewModel @Inject constructor(
             pendingOperations = TakeQueue(NewFaceAddedToDrawingUiOperation()))
     }
 
-    fun removeLastFace() {
-        if (mUiState.value?.drawing == null) return
+    private fun processSaveDrawingResult(result: SaveDrawingResult): EditorUiState {
+        return generateDrawingUiState(drawing = uiState.value?.drawing, isLoading = false,
+            pendingOperations = TakeQueue(DrawingSavedUiOperation(result.filePath)))
+    }
 
+    fun removeLastFace(drawing: Drawing) {
         mUiState.value = generateDrawingUiState(isLoading = true)
 
-        mEditorUseCase.removeLastFaceFromDrawing(mUiState.value!!.drawing!!)
+        mEditorUseCase.removeLastFaceFromDrawing(drawing)
     }
 
     fun saveFaceSketch(faceSketch: FaceSketch) {

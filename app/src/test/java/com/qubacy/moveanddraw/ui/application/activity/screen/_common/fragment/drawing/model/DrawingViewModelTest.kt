@@ -9,7 +9,7 @@ import com.qubacy.moveanddraw._common._test.util.rule.MainCoroutineRule
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.domain._common.usecase.drawing.DrawingUseCase
 import com.qubacy.moveanddraw.domain._common.usecase.drawing.result.LoadDrawingResult
-import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.model.BusinessViewModelTest
+import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.model._common.BusinessViewModelTest
 import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment.drawing.model._test.data.DrawingMockUseCaseInitData
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.DrawingViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.DrawingUiState
@@ -39,16 +39,16 @@ abstract class DrawingViewModelTest<
     ) {
         super.initViewModel(error, useCaseMockInitData)
 
-        useCaseMockInitData as DrawingMockUseCaseInitData
+        if (useCaseMockInitData != null) {
+            useCaseMockInitData as DrawingMockUseCaseInitData
 
-        Mockito.`when`(mUseCaseMock.loadDrawing(AnyMockUtil.anyObject()))
-            .thenAnswer {
-                mainCoroutineRule.launch {
-                    System.out.println("emit(): thread.id = ${Thread.currentThread().id}")
-
-                    mResultFlow.emit(LoadDrawingResult(useCaseMockInitData.loadedDrawing))
+            Mockito.`when`(mUseCaseMock.loadDrawing(AnyMockUtil.anyObject()))
+                .thenAnswer {
+                    mainCoroutineRule.launch {
+                        mResultFlow.emit(LoadDrawingResult(useCaseMockInitData.loadedDrawing!!))
+                    }
                 }
-            }
+        }
     }
 
     @Before

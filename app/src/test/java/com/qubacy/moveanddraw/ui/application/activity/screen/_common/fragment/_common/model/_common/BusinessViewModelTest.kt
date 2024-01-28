@@ -1,9 +1,9 @@
-package com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.model
+package com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.model._common
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import app.cash.turbine.test
 import com.qubacy.moveanddraw._common._test.data.InitData
 import com.qubacy.moveanddraw._common.error.Error
-import com.qubacy.moveanddraw._common._test.util.livedata.getOrAwaitValue
 import com.qubacy.moveanddraw._common._test.util.rule.MainCoroutineRule
 import com.qubacy.moveanddraw.domain._common.usecase._common.UseCase
 import com.qubacy.moveanddraw.domain._common.usecase._common.result._common.Result
@@ -63,17 +63,18 @@ abstract class BusinessViewModelTest<
         mViewModel = createViewModel(mUseCaseMock)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun retrieveErrorTest() = mainCoroutineRule.run {
+    fun retrieveErrorTest() = runBlocking {
         val error = Error(0, "test", false)
 
         initViewModel(error)
 
-        mViewModel.retrieveError(error.id)
+        mViewModel.uiStateFlow.test {
+            skipItems(1)
 
-        runBlocking {
-            val uiState = mViewModel.uiState.getOrAwaitValue()!!
+            mViewModel.retrieveError(error.id)
+
+            val uiState = awaitItem()!!
             val operation = uiState.pendingOperations.take()!!
 
             Assert.assertEquals(ShowErrorUiOperation::class, operation::class)

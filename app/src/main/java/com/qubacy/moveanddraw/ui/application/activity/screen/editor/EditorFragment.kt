@@ -32,6 +32,7 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.Editor
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.EditorViewModelFactoryQualifier
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.EditorUiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.operation.face.added.NewFaceAddedToDrawingUiOperation
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.operation.saved.DrawingSavedUiOperation
 import com.skydoves.colorpickerview.ColorPickerDialog
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 import dagger.hilt.android.AndroidEntryPoint
@@ -158,6 +159,8 @@ class EditorFragment(
 
         when (uiOperation::class) {
             NewFaceAddedToDrawingUiOperation::class -> onNewFaceSaved()
+            DrawingSavedUiOperation::class ->
+                onDrawingSaved(uiOperation as DrawingSavedUiOperation)
         }
     }
 
@@ -165,6 +168,12 @@ class EditorFragment(
         // todo: changing the bottom menu appearance if the operation went OK..
 
         setEditorMode(EditorMode.MAIN)
+    }
+
+    private fun onDrawingSaved(operation: DrawingSavedUiOperation) {
+        // todo: showing a message with the file path..
+
+
     }
 
     override fun setCanvasDrawing(drawing: Drawing) {
@@ -250,18 +259,6 @@ class EditorFragment(
 
         mBinding.fragmentEditorButtonMainAction.setImageDrawable(iconDrawable)
     }
-
-//    override fun checkSensorEventValidity(event: SensorEvent?): Boolean {
-//        if (!super.checkSensorEventValidity(event)) return false
-//
-//        val curTime = System.currentTimeMillis()
-//
-//        if (mLastSensorDataTime + SENSOR_DELAY > curTime) return false
-//
-//        mLastSensorDataTime = curTime
-//
-//        return true
-//    }
 
      override fun inflateTopAppBarMenu(menuInflater: MenuInflater, menu: Menu) {
         super.inflateTopAppBarMenu(menuInflater, menu)
@@ -420,6 +417,14 @@ class EditorFragment(
     }
 
     private fun onUndoFaceClicked() {
-        mModel.removeLastFace()
+        val drawing = mModel.uiState.value?.drawing
+
+        if (drawing == null) {
+            // todo: showing a message..
+
+            return
+        }
+
+        mModel.removeLastFace(drawing)
     }
 }

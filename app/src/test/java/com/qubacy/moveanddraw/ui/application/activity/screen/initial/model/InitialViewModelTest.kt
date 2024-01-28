@@ -1,16 +1,17 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.initial.model
 
+import app.cash.turbine.test
 import com.qubacy.moveanddraw._common._test.data.InitData
 import com.qubacy.moveanddraw._common.error.Error
-import com.qubacy.moveanddraw._common._test.util.livedata.getOrAwaitValue
 import com.qubacy.moveanddraw._common._test.util.mock.UriMockUtil
 import com.qubacy.moveanddraw.domain.initial.InitialUseCase
 import com.qubacy.moveanddraw.domain.initial.result.GetExamplePreviewsResult
-import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.model.BusinessViewModelTest
+import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.model._common.BusinessViewModelTest
 import com.qubacy.moveanddraw.ui.application.activity.screen.initial.model._test.data.InitialUseCaseMockInitData
 import com.qubacy.moveanddraw.ui.application.activity.screen.initial.model.state.InitialUiState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -27,12 +28,12 @@ class InitialViewModelTest :
         super.initViewModel(error, null)
 
         if (useCaseMockInitData != null) {
-            val initialUseCaseMockInitData = useCaseMockInitData as InitialUseCaseMockInitData
+            useCaseMockInitData as InitialUseCaseMockInitData
 
             Mockito.`when`(mUseCaseMock.getExamplePreviews())
                 .thenAnswer {
                     mainCoroutineRule.launch {
-                        mResultFlow.emit(GetExamplePreviewsResult(initialUseCaseMockInitData.previewUris))
+                        mResultFlow.emit(GetExamplePreviewsResult(useCaseMockInitData.previewUris))
                     }
                 }
         }
@@ -51,17 +52,20 @@ class InitialViewModelTest :
         super.setup()
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun getExampleDrawingPreviewsTest() = mainCoroutineRule.run {
+    fun getExampleDrawingPreviewsTest() = runTest {
         val exampleDrawingPreviewUris = listOf(UriMockUtil.getMockedUri())
 
         initViewModel(useCaseMockInitData = InitialUseCaseMockInitData(exampleDrawingPreviewUris))
 
-        mViewModel.getExampleDrawingPreviews()
+        mViewModel.uiStateFlow.test {
+            skipItems(1)
 
-        val uiState = mViewModel.uiState.getOrAwaitValue()!!
+            mViewModel.getExampleDrawingPreviews()
 
-        Assert.assertEquals(exampleDrawingPreviewUris, uiState.previewUris)
+            val uiState = awaitItem()!!
+
+            Assert.assertEquals(exampleDrawingPreviewUris, uiState.previewUris)
+        }
     }
 }

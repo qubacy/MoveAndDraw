@@ -8,7 +8,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
-import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.model.BusinessViewModelTest
+import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.model._common.BusinessViewModelTest
 import com.qubacy.moveanddraw.ui.application.activity.screen.calibration.model.state.CalibrationUiState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
