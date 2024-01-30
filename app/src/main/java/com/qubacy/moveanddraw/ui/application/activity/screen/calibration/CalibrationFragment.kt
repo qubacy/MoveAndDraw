@@ -98,11 +98,11 @@ class CalibrationFragment(
     }
 
     private fun goToEditor() {
-        val action = CalibrationFragmentDirections
-            .actionCalibrationFragmentToEditorFragment(
-                mModel.xAverageOffset, mModel.yAverageOffset, mModel.zAverageOffset)
-
-        findNavController().navigate(action)
+//        val action = CalibrationFragmentDirections
+//            .actionCalibrationFragmentToEditorFragment(
+//                mModel.xAverageOffset, mModel.yAverageOffset, mModel.zAverageOffset)
+//
+//        findNavController().navigate(action)
     }
 
     private fun changeProgressIndicatorEnabled(isEnabled: Boolean) {

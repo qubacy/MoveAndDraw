@@ -9,6 +9,7 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.dra
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.CanvasRenderer
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.util.GL2Util
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.data.FaceSketch
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.renderer.initializer.EditorRendererStepInitializer
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -48,10 +49,27 @@ class EditorCanvasRenderer(
 
     private val mProjWorldMatrix = FloatArray(16)
 
-    suspend fun setFaceSketchDotBuffer(faceSketchDotArray: FloatArray) = mFaceSketchMutex.withLock {
-        for (i in faceSketchDotArray.indices step COORDS_PER_DOT) {
-            mFaceSketchDotBuffer.add(Pair(faceSketchDotArray[i], faceSketchDotArray[i + 1]))
+    override val mInitializer: EditorRendererStepInitializer = EditorRendererStepInitializer()
+
+    suspend fun setFaceSketchDotBuffer(
+        faceSketchDots: List<Pair<Float, Float>>
+    ) {
+        mInitializerMutex.withLock {
+            mInitializer.postponeSketchDotList(faceSketchDots)
+
+            if (mInitializer.currentStep != EditorRendererStepInitializer.EditorStep.SKETCH)
+                return
+
+            mFaceSketchMutex.withLock() { onSketchStepInitializing() }
         }
+    }
+
+    private fun onSketchStepInitializing() {
+        Log.d(TAG, "onSketchStepInitializing(): entering..")
+
+        mFaceSketchDotBuffer.addAll(mInitializer.sketch!!)
+
+        mInitializer.nextStep()
     }
 
     suspend fun saveAndGetFaceSketch(): FaceSketch? {
@@ -128,7 +146,7 @@ class EditorCanvasRenderer(
             EditorRendererMode.CREATING_FACE -> MIN_HELPING_PLANE_DISTANCE
         }
 
-        changeCameraNear(cameraNear) // todo: isn't working..
+        changeCameraNear(cameraNear)
     }
 
     private fun setHelpingPlaneVisibilityByMode(mode: EditorRendererMode) {
@@ -138,14 +156,14 @@ class EditorCanvasRenderer(
         }
     }
 
-    override fun handleScale(scaleFactor: Float) {
+    override suspend fun handleScale(scaleFactor: Float) {
         when (mEditorRendererMode) {
             EditorRendererMode.CREATING_FACE -> handleHelpingPlaneDistanceChange(scaleFactor)
             else -> super.handleScale(scaleFactor)
         }
     }
 
-    override fun handleRotation(dx: Float, dy: Float) {
+    override suspend fun handleRotation(dx: Float, dy: Float) {
         when (mEditorRendererMode) {
             EditorRendererMode.CREATING_FACE -> {  } // nothing?
             else -> super.handleRotation(dx, dy)
@@ -181,7 +199,7 @@ class EditorCanvasRenderer(
         changeCameraNear(filteredNewNear)
     }
 
-    private fun changeCameraNear(near: Float) {
+    private fun changeCameraNear(near: Float) {//= mCameraMutex.withLock {
         Log.d(TAG, "changeCameraNear(): near = $near")
 
         mCameraNear = near

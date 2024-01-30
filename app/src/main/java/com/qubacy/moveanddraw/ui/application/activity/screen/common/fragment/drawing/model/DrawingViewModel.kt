@@ -1,6 +1,7 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model
 
 import android.net.Uri
+import android.util.Log
 import com.qubacy.moveanddraw._common.util.struct.takequeue._common.TakeQueue
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.domain._common.usecase._common.result._common.Result
@@ -10,14 +11,26 @@ import com.qubacy.moveanddraw.domain._common.usecase.drawing.result.LoadDrawingR
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation.error.ShowErrorUiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model.business.BusinessViewModel
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.camera._common.CameraData
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.DrawingUiState
 
 abstract class DrawingViewModel<UiStateType : DrawingUiState>(
     protected val mDrawingUseCase: DrawingUseCase
 ) : BusinessViewModel<UiStateType>(mDrawingUseCase) {
     companion object {
+        const val TAG = "DRAWING_VIEW_MODEL"
+
         const val DRAWING_MIME_TYPE = "model/obj"
         val DRAWING_FILE_EXTENSIONS = arrayOf("obj")
+    }
+
+    protected var mLastCameraData: CameraData? = null
+    val lastCameraData get() = mLastCameraData
+
+    fun setLastCameraData(cameraData: CameraData) {
+        Log.d(TAG, "setLastCameraData(): cameraData.pos = ${cameraData.position.joinToString()}")
+
+        mLastCameraData = cameraData
     }
 
     fun isDrawingFileExtensionValid(ext: String): Boolean {

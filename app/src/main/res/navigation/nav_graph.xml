@@ -9,32 +9,11 @@
         android:name="com.qubacy.moveanddraw.ui.application.activity.screen.initial.InitialFragment"
         android:label="InitialFragment" >
         <action
-            android:id="@+id/action_initialFragment_to_calibrationFragment"
-            app:destination="@id/calibrationFragment" />
-        <action
             android:id="@+id/action_initialFragment_to_viewerFragment"
             app:destination="@id/viewerFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/calibrationFragment"
-        android:name="com.qubacy.moveanddraw.ui.application.activity.screen.calibration.CalibrationFragment"
-        android:label="CalibrationFragment" >
         <action
-            android:id="@+id/action_calibrationFragment_to_editorFragment"
-            app:destination="@id/editorFragment" >
-            <argument
-                android:name="xOffset"
-                app:argType="float"
-                android:defaultValue="0" />
-            <argument
-                android:name="yOffset"
-                app:argType="float"
-                android:defaultValue="0" />
-            <argument
-                android:name="zOffset"
-                app:argType="float"
-                android:defaultValue="0" />
-        </action>
+            android:id="@+id/action_initialFragment_to_editorFragment"
+            app:destination="@id/editorFragment" />
     </fragment>
     <fragment
         android:id="@+id/viewerFragment"
@@ -43,18 +22,5 @@
     <fragment
         android:id="@+id/editorFragment"
         android:name="com.qubacy.moveanddraw.ui.application.activity.screen.editor.EditorFragment"
-        android:label="EditorFragment" >
-        <argument
-            android:name="xOffset"
-            app:argType="float"
-            android:defaultValue="0" />
-        <argument
-            android:name="yOffset"
-            app:argType="float"
-            android:defaultValue="0" />
-        <argument
-            android:name="zOffset"
-            app:argType="float"
-            android:defaultValue="0" />
-    </fragment>
+        android:label="EditorFragment" />
 </navigation>

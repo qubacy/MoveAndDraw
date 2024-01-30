@@ -158,7 +158,7 @@ class InitialFragment(
     }
 
     private fun goToEditor() {
-        findNavController().navigate(R.id.action_initialFragment_to_calibrationFragment)
+        findNavController().navigate(R.id.action_initialFragment_to_editorFragment)
     }
 
     override fun onScrimClicked() {

@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Color
 import android.opengl.GLSurfaceView
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import androidx.annotation.ColorInt
@@ -16,9 +17,12 @@ import androidx.lifecycle.lifecycleScope
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.camera._common.CameraData
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.mapper.DrawingGLDrawingMapper
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.CanvasRenderer
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 open class CanvasView(
@@ -112,16 +116,16 @@ open class CanvasView(
         requestRender()
     }
 
-    suspend fun setCanvasModelColor(rgba: FloatArray) {
+    fun setCanvasModelColor(rgba: FloatArray) {
         mRenderer.setModelColor(rgba[0], rgba[1], rgba[2], rgba[3])
         requestRender()
     }
 
-    suspend fun setCanvasModelColor(color: Int) {
+    fun setCanvasModelColor(color: Int) {
         setCanvasModelColor(colorToRGBAFloatArray(color))
     }
 
-    suspend fun setCanvasModelColor(argb: IntArray) {
+    fun setCanvasModelColor(argb: IntArray) {
         val argbFloatArray = argb.toMutableList().map { it / 255f } as MutableList<Float>
 
         argbFloatArray.removeAt(0).also {
@@ -153,6 +157,17 @@ open class CanvasView(
         if (drawingMode != null) glDrawing.setDrawingMode(drawingMode)
 
         mRenderer.setFigure(glDrawing)
+        requestRender()
+    }
+
+    fun getCameraData(): CameraData {
+        return mRenderer.cameraData.copy()
+    }
+
+    fun setCameraData(cameraData: CameraData) = mLifecycleScope?.launch(Dispatchers.IO) {
+        Log.d(TAG, "setCameraData(): entering.. cameraData.pos = ${cameraData.position.joinToString()}")
+
+        mRenderer.setCameraData(cameraData)
         requestRender()
     }
 
@@ -206,8 +221,10 @@ open class CanvasView(
         mPrevX = e.x
         mPrevY = e.y
 
-        mRenderer.handleRotation(mPrevDX * TOUCH_SCALE_FACTOR, mPrevDY * TOUCH_SCALE_FACTOR)
-        requestRender()
+        mLifecycleScope?.launch(Dispatchers.IO) {
+            mRenderer.handleRotation(mPrevDX * TOUCH_SCALE_FACTOR, mPrevDY * TOUCH_SCALE_FACTOR)
+            requestRender()
+        }
 
         return true
     }
@@ -215,7 +232,9 @@ open class CanvasView(
     protected open fun processOtherTouchEventAction(e: MotionEvent): Boolean { return true }
 
     override fun onScale(detector: ScaleGestureDetector): Boolean {
-        mRenderer.handleScale(detector.scaleFactor)
+        mLifecycleScope?.launch(Dispatchers.IO) {
+            mRenderer.handleScale(detector.scaleFactor)
+        }
 
         return true
     }

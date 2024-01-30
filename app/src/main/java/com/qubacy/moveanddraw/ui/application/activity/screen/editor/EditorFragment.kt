@@ -1,6 +1,7 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.editor
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -16,7 +17,6 @@ import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.navArgs
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.transition.MaterialSharedAxis
@@ -65,8 +65,6 @@ class EditorFragment(
         }
     }
 
-    private val mArgs by navArgs<EditorFragmentArgs>()
-
     @Inject
     @EditorViewModelFactoryQualifier
     lateinit var viewModelFactory: ViewModelProvider.Factory
@@ -109,6 +107,8 @@ class EditorFragment(
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
 
+        Log.d(TAG, "onViewStateRestored(): is entered..")
+
         mModelColor = savedInstanceState?.getInt(STATE_MODEL_COLOR_KEY)
 
         val editorModeId = savedInstanceState?.getInt(EDITOR_MODE_KEY) ?: EditorMode.MAIN.id
@@ -138,8 +138,6 @@ class EditorFragment(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-//        mModel.setConstantOffsets(mArgs.xOffset, mArgs.yOffset, mArgs.zOffset)
 
         mBinding.fragmentEditorBottomBar.setOnMenuItemClickListener(this)
         mBinding.fragmentEditorButtonMainAction.setOnClickListener { onMainActionClicked() }
@@ -178,6 +176,8 @@ class EditorFragment(
 
     override fun setCanvasDrawing(drawing: Drawing) {
         lifecycleScope.launch(Dispatchers.IO) {
+            Log.d(DrawingFragment.TAG, "setCanvasDrawing(): entering..")
+
             mCanvasView.setFigure(drawing, mDrawingMode)
         }
     }

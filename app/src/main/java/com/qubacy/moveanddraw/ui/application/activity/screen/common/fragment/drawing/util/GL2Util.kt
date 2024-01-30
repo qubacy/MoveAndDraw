@@ -42,9 +42,6 @@ object GL2Util {
             )
 
             if (distance > maxDistance) maxDistance = distance
-
-            Log.d(TAG, "getMaxDistanceFromDot(): vertex = (${vertices[i]},${vertices[i + 1]},${vertices[i + 2]});")
-            Log.d(TAG, "getMaxDistanceFromDot(): distance = $distance;")
         }
 
         return maxDistance

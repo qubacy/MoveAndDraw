@@ -3,6 +3,7 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.dr
 import android.Manifest
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -18,6 +19,7 @@ import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.MainActivity
 import com.qubacy.moveanddraw.ui.application.activity.file.picker.GetFileUriCallback
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.base.BaseFragment
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.camera._common.CameraData
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.mapper.DrawingGLDrawingMapperImpl
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.view.CanvasView
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.DrawingViewModel
@@ -32,12 +34,17 @@ abstract class DrawingFragment<
 >(
 
 ) : BaseFragment<DrawingUiStateType, DrawingViewModelType>(), GetFileUriCallback {
+    companion object {
+        const val TAG = "DRAWING_FRAGMENT"
+    }
 
     protected lateinit var mCanvasView: CanvasViewType
     protected lateinit var mTopMenuBar: Toolbar
     protected lateinit var mProgressIndicator: LinearProgressIndicator
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Log.d(TAG, "onViewCreated(): entering..")
+
         super.onViewCreated(view, savedInstanceState)
 
         inflateTopAppBarMenu(requireActivity().menuInflater, mTopMenuBar.menu)
@@ -50,6 +57,41 @@ abstract class DrawingFragment<
             setDrawingMapper(DrawingGLDrawingMapperImpl())
             setLifecycleOwner(lifecycle)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        mModel.lastCameraData?.apply {
+            Log.d(TAG, "onResume(): cameraData.pos = ${position.joinToString()}")
+
+            mCanvasView.setCameraData(this@apply)
+        }
+    }
+
+    override fun onPause() {
+        Log.d(TAG, "onPause(): entering..")
+
+        if (mModel.uiState.value?.drawing != null)
+            mModel.setLastCameraData(mCanvasView.getCameraData())
+
+        super.onPause()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d(TAG, "onCreate(): entering..")
+
+        super.onCreate(savedInstanceState)
+    }
+
+    override fun onDestroy() {
+        Log.d(TAG, "onDestroy(): entering..")
+
+        super.onDestroy()
+    }
+
+    protected fun setCameraData(cameraData: CameraData) {
+        mCanvasView.setCameraData(cameraData)
     }
 
     protected open fun inflateTopAppBarMenu(menuInflater: MenuInflater, menu: Menu) {
@@ -89,6 +131,8 @@ abstract class DrawingFragment<
     }
 
     override fun setUiElementsState(uiState: DrawingUiStateType) {
+        Log.d(TAG, "setUiElementsState(): entering..")
+
         setTopBarMenuEnabled(!uiState.isLoading)
         setProgressIndicatorEnabled(uiState.isLoading)
         setCurrentDrawing(uiState.drawing)
@@ -110,6 +154,8 @@ abstract class DrawingFragment<
 
     protected open fun setCanvasDrawing(drawing: Drawing) {
         lifecycleScope.launch(Dispatchers.IO) {
+            Log.d(TAG, "setCanvasDrawing(): entering..")
+
             mCanvasView.setFigure(drawing)
         }
     }

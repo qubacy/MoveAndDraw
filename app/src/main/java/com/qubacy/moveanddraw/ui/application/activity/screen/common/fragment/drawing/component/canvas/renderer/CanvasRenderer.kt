@@ -6,7 +6,10 @@ import android.opengl.Matrix
 import android.util.Log
 import androidx.annotation.FloatRange
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.camera._common.CameraData
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.camera.mutable.MutableCameraData
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.model.GLDrawing
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.initializer.RendererStepInitializer
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.util.GL2Util
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -49,16 +52,19 @@ open class CanvasRenderer(
     protected var mCameraCenterLocation = floatArrayOf(0f, 0f, 0f)
     @Volatile
     protected var mViewCenterLocation = floatArrayOf(0f, 0f, 0f)
-    @Volatile
-    protected var mCameraLocation = floatArrayOf(mCameraRadius, 0f, mCameraCenterLocation[2])
-    @Volatile
-    protected var mCameraMadeWayHorizontal = 0f
-    @Volatile
-    protected var mCameraMadeWayVertical = 0f
+
+    protected var mCameraData: MutableCameraData = MutableCameraData(
+        floatArrayOf(mCameraRadius, 0f, mCameraCenterLocation[2]),
+        CAMERA_FOV,
+        1f,
+        0f,
+        0f
+    )
+    val cameraData: CameraData get() = mCameraData
+
     @Volatile
     protected var mViewportRatio = 1f
-    @Volatile
-    protected var mCurScaleFactor = 1f
+
     @Volatile
     protected var mFigureVolumeCoef = 1f
 
@@ -72,6 +78,22 @@ open class CanvasRenderer(
 
     protected var mDeviceWidth: Int = 0
     protected var mDeviceHeight: Int = 0
+
+    protected open val mInitializer: RendererStepInitializer = RendererStepInitializer()
+    protected val mInitializerMutex = Mutex(false)
+
+    suspend fun setCameraData(cameraData: CameraData) {//= mCameraMutex.withLock {
+        Log.d(TAG, "setCameraData(): entering.. cameraData.pos = ${cameraData.position.joinToString()}")
+
+        mInitializerMutex.withLock {
+            mInitializer.postponeCamera(cameraData)
+
+            if (mInitializer.currentStep != RendererStepInitializer.StandardStep.CAMERA)
+                return
+
+            onCameraStepInitializing()
+        }
+    }
 
     fun setModelColor(
         @FloatRange(0.0, 1.0) r: Float,
@@ -99,16 +121,46 @@ open class CanvasRenderer(
         mFigure?.setDrawingMode(drawingMode)
     }
 
-    suspend fun setFigure(figure: GLDrawing) = mFigureMutex.withLock {
-        setFigureData(figure)
+    protected open fun onCameraStepInitializing() {
+        Log.d(TAG, "onCameraStepInitializing(): entering..")
+
+        mCameraData.setData(mInitializer.camera!!)
+        setPerspective()
+
+        mInitializer.nextStep()
+    }
+
+    protected fun onFigureStepInitializing() {
+        Log.d(TAG, "onFigureStepInitializing(): entering..")
+
+        setFigureData(mInitializer.figure!!)
+
+        mInitializer.nextStep()
+
+        if (mInitializer.camera != null) onCameraStepInitializing()
+    }
+
+    suspend fun setFigure(figure: GLDrawing) {
+        Log.d(TAG, "setFigure(): entering..")
+
+        mInitializerMutex.withLock {
+            if (mInitializer.currentStep != RendererStepInitializer.StandardStep.FIGURE)
+                mInitializer.reset()
+
+            mInitializer.postponeFigure(figure)
+
+            mFigureMutex.withLock { onFigureStepInitializing() }
+        }
     }
 
     protected fun setFigureData(figure: GLDrawing) {
+        Log.d(TAG, "setFigureData(): entering..")
+
         prepareForFigure(figure)
 
-        mCameraMadeWayHorizontal = 0f
-        mCameraMadeWayVertical = 0f
-        mCurScaleFactor = 1f
+        mCameraData.setMadeWayHorizontal(0f)
+        mCameraData.setMadeWayVertical(0f)
+        mCameraData.setScaleFactor(1f)
 
         setDefaultCameraLocation()
         setPerspective()
@@ -118,6 +170,8 @@ open class CanvasRenderer(
      * Note: this method should be called DURING mFigureMutex LOCKING!
      */
     protected fun prepareForFigure(figure: GLDrawing) {
+        Log.d(TAG, "prepareForFigure(): entering..")
+
         mFigure = figure.apply {
             setColor(mDefaultModelColor)
         }
@@ -137,10 +191,6 @@ open class CanvasRenderer(
         mCameraCenterLocation = mViewCenterLocation
         mFigureVolumeCoef = getFigureVolumeCoefBySphereRadiusAndMaxDistance(
             mSphereRadius, sphereRadiusFromDistance)
-
-        Log.d(TAG, "prepareForFigure(): sphereRadiusFromDistance = $sphereRadiusFromDistance;")
-        Log.d(TAG, "prepareForFigure(): mSphereRadius = $mSphereRadius; mFigureVolumeCoef = $mFigureVolumeCoef;")
-        Log.d(TAG, "prepareForFigure(): mViewCenterLocation = ${mViewCenterLocation.joinToString()};")
     }
 
     protected fun getFigureVolumeCoefBySphereRadiusAndMaxDistance(
@@ -162,16 +212,16 @@ open class CanvasRenderer(
     }
 
     private fun getTranslatedCameraLocation(dx: Float, dy: Float): FloatArray {
-        val preparedDX = dx * -1 * mFigureVolumeCoef * (1 / mCurScaleFactor)
-        val preparedDY = dy * 1 * mFigureVolumeCoef * (1 / mCurScaleFactor)
+        val preparedDX = dx * -1 * mFigureVolumeCoef * (1 / mCameraData.scaleFactor)
+        val preparedDY = dy * 1 * mFigureVolumeCoef * (1 / mCameraData.scaleFactor)
 
-        var newX = mCameraLocation[0]
-        var newY = mCameraLocation[1]
-        var newZ = mCameraLocation[2]
+        var newX = mCameraData.position[0]
+        var newY = mCameraData.position[1]
+        var newZ = mCameraData.position[2]
 
         if (abs(preparedDX) >= abs(preparedDY)) {
             val cameraWayLength = getHorizontalCameraWayLength()
-            val cameraMadeWay = (preparedDX + mCameraMadeWayHorizontal) % cameraWayLength
+            val cameraMadeWay = (preparedDX + mCameraData.madeWayHorizontal) % cameraWayLength
             val cameraMadeWayNormalized =
                 if (cameraMadeWay < 0) cameraMadeWay + cameraWayLength
                 else cameraMadeWay
@@ -181,55 +231,57 @@ open class CanvasRenderer(
             newX = mCameraCenterLocation[0] + mCameraRadius * cos(madeWayAngle)
             newY = mCameraCenterLocation[1] + mCameraRadius * sin(madeWayAngle)
 
-            mCameraMadeWayHorizontal = cameraMadeWayNormalized
+            mCameraData.setMadeWayHorizontal(cameraMadeWayNormalized)
 
         } else {
             val cameraWayLength = getVerticalCameraWayLength()
-            val cameraMadeWayNormalized = preparedDY + mCameraMadeWayVertical
+            val cameraMadeWayNormalized = preparedDY + mCameraData.madeWayVertical
 
-            if (abs(cameraMadeWayNormalized) >= cameraWayLength) return mCameraLocation
+            if (abs(cameraMadeWayNormalized) >= cameraWayLength) return mCameraData.position
 
             val madeWayAngleVertical = cameraMadeWayNormalized / mSphereRadius
 
             newZ = CENTER_POSITION[2] + mSphereRadius * sin(madeWayAngleVertical)
             val newCameraRadius = sqrt(mSphereRadius * mSphereRadius - newZ * newZ)
 
-            mCameraMadeWayHorizontal *= (newCameraRadius / mCameraRadius)
+            mCameraData.apply {
+                setMadeWayHorizontal(madeWayHorizontal * (newCameraRadius / mCameraRadius))
+            }
             mCameraRadius = newCameraRadius
 
-            val madeWayAngleHorizontal = mCameraMadeWayHorizontal / mCameraRadius
+            val madeWayAngleHorizontal = mCameraData.madeWayHorizontal / mCameraRadius
 
             newX = mCameraCenterLocation[0] + mCameraRadius * cos(madeWayAngleHorizontal)
             newY = mCameraCenterLocation[1] + mCameraRadius * sin(madeWayAngleHorizontal)
 
-            mCameraMadeWayVertical = cameraMadeWayNormalized
+            mCameraData.setMadeWayVertical(cameraMadeWayNormalized)
         }
 
         return floatArrayOf(newX, newY, newZ)
     }
 
-    open fun handleRotation(dx: Float, dy: Float) {
-        mCameraLocation = getTranslatedCameraLocation(dx, dy)
+    open suspend fun handleRotation(dx: Float, dy: Float) {//= mCameraMutex.withLock {
+        mCameraData.setPosition(getTranslatedCameraLocation(dx, dy))
     }
 
-    open fun handleScale(scaleFactor: Float) {
-        val newScaleFactor = mCurScaleFactor * scaleFactor
+    open suspend fun handleScale(scaleFactor: Float) {//= mCameraMutex.withLock {
+        val newScaleFactor = mCameraData.scaleFactor * scaleFactor
 
         if (newScaleFactor !in MIN_SCALE_FACTOR..MAX_SCALE_FACTOR) return
 
         Log.d(TAG, "handleScale(): newScaleFactor = $newScaleFactor")
 
-        mCurScaleFactor = newScaleFactor
+        mCameraData.setScaleFactor(newScaleFactor)
 
         setPerspective()
     }
 
     protected fun setPerspective() {
-        val scaledFOV = CAMERA_FOV / (mCurScaleFactor)
+        mCameraData.apply { setFOV(CAMERA_FOV / scaleFactor) }
 
         Matrix.perspectiveM(
             mProjectionMatrix, 0,
-            scaledFOV,
+            mCameraData.fov,
             mViewportRatio,
             mCameraNear,
             mSphereRadius * 2
@@ -242,11 +294,11 @@ open class CanvasRenderer(
     protected fun setDefaultCameraLocation() {
         //val initCameraVerticalMadeWay = PI * mSphereRadius / 4f // todo: think about this;
 
-        mCameraLocation = floatArrayOf(
-            mViewCenterLocation[0] + mCameraRadius, mViewCenterLocation[1], mViewCenterLocation[2])
+        mCameraData.setPosition(floatArrayOf(
+            mViewCenterLocation[0] + mCameraRadius, mViewCenterLocation[1], mViewCenterLocation[2]))
         //mCameraLocation = getTranslatedCameraLocation(0f, initCameraVerticalMadeWay.toFloat())
 
-        Log.d(TAG, "setDefaultCameraLocation(): mCameraLocation = (${mCameraLocation.joinToString()});")
+        Log.d(TAG, "setDefaultCameraLocation(): mCameraLocation = (${mCameraData.position.joinToString()});")
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
@@ -254,7 +306,7 @@ open class CanvasRenderer(
 
         mFigure?.init()
 
-        setDefaultCameraLocation()
+        runBlocking { setDefaultCameraLocation() }
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
@@ -265,7 +317,7 @@ open class CanvasRenderer(
 
         mViewportRatio = width.toFloat() / height.toFloat()
 
-        setPerspective()
+        runBlocking { setPerspective() }
     }
 
     override fun onDrawFrame(gl: GL10?): Unit = runBlocking {
@@ -277,9 +329,9 @@ open class CanvasRenderer(
 
             Matrix.setLookAtM(
                 mViewMatrix, 0,
-                mCameraLocation[0],
-                mCameraLocation[1],
-                mCameraLocation[2],
+                mCameraData.position[0],
+                mCameraData.position[1],
+                mCameraData.position[2],
                 mViewCenterLocation[0], mViewCenterLocation[1], mViewCenterLocation[2],
                 0f, 0f, 1.0f
             )
