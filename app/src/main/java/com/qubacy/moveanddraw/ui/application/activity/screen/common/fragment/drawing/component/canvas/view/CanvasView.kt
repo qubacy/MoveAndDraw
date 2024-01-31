@@ -17,8 +17,9 @@ import androidx.lifecycle.lifecycleScope
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.camera._common.CameraData
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.camera._common.CameraData
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.mapper.DrawingGLDrawingMapper
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.settings._common.DrawingSettings
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.CanvasRenderer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -100,6 +101,15 @@ open class CanvasView(
         lifecycle.addObserver(this)
 
         mLifecycleScope = lifecycle.coroutineScope
+    }
+
+    fun getDrawingSettings(): DrawingSettings {
+        return mRenderer.drawingSettings.copy()
+    }
+
+    fun setDrawingSettings(drawingSettings: DrawingSettings) {
+        mRenderer.setDrawingSettings(drawingSettings)
+        requestRender()
     }
 
     private fun colorToRGBAFloatArray(@ColorInt color: Int): FloatArray {
@@ -232,9 +242,7 @@ open class CanvasView(
     protected open fun processOtherTouchEventAction(e: MotionEvent): Boolean { return true }
 
     override fun onScale(detector: ScaleGestureDetector): Boolean {
-        mLifecycleScope?.launch(Dispatchers.IO) {
-            mRenderer.handleScale(detector.scaleFactor)
-        }
+        mRenderer.handleScale(detector.scaleFactor)
 
         return true
     }

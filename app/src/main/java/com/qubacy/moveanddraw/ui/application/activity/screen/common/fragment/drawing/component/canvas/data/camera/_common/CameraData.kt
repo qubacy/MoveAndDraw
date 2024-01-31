@@ -1,24 +1,24 @@
-package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.camera._common
+package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.camera._common
 
 import java.io.Serializable
 
 open class CameraData(
-    position: FloatArray = floatArrayOf(0f, 0f, 0f),
-    fov: Float = CameraContext.MIN_FOV,
-    scaleFactor: Float = CameraContext.MIN_SCALE,
-    madeWayHorizontal: Float = 0f,
-    madeWayVertical: Float = 0f
+    initPosition: FloatArray = floatArrayOf(0f, 0f, 0f),
+    initFOV: Float = CameraContext.MIN_FOV,
+    initScaleFactor: Float = CameraContext.MIN_SCALE,
+    initMadeWayHorizontal: Float = 0f,
+    initMadeWayVertical: Float = 0f
 ) : Serializable {
     @Volatile
-    protected var mPosition: FloatArray = position
+    protected var mPosition: FloatArray = initPosition
     @Volatile
-    protected var mFOV: Float = fov
+    protected var mFOV: Float = initFOV
     @Volatile
-    protected var mScaleFactor: Float = scaleFactor
+    protected var mScaleFactor: Float = initScaleFactor
     @Volatile
-    protected var mMadeWayHorizontal: Float = madeWayHorizontal
+    protected var mMadeWayHorizontal: Float = initMadeWayHorizontal
     @Volatile
-    protected var mMadeWayVertical: Float = madeWayVertical
+    protected var mMadeWayVertical: Float = initMadeWayVertical
 
     val position get() = mPosition
     val fov get() = mFOV

@@ -11,7 +11,8 @@ import com.qubacy.moveanddraw.domain._common.usecase.drawing.result.LoadDrawingR
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation.error.ShowErrorUiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model.business.BusinessViewModel
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.camera._common.CameraData
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.camera._common.CameraData
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.settings._common.DrawingSettings
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.DrawingUiState
 
 abstract class DrawingViewModel<UiStateType : DrawingUiState>(
@@ -26,6 +27,13 @@ abstract class DrawingViewModel<UiStateType : DrawingUiState>(
 
     protected var mLastCameraData: CameraData? = null
     val lastCameraData get() = mLastCameraData
+
+    private var mDrawingSettings: DrawingSettings? = null
+    val drawingSettings get() = mDrawingSettings
+
+    fun setDrawingSettings(drawingSettings: DrawingSettings) {
+        mDrawingSettings = drawingSettings
+    }
 
     fun setLastCameraData(cameraData: CameraData) {
         Log.d(TAG, "setLastCameraData(): cameraData.pos = ${cameraData.position.joinToString()}")

@@ -12,7 +12,7 @@ import com.qubacy.moveanddraw.domain.editor.result.AddNewFaceToDrawingResult
 import com.qubacy.moveanddraw.domain.editor.result.RemoveLastFaceFromDrawingResult
 import com.qubacy.moveanddraw.domain.editor.result.SaveDrawingResult
 import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment.drawing.model.DrawingViewModelTest
-import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.data.FaceSketch
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.data.face.FaceSketch
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model._test.data.EditorUseCaseMockInitData
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.EditorUiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.operation.saved.DrawingSavedUiOperation

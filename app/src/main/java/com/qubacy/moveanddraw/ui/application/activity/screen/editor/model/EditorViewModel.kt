@@ -14,8 +14,10 @@ import com.qubacy.moveanddraw.domain.editor.result.AddNewFaceToDrawingResult
 import com.qubacy.moveanddraw.domain.editor.result.RemoveLastFaceFromDrawingResult
 import com.qubacy.moveanddraw.domain.editor.result.SaveDrawingResult
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.Dot2D
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.DrawingViewModel
-import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.data.FaceSketch
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas._common.EditorCanvasContext
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.data.face.FaceSketch
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.EditorUiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.operation.face.added.NewFaceAddedToDrawingUiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.operation.saved.DrawingSavedUiOperation
@@ -34,6 +36,20 @@ open class EditorViewModel @Inject constructor(
 ) : DrawingViewModel<EditorUiState>(mEditorUseCase) {
     companion object {
         const val TAG = "EDITOR_VIEW_MODEL"
+    }
+
+    private var mEditorMode: EditorCanvasContext.Mode? = null
+    val editorMode get() = mEditorMode
+
+    private var mFaceSketchDotBuffer: List<Dot2D>? = null
+    val faceSketchDotBuffer get() = mFaceSketchDotBuffer
+
+    fun setEditorMode(editorMode: EditorCanvasContext.Mode) {
+        mEditorMode = editorMode
+    }
+
+    fun setFaceSketchDotBuffer(faceSketchDotBuffer: List<Dot2D>) {
+        mFaceSketchDotBuffer = faceSketchDotBuffer
     }
 
     override fun generateDrawingUiState(

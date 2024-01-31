@@ -19,7 +19,7 @@ import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.MainActivity
 import com.qubacy.moveanddraw.ui.application.activity.file.picker.GetFileUriCallback
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.base.BaseFragment
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.camera._common.CameraData
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.camera._common.CameraData
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.mapper.DrawingGLDrawingMapperImpl
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.view.CanvasView
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.DrawingViewModel
@@ -67,6 +67,9 @@ abstract class DrawingFragment<
 
             mCanvasView.setCameraData(this@apply)
         }
+        mModel.drawingSettings?.apply {
+            mCanvasView.setDrawingSettings(this@apply)
+        }
     }
 
     override fun onPause() {
@@ -74,6 +77,8 @@ abstract class DrawingFragment<
 
         if (mModel.uiState.value?.drawing != null)
             mModel.setLastCameraData(mCanvasView.getCameraData())
+
+        mModel.setDrawingSettings(mCanvasView.getDrawingSettings())
 
         super.onPause()
     }

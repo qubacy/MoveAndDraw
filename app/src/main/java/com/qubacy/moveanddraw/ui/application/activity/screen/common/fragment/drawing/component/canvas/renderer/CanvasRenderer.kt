@@ -6,9 +6,11 @@ import android.opengl.Matrix
 import android.util.Log
 import androidx.annotation.FloatRange
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.camera._common.CameraData
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.camera.mutable.MutableCameraData
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.camera._common.CameraData
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.camera.mutable.MutableCameraData
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.model.GLDrawing
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.settings._common.DrawingSettings
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.settings.mutable.MutableDrawingSettings
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.initializer.RendererStepInitializer
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.util.GL2Util
 import kotlinx.coroutines.runBlocking
@@ -73,8 +75,14 @@ open class CanvasRenderer(
 
     @Volatile
     private var mBackgroundColor: FloatArray = floatArrayOf(0.0f, 0.0f, 0.0f, 1.0f)
-    @Volatile
-    private var mDefaultModelColor: FloatArray = floatArrayOf(1f, 1f, 1f, 1f)
+//    @Volatile
+//    private var mDefaultModelColor: FloatArray = floatArrayOf(1f, 1f, 1f, 1f)
+
+    protected var mDrawingSettings: MutableDrawingSettings = MutableDrawingSettings(
+        GLContext.DrawingMode.FILLED,
+        floatArrayOf(1f, 1f, 1f, 1f)
+    )
+    val drawingSettings: DrawingSettings get() = mDrawingSettings
 
     protected var mDeviceWidth: Int = 0
     protected var mDeviceHeight: Int = 0
@@ -95,17 +103,41 @@ open class CanvasRenderer(
         }
     }
 
+    fun setDrawingSettings(drawingSettings: DrawingSettings) {
+        mDrawingSettings.setData(drawingSettings)
+
+        setFigureColor(mDrawingSettings.modelColor)
+        mFigure?.setDrawingMode(mDrawingSettings.drawingMode)
+    }
+
+    fun setFigureDrawingMode(drawingMode: GLContext.DrawingMode) {
+        mDrawingSettings.setDrawingMode(drawingMode)
+
+        mFigure?.setDrawingMode(mDrawingSettings.drawingMode)
+
+//        mFigure?.setDrawingMode(drawingMode)
+    }
+
     fun setModelColor(
         @FloatRange(0.0, 1.0) r: Float,
         @FloatRange(0.0, 1.0) g: Float,
         @FloatRange(0.0, 1.0) b: Float,
         @FloatRange(0.0, 1.0) a: Float
     ) {
-        mDefaultModelColor = floatArrayOf(r, g, b, a)
+        mDrawingSettings.setModelColor(r, g, b, a)
 
-        mFigure?.apply {
-            setColor(mDefaultModelColor)
-        }
+        setFigureColor(mDrawingSettings.modelColor)
+
+
+//        mDefaultModelColor = floatArrayOf(r, g, b, a)
+//
+//        mFigure?.apply {
+//            setColor(mDefaultModelColor)
+//        }
+    }
+
+    private fun setFigureColor(color: FloatArray) {
+        mFigure?.apply { setColor(color) }
     }
 
     fun setBackgroundColor(
@@ -115,10 +147,6 @@ open class CanvasRenderer(
         @FloatRange(0.0, 1.0) a: Float
     ) {
         mBackgroundColor = floatArrayOf(r, g, b, a)
-    }
-
-    fun setFigureDrawingMode(drawingMode: GLContext.DrawingMode) {
-        mFigure?.setDrawingMode(drawingMode)
     }
 
     protected open fun onCameraStepInitializing() {
@@ -173,7 +201,7 @@ open class CanvasRenderer(
         Log.d(TAG, "prepareForFigure(): entering..")
 
         mFigure = figure.apply {
-            setColor(mDefaultModelColor)
+            setColor(mDrawingSettings.modelColor)
         }
 
         mViewCenterLocation = GL2Util.getVertexCenterPoint(mFigure!!.vertexArray)
@@ -260,16 +288,16 @@ open class CanvasRenderer(
         return floatArrayOf(newX, newY, newZ)
     }
 
-    open suspend fun handleRotation(dx: Float, dy: Float) {//= mCameraMutex.withLock {
+    open fun handleRotation(dx: Float, dy: Float) {//= mCameraMutex.withLock {
         mCameraData.setPosition(getTranslatedCameraLocation(dx, dy))
     }
 
-    open suspend fun handleScale(scaleFactor: Float) {//= mCameraMutex.withLock {
-        val newScaleFactor = mCameraData.scaleFactor * scaleFactor
+    open fun handleScale(gottenScaleFactor: Float) {//= mCameraMutex.withLock {
+        val newScaleFactor = mCameraData.scaleFactor * gottenScaleFactor
 
         if (newScaleFactor !in MIN_SCALE_FACTOR..MAX_SCALE_FACTOR) return
 
-        Log.d(TAG, "handleScale(): newScaleFactor = $newScaleFactor")
+        Log.d(TAG, "handleScale(): newScaleFactor = $newScaleFactor; scaleFactor = $gottenScaleFactor;")
 
         mCameraData.setScaleFactor(newScaleFactor)
 
@@ -278,6 +306,8 @@ open class CanvasRenderer(
 
     protected fun setPerspective() {
         mCameraData.apply { setFOV(CAMERA_FOV / scaleFactor) }
+
+        Log.d(TAG, "setPerspective(): mCameraData.fov = ${mCameraData.fov}; mCameraData.scaleFactor = ${mCameraData.scaleFactor}")
 
         Matrix.perspectiveM(
             mProjectionMatrix, 0,

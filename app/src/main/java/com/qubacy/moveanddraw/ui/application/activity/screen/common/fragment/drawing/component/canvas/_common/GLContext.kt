@@ -1,7 +1,8 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common
 
-object GLContext {
+typealias Dot2D = Pair<Float, Float>
 
+object GLContext {
     enum class DrawingMode(val id: Int) {
         FILLED(0), SKETCH(1), OUTLINED(2);
 

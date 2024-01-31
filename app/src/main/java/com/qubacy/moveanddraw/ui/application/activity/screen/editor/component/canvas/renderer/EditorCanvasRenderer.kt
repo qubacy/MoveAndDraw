@@ -4,11 +4,13 @@ import android.opengl.Matrix
 import android.util.Log
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.DrawingContext
 import com.qubacy.moveanddraw.domain._common.model.drawing.util.toVertexTripleArray
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.Dot2D
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.model.GLDrawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.CanvasRenderer
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.util.GL2Util
-import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.data.FaceSketch
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas._common.EditorCanvasContext
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.data.face.FaceSketch
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.renderer.initializer.EditorRendererStepInitializer
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -19,9 +21,6 @@ import javax.microedition.khronos.opengles.GL10
 class EditorCanvasRenderer(
 
 ) : CanvasRenderer() {
-    enum class EditorRendererMode {
-        VIEWING, CREATING_FACE;
-    }
 
     companion object {
         val HELPING_PLANE_DRAWING_COLOR = floatArrayOf(0f, 1f, 0f, 0.4f)
@@ -29,31 +28,55 @@ class EditorCanvasRenderer(
 
         const val MIN_HELPING_PLANE_DISTANCE = DEFAULT_CAMERA_NEAR
         const val HELPING_PLANE_MODEL_GAP = 0.001f
-
-        const val COORDS_PER_DOT = 2
     }
 
     private val mHelpingPlaneDrawing: GLDrawing = generateHelpingPlaneGLDrawing()
     private val mFaceSketchDrawing: GLDrawing = generateFaceSketchDrawing()
-    private val mFaceSketchDotBuffer: MutableList<Pair<Float, Float>> = mutableListOf()
+    private val mFaceSketchDotBuffer: MutableList<Dot2D> = mutableListOf()
 
     private val mFaceSketchMutex: Mutex = Mutex(false)
 
-    val faceSketchDotBuffer: List<Pair<Float, Float>> get() = mFaceSketchDotBuffer
+    val faceSketchDotBuffer: List<Dot2D> get() = mFaceSketchDotBuffer
 
     private var mLastFaceSketchVertexArray: FloatArray = floatArrayOf()
     private var mLastFaceSketchDrawingOrder: ShortArray = shortArrayOf()
 
-    private var mEditorRendererMode: EditorRendererMode = EditorRendererMode.VIEWING
+    private var mEditorRendererMode: EditorCanvasContext.Mode = EditorCanvasContext.Mode.VIEWING
+    val editorRendererMode get() = mEditorRendererMode
+
     private var mIsHelpingPlaneVisible: Boolean = false
 
     private val mProjWorldMatrix = FloatArray(16)
 
     override val mInitializer: EditorRendererStepInitializer = EditorRendererStepInitializer()
 
+    suspend fun setEditorRendererMode(editorRendererMode: EditorCanvasContext.Mode) {
+        Log.d(TAG, "setEditorRendererMode(): editorRendererMode = $editorRendererMode;")
+
+        mInitializerMutex.withLock {
+            mInitializer.postponeEditorMode(editorRendererMode)
+
+            if (mInitializer.currentStep != EditorRendererStepInitializer.EditorStep.EDITOR_MODE)
+                return
+
+            onEditorModeInitializing()
+        }
+    }
+
+    private fun onEditorModeInitializing() {
+        Log.d(TAG, "onEditorModeInitializing(): entering..")
+
+        mEditorRendererMode = mInitializer.editorMode!!
+
+        setHelpingPlaneVisibilityByMode(mEditorRendererMode)
+        changeCameraNearByMode(mEditorRendererMode)
+    }
+
     suspend fun setFaceSketchDotBuffer(
-        faceSketchDots: List<Pair<Float, Float>>
+        faceSketchDots: List<Dot2D>
     ) {
+        Log.d(TAG, "setFaceSketchDotBuffer(): faceSketchDots = ${faceSketchDots.joinToString()};")
+
         mInitializerMutex.withLock {
             mInitializer.postponeSketchDotList(faceSketchDots)
 
@@ -132,47 +155,48 @@ class EditorCanvasRenderer(
         return faceSketch
     }
 
-    fun setMode(mode: EditorRendererMode) {
-        mEditorRendererMode = mode
+//    fun setMode(mode: EditorRendererMode) {
+//        mEditorRendererMode = mode
+//
+//        setHelpingPlaneVisibilityByMode(mode)
+//        changeCameraNearByMode(mode)
+//        mFaceSketchDotBuffer.clear()
+//    }
 
-        setHelpingPlaneVisibilityByMode(mode)
-        changeCameraNearByMode(mode)
-        mFaceSketchDotBuffer.clear()
-    }
-
-    private fun changeCameraNearByMode(mode: EditorRendererMode) {
+    private fun changeCameraNearByMode(mode: EditorCanvasContext.Mode) {
         val cameraNear = when (mode) {
-            EditorRendererMode.VIEWING -> DEFAULT_CAMERA_NEAR
-            EditorRendererMode.CREATING_FACE -> MIN_HELPING_PLANE_DISTANCE
+            EditorCanvasContext.Mode.VIEWING -> DEFAULT_CAMERA_NEAR
+            EditorCanvasContext.Mode.CREATING_FACE -> MIN_HELPING_PLANE_DISTANCE
         }
 
         changeCameraNear(cameraNear)
     }
 
-    private fun setHelpingPlaneVisibilityByMode(mode: EditorRendererMode) {
+    private fun setHelpingPlaneVisibilityByMode(mode: EditorCanvasContext.Mode) {
         mIsHelpingPlaneVisible = when (mode) {
-            EditorRendererMode.VIEWING -> false
-            EditorRendererMode.CREATING_FACE -> true
+            EditorCanvasContext.Mode.VIEWING -> false
+            EditorCanvasContext.Mode.CREATING_FACE -> true
         }
     }
 
-    override suspend fun handleScale(scaleFactor: Float) {
+    override fun handleScale(gottenScaleFactor: Float) {
         when (mEditorRendererMode) {
-            EditorRendererMode.CREATING_FACE -> handleHelpingPlaneDistanceChange(scaleFactor)
-            else -> super.handleScale(scaleFactor)
+            EditorCanvasContext.Mode.CREATING_FACE ->
+                handleHelpingPlaneDistanceChange(gottenScaleFactor)
+            else -> super.handleScale(gottenScaleFactor)
         }
     }
 
-    override suspend fun handleRotation(dx: Float, dy: Float) {
+    override fun handleRotation(dx: Float, dy: Float) {
         when (mEditorRendererMode) {
-            EditorRendererMode.CREATING_FACE -> {  } // nothing?
+            EditorCanvasContext.Mode.CREATING_FACE -> {  } // nothing?
             else -> super.handleRotation(dx, dy)
         }
     }
 
     suspend fun handleClick(x: Float, y: Float) {
         when (mEditorRendererMode) {
-            EditorRendererMode.CREATING_FACE -> addSketchVertex(x, y)
+            EditorCanvasContext.Mode.CREATING_FACE -> addSketchVertex(x, y)
             else -> { }
         }
     }

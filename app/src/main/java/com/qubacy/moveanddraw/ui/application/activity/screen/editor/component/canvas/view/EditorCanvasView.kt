@@ -6,9 +6,11 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.Dot2D
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.view.CanvasView
-import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.data.FaceSketch
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas._common.EditorCanvasContext
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.data.face.FaceSketch
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.renderer.EditorCanvasRenderer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,22 +29,34 @@ class EditorCanvasView(
 
     override val mRenderer: EditorCanvasRenderer = EditorCanvasRenderer()
 
-    private var mIsInEditorMode: Boolean = false
     private var mIsLongAction = false
 
     private var mIsSavingSketch: Boolean = false
 
-    fun enableEditorMode(isEnabled: Boolean) {
-        mIsInEditorMode = isEnabled
-
-        val editorRendererMode =
-            if (isEnabled) EditorCanvasRenderer.EditorRendererMode.CREATING_FACE
-            else EditorCanvasRenderer.EditorRendererMode.VIEWING
-
-        mLifecycleScope?.launch {
-            mRenderer.setMode(editorRendererMode)
-            requestRender()
+    fun getFaceSketchDotBuffer(): List<Dot2D> {
+        val copyBuffer = mutableListOf<Dot2D>().apply {
+            for (dot in mRenderer.faceSketchDotBuffer) add(dot.copy())
         }
+
+        return copyBuffer
+    }
+
+    fun setFaceSketchDotBuffer(
+        faceSketchDotBuffer: List<Dot2D>
+    ) = mLifecycleScope?.launch (Dispatchers.IO) {
+        mRenderer.setFaceSketchDotBuffer(faceSketchDotBuffer)
+        requestRender()
+    }
+
+    fun getEditorMode(): EditorCanvasContext.Mode {
+        return mRenderer.editorRendererMode
+    }
+
+    fun setEditorMode(
+        editorMode: EditorCanvasContext.Mode
+    ) = mLifecycleScope?.launch (Dispatchers.IO) {
+        mRenderer.setEditorRendererMode(editorMode)
+        requestRender()
     }
 
     suspend fun removeLastSketchVertex() {
