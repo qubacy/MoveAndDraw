@@ -53,9 +53,10 @@ class EditorCanvasView(
     }
 
     fun setEditorMode(
-        editorMode: EditorCanvasContext.Mode
+        editorMode: EditorCanvasContext.Mode,
+        isInitializing: Boolean = false
     ) = mLifecycleScope?.launch (Dispatchers.IO) {
-        mRenderer.setEditorRendererMode(editorMode)
+        mRenderer.setEditorRendererMode(editorMode, isInitializing)
         requestRender()
     }
 

@@ -80,6 +80,8 @@ abstract class DrawingFragment<
 
         mModel.setDrawingSettings(mCanvasView.getDrawingSettings())
 
+        mCanvasView.prepareForPreservation()
+
         super.onPause()
     }
 

@@ -4,10 +4,11 @@ import java.io.Serializable
 
 open class CameraData(
     initPosition: FloatArray = floatArrayOf(0f, 0f, 0f),
-    initFOV: Float = CameraContext.MIN_FOV,
+    initFOV: Float = CameraContext.DEFAULT_CAMERA_FOV,
     initScaleFactor: Float = CameraContext.MIN_SCALE,
     initMadeWayHorizontal: Float = 0f,
-    initMadeWayVertical: Float = 0f
+    initMadeWayVertical: Float = 0f,
+    initCameraNear: Float = CameraContext.DEFAULT_CAMERA_NEAR
 ) : Serializable {
     @Volatile
     protected var mPosition: FloatArray = initPosition
@@ -19,12 +20,15 @@ open class CameraData(
     protected var mMadeWayHorizontal: Float = initMadeWayHorizontal
     @Volatile
     protected var mMadeWayVertical: Float = initMadeWayVertical
+    @Volatile
+    protected var mCameraNear: Float = initCameraNear
 
     val position get() = mPosition
     val fov get() = mFOV
     val scaleFactor get() = mScaleFactor
     val madeWayHorizontal get() = mMadeWayHorizontal
     val madeWayVertical get() = mMadeWayVertical
+    val cameraNear get() = mCameraNear
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -37,6 +41,7 @@ open class CameraData(
         if (scaleFactor != other.scaleFactor) return false
         if (madeWayHorizontal != other.madeWayHorizontal) return false
         if (madeWayVertical != other.madeWayVertical) return false
+        if (cameraNear != other.cameraNear) return false
 
         return true
     }
@@ -48,6 +53,7 @@ open class CameraData(
         result = 31 * result + scaleFactor.hashCode()
         result = 31 * result + madeWayHorizontal.hashCode()
         result = 31 * result + madeWayVertical.hashCode()
+        result = 31 * result + cameraNear.hashCode()
 
         return result
     }
@@ -58,7 +64,8 @@ open class CameraData(
             mFOV,
             mScaleFactor,
             mMadeWayHorizontal,
-            mMadeWayVertical
+            mMadeWayVertical,
+            mCameraNear
         )
     }
 }

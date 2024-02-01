@@ -7,8 +7,9 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.ca
 class EditorRendererStepInitializer(
 
 ) : RendererStepInitializer() {
-    enum class EditorStep : Step {
-        EDITOR_MODE(), SKETCH();
+    enum class EditorStep(override val id: Short) : Step {
+        EDITOR_MODE(StandardStep.entries.size.toShort()),
+        SKETCH((EDITOR_MODE.id + 1).toShort());
     }
 
     @Volatile

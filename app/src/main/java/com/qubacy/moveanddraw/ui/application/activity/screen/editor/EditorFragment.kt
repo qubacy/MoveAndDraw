@@ -50,21 +50,7 @@ class EditorFragment(
 {
     companion object {
         const val TAG = "EDITOR_FRAGMENT"
-
-//        const val STATE_MODEL_COLOR_KEY = "modelColor"
-//        const val EDITOR_MODE_KEY = "editorMode"
-//        const val DRAWING_MODE_KEY = "drawingMode"
     }
-
-//    enum class EditorMode(val id: Int) {
-//        MAIN(0), FACE(1);
-//
-//        companion object {
-//            fun getBottomMenuModeById(id: Int): EditorMode {
-//                return EditorMode.values().first { it.id == id }
-//            }
-//        }
-//    }
 
     @Inject
     @EditorViewModelFactoryQualifier
@@ -75,10 +61,6 @@ class EditorFragment(
     )
 
     private lateinit var mBinding: FragmentEditorBinding
-//    private var mEditorMode: EditorMode = EditorMode.MAIN
-
-//    private var mModelColor: Int? = null
-//    private var mDrawingMode: GLContext.DrawingMode = GLContext.DrawingMode.FILLED
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -94,34 +76,6 @@ class EditorFragment(
             false
         )
     }
-
-//    override fun onSaveInstanceState(outState: Bundle) {
-//        super.onSaveInstanceState(outState)
-//
-//        if (mModelColor != null)
-//            outState.putInt(STATE_MODEL_COLOR_KEY, mModelColor!!)
-//
-//        outState.putInt(EDITOR_MODE_KEY, mEditorMode.id)
-//        outState.putInt(DRAWING_MODE_KEY, mDrawingMode.id)
-//    }
-//
-//    override fun onViewStateRestored(savedInstanceState: Bundle?) {
-//        super.onViewStateRestored(savedInstanceState)
-//
-//        Log.d(TAG, "onViewStateRestored(): is entered..")
-//
-//        mModelColor = savedInstanceState?.getInt(STATE_MODEL_COLOR_KEY)
-//
-//        val editorModeId = savedInstanceState?.getInt(EDITOR_MODE_KEY) ?: EditorMode.MAIN.id
-//        val editorMode = EditorMode.getBottomMenuModeById(editorModeId)
-//
-//        val drawingModeId = savedInstanceState?.getInt(DRAWING_MODE_KEY) ?: GLContext.DrawingMode.FILLED.id
-//        val drawingMode = GLContext.DrawingMode.getDrawingModeById(drawingModeId)
-//
-//        applyCurrentModelColor()
-//        setEditorMode(editorMode)
-//        setDrawingMode(drawingMode)
-//    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -157,7 +111,7 @@ class EditorFragment(
     override fun onStart() {
         super.onStart()
 
-        mModel.editorMode?.also { mCanvasView.setEditorMode(it) }
+        mModel.editorMode?.also { mCanvasView.setEditorMode(it, true) }
         mModel.faceSketchDotBuffer?.also { mCanvasView.setFaceSketchDotBuffer(it) }
     }
 
@@ -180,7 +134,7 @@ class EditorFragment(
     private fun onNewFaceSaved() {
         // todo: changing the bottom menu appearance if the operation went OK..
 
-        setEditorMode(EditorCanvasContext.Mode.VIEWING)//EditorMode.MAIN)
+        setEditorMode(EditorCanvasContext.Mode.VIEWING)
     }
 
     private fun onDrawingSaved(operation: DrawingSavedUiOperation) {
@@ -193,14 +147,12 @@ class EditorFragment(
         lifecycleScope.launch(Dispatchers.IO) {
             Log.d(DrawingFragment.TAG, "setCanvasDrawing(): entering..")
 
-            mCanvasView.setFigure(drawing) //, mDrawingMode)
+            mCanvasView.setFigure(drawing)
         }
     }
 
     private fun onMainActionClicked() {
         when (mCanvasView.getEditorMode()) {
-//            EditorMode.MAIN -> onAddFaceClicked()
-//            EditorMode.FACE -> onSaveFaceClicked()
             EditorCanvasContext.Mode.VIEWING -> onAddFaceClicked()
             EditorCanvasContext.Mode.CREATING_FACE -> onSaveFaceClicked()
         }
@@ -209,7 +161,7 @@ class EditorFragment(
     private fun onAddFaceClicked() {
         // todo: changing the bottom menu appearance..
 
-        setEditorMode(EditorCanvasContext.Mode.CREATING_FACE)//EditorMode.FACE)
+        setEditorMode(EditorCanvasContext.Mode.CREATING_FACE)
     }
 
     private fun onSaveFaceClicked() = lifecycleScope.launch(Dispatchers.IO) {
@@ -226,25 +178,21 @@ class EditorFragment(
         }
     }
 
-    private fun setEditorMode(editorMode: EditorCanvasContext.Mode) {//mode: EditorMode) {
-        //mEditorMode = mode
-
+    private fun setEditorMode(editorMode: EditorCanvasContext.Mode) {
         when (editorMode) {
-            EditorCanvasContext.Mode.VIEWING -> {//EditorMode.MAIN -> {
+            EditorCanvasContext.Mode.VIEWING -> {
                 setBottomMenuMainGroupVisibility(true)
             }
-            EditorCanvasContext.Mode.CREATING_FACE -> {//EditorMode.FACE -> {
+            EditorCanvasContext.Mode.CREATING_FACE -> {
                 setBottomMenuMainGroupVisibility(false)
             }
         }
 
-        mCanvasView.setEditorMode(editorMode)
+        mCanvasView.setEditorMode(editorMode, false)
         setMainActionAppearanceByBottomMenuMode(editorMode)
     }
 
     private fun setDrawingMode(drawingMode: GLContext.DrawingMode) {
-//        mDrawingMode = drawingMode
-
         setDrawingModeActionAppearanceByDrawingMode(drawingMode)
 
         mCanvasView.setFigureDrawingMode(drawingMode)
@@ -266,10 +214,8 @@ class EditorFragment(
         mBinding.fragmentEditorBottomBar.menu.setGroupVisible(R.id.editor_bottom_bar_face_group, !isVisible)
     }
 
-    private fun setMainActionAppearanceByBottomMenuMode(editorMode: EditorCanvasContext.Mode) {//mode: EditorMode) {
+    private fun setMainActionAppearanceByBottomMenuMode(editorMode: EditorCanvasContext.Mode) {
         val iconDrawableId = when (editorMode) {
-//            EditorMode.MAIN -> { R.drawable.ic_surface }
-//            EditorMode.FACE -> { R.drawable.ic_check }
             EditorCanvasContext.Mode.VIEWING -> { R.drawable.ic_surface }
             EditorCanvasContext.Mode.CREATING_FACE -> { R.drawable.ic_check }
         }
@@ -383,7 +329,7 @@ class EditorFragment(
 
 
 
-        setEditorMode(EditorCanvasContext.Mode.VIEWING)//EditorMode.MAIN)
+        setEditorMode(EditorCanvasContext.Mode.VIEWING)
     }
 
     private fun onUndoVertexClicked() {
@@ -412,14 +358,10 @@ class EditorFragment(
     }
 
     private fun onColorPicked(@ColorInt color: Int) {
-//        mModelColor = color
-
         applyModelColor(color)
     }
 
     private fun applyModelColor(@ColorInt color: Int) {
-//        if (mModelColor == null) return
-
         changePreviewColor(color)
         changeCanvasModelColor(color)
     }

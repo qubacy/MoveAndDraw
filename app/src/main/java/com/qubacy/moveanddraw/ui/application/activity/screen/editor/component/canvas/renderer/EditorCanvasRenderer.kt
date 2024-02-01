@@ -6,6 +6,7 @@ import com.qubacy.moveanddraw.domain._common.model.drawing._common.DrawingContex
 import com.qubacy.moveanddraw.domain._common.model.drawing.util.toVertexTripleArray
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.Dot2D
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.camera._common.CameraContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.model.GLDrawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.renderer.CanvasRenderer
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.util.GL2Util
@@ -26,7 +27,7 @@ class EditorCanvasRenderer(
         val HELPING_PLANE_DRAWING_COLOR = floatArrayOf(0f, 1f, 0f, 0.4f)
         val FACE_SKETCH_DRAWING_COLOR = floatArrayOf(1f, 0f, 1f, 1f)
 
-        const val MIN_HELPING_PLANE_DISTANCE = DEFAULT_CAMERA_NEAR
+        const val MIN_HELPING_PLANE_DISTANCE = CameraContext.DEFAULT_CAMERA_NEAR
         const val HELPING_PLANE_MODEL_GAP = 0.001f
     }
 
@@ -50,23 +51,39 @@ class EditorCanvasRenderer(
 
     override val mInitializer: EditorRendererStepInitializer = EditorRendererStepInitializer()
 
-    suspend fun setEditorRendererMode(editorRendererMode: EditorCanvasContext.Mode) {
+    /**
+     * Note: it can be changed multiple times having the same active Figure so 'isInitializing'
+     * param is drastically important!
+     */
+    suspend fun setEditorRendererMode(
+        editorRendererMode: EditorCanvasContext.Mode,
+        isInitializing: Boolean = false
+    ) {
         Log.d(TAG, "setEditorRendererMode(): editorRendererMode = $editorRendererMode;")
 
-        mInitializerMutex.withLock {
-            mInitializer.postponeEditorMode(editorRendererMode)
+        if (isInitializing) {
+            mInitializerMutex.withLock {
+                mInitializer.postponeEditorMode(editorRendererMode)
 
-            if (mInitializer.currentStep != EditorRendererStepInitializer.EditorStep.EDITOR_MODE)
-                return
+                if (mInitializer.currentStep != EditorRendererStepInitializer.EditorStep.EDITOR_MODE)
+                    return
 
-            onEditorModeInitializing()
+                onEditorModeInitializing()
+            }
+
+        } else {
+            changeEditorMode(editorRendererMode)
         }
     }
 
     private fun onEditorModeInitializing() {
         Log.d(TAG, "onEditorModeInitializing(): entering..")
 
-        mEditorRendererMode = mInitializer.editorMode!!
+        changeEditorMode(mInitializer.editorMode!!)
+    }
+
+    private fun changeEditorMode(editorMode: EditorCanvasContext.Mode) {
+        mEditorRendererMode = editorMode
 
         setHelpingPlaneVisibilityByMode(mEditorRendererMode)
         changeCameraNearByMode(mEditorRendererMode)
@@ -165,7 +182,7 @@ class EditorCanvasRenderer(
 
     private fun changeCameraNearByMode(mode: EditorCanvasContext.Mode) {
         val cameraNear = when (mode) {
-            EditorCanvasContext.Mode.VIEWING -> DEFAULT_CAMERA_NEAR
+            EditorCanvasContext.Mode.VIEWING -> CameraContext.DEFAULT_CAMERA_NEAR
             EditorCanvasContext.Mode.CREATING_FACE -> MIN_HELPING_PLANE_DISTANCE
         }
 
@@ -214,7 +231,7 @@ class EditorCanvasRenderer(
     }
 
     private fun handleHelpingPlaneDistanceChange(distanceFactor: Float) {
-        val newNear = mCameraNear * distanceFactor
+        val newNear = mCameraData.cameraNear * distanceFactor//mCameraNear * distanceFactor
         val filteredNewNear =
             if (newNear <= MIN_HELPING_PLANE_DISTANCE) MIN_HELPING_PLANE_DISTANCE
             else if (newNear >= mSphereRadius * 2) mSphereRadius * 2 - HELPING_PLANE_MODEL_GAP
@@ -226,7 +243,8 @@ class EditorCanvasRenderer(
     private fun changeCameraNear(near: Float) {//= mCameraMutex.withLock {
         Log.d(TAG, "changeCameraNear(): near = $near")
 
-        mCameraNear = near
+        mCameraData.setCameraNear(near)
+        //mCameraNear = near
 
         setPerspective()
     }
@@ -347,6 +365,8 @@ class EditorCanvasRenderer(
 
             curFaceSketchIndex += DrawingContext.COORDS_PER_VERTEX
         }
+
+        Log.d(TAG, "getFaceSketchVerticesByDots(): faceSketchVertices = ${faceSketchVertices.joinToString()};")
 
         return faceSketchVertices
     }

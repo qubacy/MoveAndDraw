@@ -10,8 +10,9 @@ class MutableCameraData(
     fov: Float,
     scaleFactor: Float,
     madeWayHorizontal: Float,
-    madeWayVertical: Float
-) : CameraData(position, fov, scaleFactor, madeWayHorizontal, madeWayVertical) {
+    madeWayVertical: Float,
+    cameraNear: Float
+) : CameraData(position, fov, scaleFactor, madeWayHorizontal, madeWayVertical, cameraNear) {
     companion object {
         const val TAG = "MUTABLE_CAMERA_DATA"
     }
@@ -45,6 +46,12 @@ class MutableCameraData(
         mMadeWayVertical = madeWayVertical
     }
 
+    fun setCameraNear(cameraNear: Float) {
+        if (cameraNear <= 0f) throw IllegalArgumentException()
+
+        mCameraNear = cameraNear
+    }
+
     fun setData(cameraData: CameraData) {
         Log.d(TAG, "setData(): cameraData.pos = ${cameraData.position.joinToString()}")
 
@@ -53,5 +60,6 @@ class MutableCameraData(
         mScaleFactor = cameraData.scaleFactor
         mMadeWayHorizontal = cameraData.madeWayHorizontal
         mMadeWayVertical = cameraData.madeWayVertical
+        mCameraNear = cameraData.cameraNear
     }
 }

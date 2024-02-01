@@ -6,10 +6,18 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.dra
 open class RendererStepInitializer(
 
 ) {
-    interface Step { }
+    interface Step {
+        val id: Short
+    }
 
-    enum class StandardStep : Step {
-        FIGURE(), CAMERA(), FINAL();
+    /**
+     * 'id' goes between 0 and N;
+     * Note: 'id' is meant to be unique!
+     */
+    enum class StandardStep(
+        override val id: Short
+    ) : Step {
+        FIGURE(0), CAMERA(1), FINAL(2);
     }
 
     @Volatile
@@ -56,5 +64,9 @@ open class RendererStepInitializer(
 
         mFigure = null
         mCamera = null
+    }
+
+    fun isAtLeast(step: Step): Boolean {
+        return (mCurrentStep.id >= step.id)
     }
 }

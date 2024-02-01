@@ -6,6 +6,7 @@ import android.opengl.Matrix
 import android.util.Log
 import androidx.annotation.FloatRange
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.camera._common.CameraContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.camera._common.CameraData
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.camera.mutable.MutableCameraData
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.model.GLDrawing
@@ -36,10 +37,6 @@ open class CanvasRenderer(
 
         const val MIN_SCALE_FACTOR = 0.25f
         const val MAX_SCALE_FACTOR = 100f
-
-        const val DEFAULT_CAMERA_NEAR = 0.01f
-        const val CAMERA_NEAR_DRAWING_GAP = 0.001f
-        private const val CAMERA_FOV = 60f
     }
 
     protected val mProjectionMatrix = FloatArray(16)
@@ -48,7 +45,7 @@ open class CanvasRenderer(
 
     protected var mSphereRadius: Float = DEFAULT_SPHERE_RADIUS
     protected var mCameraRadius = mSphereRadius
-    protected var mCameraNear = DEFAULT_CAMERA_NEAR
+//    protected var mCameraNear = CameraContext.DEFAULT_CAMERA_NEAR
 
     @Volatile
     protected var mCameraCenterLocation = floatArrayOf(0f, 0f, 0f)
@@ -57,10 +54,11 @@ open class CanvasRenderer(
 
     protected var mCameraData: MutableCameraData = MutableCameraData(
         floatArrayOf(mCameraRadius, 0f, mCameraCenterLocation[2]),
-        CAMERA_FOV,
+        CameraContext.DEFAULT_CAMERA_FOV,
         1f,
         0f,
-        0f
+        0f,
+        CameraContext.DEFAULT_CAMERA_NEAR
     )
     val cameraData: CameraData get() = mCameraData
 
@@ -90,6 +88,10 @@ open class CanvasRenderer(
     protected open val mInitializer: RendererStepInitializer = RendererStepInitializer()
     protected val mInitializerMutex = Mutex(false)
 
+    fun resetInitializer() {
+        mInitializer.reset()
+    }
+
     suspend fun setCameraData(cameraData: CameraData) {//= mCameraMutex.withLock {
         Log.d(TAG, "setCameraData(): entering.. cameraData.pos = ${cameraData.position.joinToString()}")
 
@@ -112,7 +114,6 @@ open class CanvasRenderer(
 
     fun setFigureDrawingMode(drawingMode: GLContext.DrawingMode) {
         mDrawingSettings.setDrawingMode(drawingMode)
-
         mFigure?.setDrawingMode(mDrawingSettings.drawingMode)
 
 //        mFigure?.setDrawingMode(drawingMode)
@@ -202,13 +203,14 @@ open class CanvasRenderer(
 
         mFigure = figure.apply {
             setColor(mDrawingSettings.modelColor)
+            setDrawingMode(mDrawingSettings.drawingMode)
         }
 
         mViewCenterLocation = GL2Util.getVertexCenterPoint(mFigure!!.vertexArray)
 
         val sphereRadiusFromDistance =
             GL2Util.getMaxDistanceFromDot(mFigure!!.vertexArray, mViewCenterLocation)
-        val minSphereRadius = DEFAULT_CAMERA_NEAR + CAMERA_NEAR_DRAWING_GAP
+        val minSphereRadius = CameraContext.DEFAULT_CAMERA_NEAR + CameraContext.CAMERA_NEAR_DRAWING_GAP
         val sphereRadius =
             if (sphereRadiusFromDistance > minSphereRadius) sphereRadiusFromDistance
             else minSphereRadius
@@ -305,7 +307,7 @@ open class CanvasRenderer(
     }
 
     protected fun setPerspective() {
-        mCameraData.apply { setFOV(CAMERA_FOV / scaleFactor) }
+        mCameraData.apply { setFOV(CameraContext.DEFAULT_CAMERA_FOV / scaleFactor) }
 
         Log.d(TAG, "setPerspective(): mCameraData.fov = ${mCameraData.fov}; mCameraData.scaleFactor = ${mCameraData.scaleFactor}")
 
@@ -313,7 +315,7 @@ open class CanvasRenderer(
             mProjectionMatrix, 0,
             mCameraData.fov,
             mViewportRatio,
-            mCameraNear,
+            mCameraData.cameraNear,//mCameraNear,
             mSphereRadius * 2
         )
     }

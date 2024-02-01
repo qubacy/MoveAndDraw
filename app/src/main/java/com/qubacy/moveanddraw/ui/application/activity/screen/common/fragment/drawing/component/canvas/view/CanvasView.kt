@@ -97,6 +97,14 @@ open class CanvasView(
         }
     }
 
+    /**
+     * This method is meant to be called during onPause() lifecycle event handler;
+     * It's in charge for resetting a RendererInitializer instance;
+     */
+    fun prepareForPreservation() {
+        mRenderer.resetInitializer()
+    }
+
     fun setLifecycleOwner(lifecycle: Lifecycle) {
         lifecycle.addObserver(this)
 
