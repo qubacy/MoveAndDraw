@@ -31,7 +31,6 @@ open class CanvasRenderer(
     companion object {
         const val TAG = "CANVAS_RENDERER"
 
-        val CENTER_POSITION = floatArrayOf(0f, 0f, 0f)
         const val DEFAULT_SPHERE_RADIUS = 1f
         const val DEFAULT_SPHERE_RADIUS_COEF = 3f
 
@@ -45,7 +44,6 @@ open class CanvasRenderer(
 
     protected var mSphereRadius: Float = DEFAULT_SPHERE_RADIUS
     protected var mCameraRadius = mSphereRadius
-//    protected var mCameraNear = CameraContext.DEFAULT_CAMERA_NEAR
 
     @Volatile
     protected var mCameraCenterLocation = floatArrayOf(0f, 0f, 0f)
@@ -73,8 +71,6 @@ open class CanvasRenderer(
 
     @Volatile
     private var mBackgroundColor: FloatArray = floatArrayOf(0.0f, 0.0f, 0.0f, 1.0f)
-//    @Volatile
-//    private var mDefaultModelColor: FloatArray = floatArrayOf(1f, 1f, 1f, 1f)
 
     protected var mDrawingSettings: MutableDrawingSettings = MutableDrawingSettings(
         GLContext.DrawingMode.FILLED,
@@ -92,7 +88,7 @@ open class CanvasRenderer(
         mInitializer.reset()
     }
 
-    suspend fun setCameraData(cameraData: CameraData) {//= mCameraMutex.withLock {
+    suspend fun setCameraData(cameraData: CameraData) {
         Log.d(TAG, "setCameraData(): entering.. cameraData.pos = ${cameraData.position.joinToString()}")
 
         mInitializerMutex.withLock {
@@ -115,8 +111,6 @@ open class CanvasRenderer(
     fun setFigureDrawingMode(drawingMode: GLContext.DrawingMode) {
         mDrawingSettings.setDrawingMode(drawingMode)
         mFigure?.setDrawingMode(mDrawingSettings.drawingMode)
-
-//        mFigure?.setDrawingMode(drawingMode)
     }
 
     fun setModelColor(
@@ -128,13 +122,6 @@ open class CanvasRenderer(
         mDrawingSettings.setModelColor(r, g, b, a)
 
         setFigureColor(mDrawingSettings.modelColor)
-
-
-//        mDefaultModelColor = floatArrayOf(r, g, b, a)
-//
-//        mFigure?.apply {
-//            setColor(mDefaultModelColor)
-//        }
     }
 
     private fun setFigureColor(color: FloatArray) {
@@ -271,7 +258,7 @@ open class CanvasRenderer(
 
             val madeWayAngleVertical = cameraMadeWayNormalized / mSphereRadius
 
-            newZ = CENTER_POSITION[2] + mSphereRadius * sin(madeWayAngleVertical)
+            newZ = mViewCenterLocation[2] + mSphereRadius * sin(madeWayAngleVertical)
             val newCameraRadius = sqrt(mSphereRadius * mSphereRadius - newZ * newZ)
 
             mCameraData.apply {
@@ -290,11 +277,11 @@ open class CanvasRenderer(
         return floatArrayOf(newX, newY, newZ)
     }
 
-    open fun handleRotation(dx: Float, dy: Float) {//= mCameraMutex.withLock {
+    open fun handleRotation(dx: Float, dy: Float) {
         mCameraData.setPosition(getTranslatedCameraLocation(dx, dy))
     }
 
-    open fun handleScale(gottenScaleFactor: Float) {//= mCameraMutex.withLock {
+    open fun handleScale(gottenScaleFactor: Float) {
         val newScaleFactor = mCameraData.scaleFactor * gottenScaleFactor
 
         if (newScaleFactor !in MIN_SCALE_FACTOR..MAX_SCALE_FACTOR) return
