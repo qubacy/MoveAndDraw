@@ -25,3 +25,7 @@ fun Context.getFileNameByUri(uri: Uri): String {
         it.getString(nameColumnIndex)
     }!!
 }
+
+fun Context.getFileProviderAuthority(): String {
+    return applicationContext.packageName + ".provider"
+}

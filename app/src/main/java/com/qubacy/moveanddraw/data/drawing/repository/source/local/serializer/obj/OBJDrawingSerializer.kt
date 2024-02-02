@@ -40,11 +40,15 @@ class OBJDrawingSerializer : DrawingSerializer {
                 serializedFacesBuilder.append(curVertex.first + 1)
 
                 if (curVertex.second != null)
-                    serializedFacesBuilder.append(OBJContext.TOKEN_SPLITTER)
+                    serializedFacesBuilder.append(OBJContext.PARTS_SPLITTER)
                         .append(curVertex.second!! + 1)
-                if (curVertex.third != null)
-                    serializedFacesBuilder.append(OBJContext.TOKEN_SPLITTER)
+                if (curVertex.third != null) {
+                    if (curVertex.second == null)
+                        serializedFacesBuilder.append(OBJContext.PARTS_SPLITTER)
+
+                    serializedFacesBuilder.append(OBJContext.PARTS_SPLITTER)
                         .append(curVertex.third!! + 1)
+                }
 
                 if (j != curFace.size - 1) serializedFacesBuilder.append(" ")
             }

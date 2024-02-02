@@ -18,11 +18,16 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.dra
 abstract class DrawingViewModel<UiStateType : DrawingUiState>(
     protected val mDrawingUseCase: DrawingUseCase
 ) : BusinessViewModel<UiStateType>(mDrawingUseCase) {
+    enum class DrawingFileExtension(
+        val ext: String
+    ) {
+        OBJ("obj");
+    }
+
     companion object {
         const val TAG = "DRAWING_VIEW_MODEL"
 
         const val DRAWING_MIME_TYPE = "model/obj"
-        val DRAWING_FILE_EXTENSIONS = arrayOf("obj")
     }
 
     protected var mLastCameraData: CameraData? = null
@@ -42,7 +47,7 @@ abstract class DrawingViewModel<UiStateType : DrawingUiState>(
     }
 
     fun isDrawingFileExtensionValid(ext: String): Boolean {
-        return DRAWING_FILE_EXTENSIONS.contains(ext)
+        return DrawingFileExtension.values().find { it.ext == ext } != null
     }
 
     fun loadDrawing(drawingUri: Uri) {

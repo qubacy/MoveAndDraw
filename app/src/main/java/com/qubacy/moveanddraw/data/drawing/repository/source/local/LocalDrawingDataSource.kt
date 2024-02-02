@@ -2,9 +2,14 @@ package com.qubacy.moveanddraw.data.drawing.repository.source.local
 
 import android.content.Context
 import android.net.Uri
+import android.os.Environment
+import androidx.core.content.FileProvider
+import com.qubacy.moveanddraw._common.util.context.getFileNameByUri
+import com.qubacy.moveanddraw._common.util.context.getFileProviderAuthority
 import com.qubacy.moveanddraw.data._common.repository._common.source._common.DataSource
 import com.qubacy.moveanddraw.data.drawing.model.DataDrawing
 import com.qubacy.moveanddraw.data.drawing.repository.source.local.parser.obj.OBJDrawingParser
+import com.qubacy.moveanddraw.data.drawing.repository.source.local.result.SaveNewFileResult
 import com.qubacy.moveanddraw.data.drawing.repository.source.local.serializer.obj.OBJDrawingSerializer
 import java.io.File
 import java.io.FileOutputStream
@@ -78,11 +83,11 @@ open class LocalDrawingDataSource @Inject constructor(
         }
     }
 
-    open fun saveNewFile(drawing: DataDrawing, filename: String): String {
+    open fun saveNewFile(drawing: DataDrawing, filename: String): SaveNewFileResult {
         var fileStream: FileOutputStream? = null
 
         try {
-            val filesDir = context.filesDir
+            val filesDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)!!
             val drawingFile = File(filesDir.path + "/" + filename)
 
             drawingFile.createNewFile()
@@ -93,7 +98,10 @@ open class LocalDrawingDataSource @Inject constructor(
 
             fileStream.write(serializedDrawing)
 
-            return drawingFile.absolutePath
+            val contentUri = FileProvider.getUriForFile(
+                context, context.getFileProviderAuthority(), drawingFile)
+
+            return SaveNewFileResult(drawingFile.absolutePath, contentUri)
 
         } catch (e: Exception) {
             e.printStackTrace()
@@ -103,5 +111,9 @@ open class LocalDrawingDataSource @Inject constructor(
         } finally {
             fileStream?.close()
         }
+    }
+
+    fun getDrawingFileNameByUri(drawingUri: Uri): String {
+        return context.getFileNameByUri(drawingUri)
     }
 }

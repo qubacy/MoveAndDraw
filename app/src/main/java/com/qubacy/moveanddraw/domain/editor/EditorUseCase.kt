@@ -26,13 +26,21 @@ class EditorUseCase @Inject constructor(
             try {
                 val dataDrawing = drawing.toDataDrawing()
 
-                val savedDrawingPath =
+                val savedDrawingResult =
                     if (drawingUri != null)
                         mDrawingDataRepository.saveDrawing(dataDrawing, drawingUri) // todo: can be suspend;
                     else
                         mDrawingDataRepository.saveNewDrawing(dataDrawing, filename!!)
 
-                mResultFlow.emit(SaveDrawingResult(savedDrawingPath))
+                val finalDrawing = Drawing(
+                    savedDrawingResult.uri,
+                    drawing.vertexArray,
+                    drawing.normalArray,
+                    drawing.textureArray,
+                    drawing.faceArray
+                )
+
+                mResultFlow.emit(SaveDrawingResult(finalDrawing, savedDrawingResult.filePath))
 
             } catch (e: MADErrorException) {
                 onErrorCaught(e.errorId)

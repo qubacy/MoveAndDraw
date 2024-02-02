@@ -132,15 +132,21 @@ class EditorFragment(
     }
 
     private fun onNewFaceSaved() {
-        // todo: changing the bottom menu appearance if the operation went OK..
-
         setEditorMode(EditorCanvasContext.Mode.VIEWING)
     }
 
     private fun onDrawingSaved(operation: DrawingSavedUiOperation) {
-        // todo: showing a message with the file path..
+        onMessageOccurred(R.string.fragment_editor_message_saved_image)
 
+        if (mModel.isSharingPending) onSharingDrawingSaved()
+    }
 
+    private fun onSharingDrawingSaved() {
+        val curDrawing = mModel.uiState.value?.drawing!!
+
+        shareDrawingByUri(curDrawing.uri!!)
+
+        mModel.setIsSharingPending(false)
     }
 
     override fun setCanvasDrawing(drawing: Drawing) {
@@ -159,8 +165,6 @@ class EditorFragment(
     }
 
     private fun onAddFaceClicked() {
-        // todo: changing the bottom menu appearance..
-
         setEditorMode(EditorCanvasContext.Mode.CREATING_FACE)
     }
 
@@ -240,18 +244,47 @@ class EditorFragment(
     }
 
     private fun onSaveMenuItemClicked() {
-        // todo: checking if the drawing's file exists.
-        // todo: if it doesn't then an appropriate dialog should be shown..
+        val curDrawing = mModel.uiState.value?.drawing
 
+        if (curDrawing == null) {
+            // todo: showing an error message..
 
-
-        getDrawingFilenameWithDialog() {
-
+            return
         }
 
-        // todo: saving the file..
+        if (curDrawing.uri != null)
+            return saveExistingDrawingFile(curDrawing)
 
+        saveNewDrawingFile(curDrawing)
+    }
 
+    private fun saveExistingDrawingFile(drawing: Drawing) {
+        if (!mModel.checkDrawingValidity(drawing)) {
+            // todo: showing an error message..
+
+            return
+        }
+
+        mModel.saveCurrentDrawingChanges(drawing)
+    }
+
+    private fun saveNewDrawingFile(drawing: Drawing, onEnded: (() -> Unit)? = null) {
+        if (!mModel.checkDrawingValidity(drawing)) {
+            // todo: showing an error message..
+
+            return
+        }
+
+        getDrawingFilenameWithDialog() {
+            if (!mModel.checkNewFileFilenameValidity(it)) {
+                // todo: showing an error..
+
+                return@getDrawingFilenameWithDialog
+            }
+
+            mModel.saveCurrentDrawingToNewFile(drawing, it)
+            onEnded?.invoke()
+        }
     }
 
     private fun getDrawingFilenameWithDialog(onProvided: (String) -> Unit) {
@@ -274,12 +307,18 @@ class EditorFragment(
     }
 
     override fun onShareMenuItemClicked() {
-        // todo: if the drawing's file doesn't exist then save it..
+        val curDrawing = mModel.uiState.value?.drawing
 
+        if (curDrawing == null) {
+            // todo: showing an error message..
 
-        // todo: sharing the file..
+            return
+        }
 
+        if (curDrawing.uri == null) saveNewDrawingFile(curDrawing)
+        else saveExistingDrawingFile(curDrawing)
 
+        mModel.setIsSharingPending(true)
     }
 
     override fun onMenuItemClick(item: MenuItem?): Boolean {

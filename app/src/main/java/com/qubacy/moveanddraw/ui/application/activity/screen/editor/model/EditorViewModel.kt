@@ -44,6 +44,13 @@ open class EditorViewModel @Inject constructor(
     private var mFaceSketchDotBuffer: List<Dot2D>? = null
     val faceSketchDotBuffer get() = mFaceSketchDotBuffer
 
+    private var mIsSharingPending: Boolean = false
+    val isSharingPending get() = mIsSharingPending
+
+    fun setIsSharingPending(isSharingPending: Boolean) {
+        mIsSharingPending = isSharingPending
+    }
+
     fun setEditorMode(editorMode: EditorCanvasContext.Mode) {
         mEditorMode = editorMode
     }
@@ -64,10 +71,21 @@ open class EditorViewModel @Inject constructor(
         )
     }
 
+    fun checkNewFileFilenameValidity(filename: String): Boolean {
+        return Regex("^.+$").matches(filename)
+    }
+
+    fun checkDrawingValidity(drawing: Drawing): Boolean {
+        return (drawing.vertexArray.isNotEmpty() && drawing.faceArray.isNotEmpty())
+    }
+
     fun saveCurrentDrawingToNewFile(drawing: Drawing, filename: String) {
         mUiState.value = generateDrawingUiState(drawing = drawing, isLoading = true)
 
-        mEditorUseCase.saveDrawing(drawing, filename = filename)
+        // todo: only .obj for now:
+        val filenameWithExtension = filename + '.' + DrawingFileExtension.OBJ.ext
+
+        mEditorUseCase.saveDrawing(drawing, filename = filenameWithExtension)
     }
 
     fun saveCurrentDrawingChanges(drawing: Drawing) {
@@ -102,7 +120,7 @@ open class EditorViewModel @Inject constructor(
     }
 
     private fun processSaveDrawingResult(result: SaveDrawingResult): EditorUiState {
-        return generateDrawingUiState(drawing = uiState.value?.drawing, isLoading = false,
+        return generateDrawingUiState(drawing = result.drawing, isLoading = false,
             pendingOperations = TakeQueue(DrawingSavedUiOperation(result.filePath)))
     }
 

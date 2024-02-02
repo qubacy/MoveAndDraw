@@ -46,12 +46,10 @@ open class CanvasRenderer(
     protected var mCameraRadius = mSphereRadius
 
     @Volatile
-    protected var mCameraCenterLocation = floatArrayOf(0f, 0f, 0f)
-    @Volatile
     protected var mViewCenterLocation = floatArrayOf(0f, 0f, 0f)
 
     protected var mCameraData: MutableCameraData = MutableCameraData(
-        floatArrayOf(mCameraRadius, 0f, mCameraCenterLocation[2]),
+        floatArrayOf(mCameraRadius, 0f, mViewCenterLocation[2]),
         CameraContext.DEFAULT_CAMERA_FOV,
         1f,
         0f,
@@ -205,7 +203,6 @@ open class CanvasRenderer(
         mSphereRadius = sphereRadius * DEFAULT_SPHERE_RADIUS_COEF
         mCameraRadius = mSphereRadius
 
-        mCameraCenterLocation = mViewCenterLocation
         mFigureVolumeCoef = getFigureVolumeCoefBySphereRadiusAndMaxDistance(
             mSphereRadius, sphereRadiusFromDistance)
     }
@@ -245,8 +242,8 @@ open class CanvasRenderer(
 
             val madeWayAngle = cameraMadeWayNormalized / mCameraRadius
 
-            newX = mCameraCenterLocation[0] + mCameraRadius * cos(madeWayAngle)
-            newY = mCameraCenterLocation[1] + mCameraRadius * sin(madeWayAngle)
+            newX = mViewCenterLocation[0] + mCameraRadius * cos(madeWayAngle)
+            newY = mViewCenterLocation[1] + mCameraRadius * sin(madeWayAngle)
 
             mCameraData.setMadeWayHorizontal(cameraMadeWayNormalized)
 
@@ -268,8 +265,8 @@ open class CanvasRenderer(
 
             val madeWayAngleHorizontal = mCameraData.madeWayHorizontal / mCameraRadius
 
-            newX = mCameraCenterLocation[0] + mCameraRadius * cos(madeWayAngleHorizontal)
-            newY = mCameraCenterLocation[1] + mCameraRadius * sin(madeWayAngleHorizontal)
+            newX = mViewCenterLocation[0] + mCameraRadius * cos(madeWayAngleHorizontal)
+            newY = mViewCenterLocation[1] + mCameraRadius * sin(madeWayAngleHorizontal)
 
             mCameraData.setMadeWayVertical(cameraMadeWayNormalized)
         }
@@ -302,7 +299,7 @@ open class CanvasRenderer(
             mProjectionMatrix, 0,
             mCameraData.fov,
             mViewportRatio,
-            mCameraData.cameraNear,//mCameraNear,
+            mCameraData.cameraNear,
             mSphereRadius * 2
         )
     }

@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = mimeType
 
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             putExtra(Intent.EXTRA_STREAM, uri)
         }
         val shareIntent = Intent.createChooser(intent, null)

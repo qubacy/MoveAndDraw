@@ -23,6 +23,9 @@ import kotlinx.coroutines.flow.map
 abstract class BusinessViewModel<UiStateType : UiState>(
     private val mUseCase: UseCase
 ) : BaseViewModel<UiStateType>() {
+    /**
+     * This field is formed according to the results of a business logic working;
+     */
     val uiStateFlow = mUseCase.resultFlow.map { updateUiStateWithResult(it) }
     override val mUiState = uiStateFlow.asLiveData() as MutableLiveData<UiStateType?>
 

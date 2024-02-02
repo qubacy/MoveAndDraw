@@ -41,4 +41,8 @@
 
     <string name="fragment_editor_top_bar_title">Editor</string>
 
+    <!-- Messages -->
+    
+    <string name="fragment_editor_message_saved_image">Your drawing has been saved!</string>
+
 </resources>

@@ -5,9 +5,11 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -80,6 +82,20 @@ abstract class BaseFragment<
 
     protected abstract fun setUiElementsState(uiState: UiStateType)
     protected open fun processUiOperation(uiOperation: UiOperation) = Unit
+
+    open fun onMessageOccurred(
+        message: String,
+        duration: Int = Toast.LENGTH_SHORT
+    ) {
+        Toast.makeText(requireContext(), message, duration).show()
+    }
+
+    fun onMessageOccurred(
+        @StringRes message: Int,
+        duration: Int = Toast.LENGTH_SHORT
+    ) {
+        onMessageOccurred(getString(message), duration)
+    }
 
     open fun onErrorOccurred(error: Error, callback: (() -> Unit)? = null) {
         val onDismiss = Runnable {
