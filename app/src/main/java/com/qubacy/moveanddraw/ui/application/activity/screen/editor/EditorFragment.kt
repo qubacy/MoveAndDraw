@@ -21,6 +21,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.transition.MaterialSharedAxis
 import com.qubacy.moveanddraw.R
+import com.qubacy.moveanddraw._common.error.ErrorEnum
 import com.qubacy.moveanddraw.databinding.FragmentEditorBinding
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
@@ -172,7 +173,7 @@ class EditorFragment(
         val faceSketch = mCanvasView.saveAndGetFaceSketch()
 
         if (faceSketch == null) {
-            // todo: output an error message..
+            mModel.retrieveError(ErrorEnum.NULL_FACE_SKETCH.id)
 
             return@launch
         }
@@ -247,7 +248,7 @@ class EditorFragment(
         val curDrawing = mModel.uiState.value?.drawing
 
         if (curDrawing == null) {
-            // todo: showing an error message..
+            mModel.retrieveError(ErrorEnum.NULL_CURRENT_DRAWING.id)
 
             return
         }
@@ -260,7 +261,7 @@ class EditorFragment(
 
     private fun saveExistingDrawingFile(drawing: Drawing) {
         if (!mModel.checkDrawingValidity(drawing)) {
-            // todo: showing an error message..
+            mModel.retrieveError(ErrorEnum.INVALID_DRAWING.id)
 
             return
         }
@@ -270,14 +271,14 @@ class EditorFragment(
 
     private fun saveNewDrawingFile(drawing: Drawing, onEnded: (() -> Unit)? = null) {
         if (!mModel.checkDrawingValidity(drawing)) {
-            // todo: showing an error message..
+            mModel.retrieveError(ErrorEnum.INVALID_DRAWING.id)
 
             return
         }
 
         getDrawingFilenameWithDialog() {
             if (!mModel.checkNewFileFilenameValidity(it)) {
-                // todo: showing an error..
+                mModel.retrieveError(ErrorEnum.INVALID_DRAWING_FILENAME.id)
 
                 return@getDrawingFilenameWithDialog
             }
@@ -310,7 +311,7 @@ class EditorFragment(
         val curDrawing = mModel.uiState.value?.drawing
 
         if (curDrawing == null) {
-            // todo: showing an error message..
+            mModel.retrieveError(ErrorEnum.NULL_CURRENT_DRAWING.id)
 
             return
         }
@@ -364,10 +365,6 @@ class EditorFragment(
     }
 
     private fun onCancelClicked() {
-        // todo: cleaning a vertex buffer..
-
-
-
         setEditorMode(EditorCanvasContext.Mode.VIEWING)
     }
 
@@ -421,7 +418,7 @@ class EditorFragment(
         val drawing = mModel.uiState.value?.drawing
 
         if (drawing == null) {
-            // todo: showing a message..
+            mModel.retrieveError(ErrorEnum.NULL_CURRENT_DRAWING.id)
 
             return
         }

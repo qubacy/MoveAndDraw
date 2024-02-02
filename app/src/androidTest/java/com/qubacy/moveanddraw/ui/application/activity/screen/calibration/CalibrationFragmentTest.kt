@@ -111,6 +111,7 @@ class CalibrationFragmentTest(
             .perform(SimpleClickViewAction())
 
         // todo: implement after creating a new screen!!
+        //  UPD: not needed;
 
 
     }

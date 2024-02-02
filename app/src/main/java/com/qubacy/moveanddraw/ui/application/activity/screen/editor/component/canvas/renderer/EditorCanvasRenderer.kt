@@ -87,6 +87,7 @@ class EditorCanvasRenderer(
 
         setHelpingPlaneVisibilityByMode(mEditorRendererMode)
         changeCameraNearByMode(mEditorRendererMode)
+        resetFaceSketchData()
     }
 
     suspend fun setFaceSketchDotBuffer(
