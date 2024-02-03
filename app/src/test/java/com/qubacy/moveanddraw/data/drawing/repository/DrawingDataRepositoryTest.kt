@@ -5,6 +5,7 @@ import com.qubacy.moveanddraw._common._test.util.mock.AnyMockUtil
 import com.qubacy.moveanddraw._common._test.util.mock.UriMockUtil
 import com.qubacy.moveanddraw.data.drawing.model.DataDrawing
 import com.qubacy.moveanddraw.data.drawing.repository.source.local.LocalDrawingDataSource
+import com.qubacy.moveanddraw.data.drawing.repository.source.local.result.SaveNewFileResult
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -17,7 +18,8 @@ class DrawingDataRepositoryTest {
     private fun initRepository(
         loadedDrawing: DataDrawing =
             DataDrawing(floatArrayOf(), floatArrayOf(), floatArrayOf(), arrayOf()),
-        savedDrawingPath: String = String()
+        savedExistingDrawingPath: String = String(),
+        saveNewFileResult: SaveNewFileResult = SaveNewFileResult(String(), UriMockUtil.getMockedUri())
     ) {
         val localDrawingDataSourceMock = mock(LocalDrawingDataSource::class.java)
 
@@ -25,10 +27,10 @@ class DrawingDataRepositoryTest {
             .thenReturn(loadedDrawing)
         Mockito.`when`(localDrawingDataSourceMock.saveChanges(
             AnyMockUtil.anyObject<DataDrawing>(), AnyMockUtil.anyObject<Uri>())
-        ).thenReturn(savedDrawingPath)
+        ).thenReturn(savedExistingDrawingPath)
         Mockito.`when`(localDrawingDataSourceMock.saveNewFile(
             AnyMockUtil.anyObject<DataDrawing>(), Mockito.anyString())
-        ).thenReturn(savedDrawingPath)
+        ).thenReturn(saveNewFileResult)
 
         mDrawingDataRepository = DrawingDataRepository(localDrawingDataSourceMock)
     }
@@ -55,14 +57,14 @@ class DrawingDataRepositoryTest {
         val savedDrawingFilename = String()
         val savedNewDrawing = DataDrawing(floatArrayOf(), floatArrayOf(), floatArrayOf(), arrayOf())
 
-        val savedNewDrawingFilePath = String()
+        val saveNewFileResult = SaveNewFileResult(String(), UriMockUtil.getMockedUri())
 
-        initRepository(savedDrawingPath = savedNewDrawingFilePath)
+        initRepository(saveNewFileResult = saveNewFileResult)
 
-        val gottenSavedNewDrawingFilePath =
+        val gottenSaveNewDrawingResult =
             mDrawingDataRepository.saveNewDrawing(savedNewDrawing, savedDrawingFilename)
 
-        Assert.assertEquals(savedNewDrawingFilePath, gottenSavedNewDrawingFilePath)
+        Assert.assertEquals(saveNewFileResult.filePath, gottenSaveNewDrawingResult.filePath)
     }
 
     @Test
@@ -72,11 +74,11 @@ class DrawingDataRepositoryTest {
 
         val savedNewDrawingFilePath = String()
 
-        initRepository(savedDrawingPath = savedNewDrawingFilePath)
+        initRepository(savedExistingDrawingPath = savedNewDrawingFilePath)
 
-        val gottenSavedNewDrawingFilePath =
+        val gottenSaveDrawingResult =
             mDrawingDataRepository.saveDrawing(savedNewDrawing, savedDrawingUri)
 
-        Assert.assertEquals(savedNewDrawingFilePath, gottenSavedNewDrawingFilePath)
+        Assert.assertEquals(savedNewDrawingFilePath, gottenSaveDrawingResult.filePath)
     }
 }

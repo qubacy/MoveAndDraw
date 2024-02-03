@@ -21,13 +21,14 @@ class DrawingDataRepository @Inject constructor(
         try {
             gottenDrawingFilePath = mLocalDrawingDataSource.saveChanges(drawing, drawingUri)
 
-        } catch (e: Exception) {
+        } catch (e: SecurityException) {
             val filename = mLocalDrawingDataSource.getDrawingFileNameByUri(drawingUri)
             val result = saveNewDrawing(drawing, filename)
 
             gottenDrawingFilePath = result.filePath
             gottenDrawingUri = result.uri
-        }
+
+        } catch (e: Exception) { throw e }
 
         return SaveDrawingResult(gottenDrawingFilePath!!, gottenDrawingUri)
     }

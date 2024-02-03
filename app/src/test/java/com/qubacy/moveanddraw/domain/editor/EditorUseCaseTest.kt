@@ -32,10 +32,10 @@ class EditorUseCaseTest(
 
             Mockito.`when`(drawingDataRepositoryMock.saveDrawing(
                 AnyMockUtil.anyObject<DataDrawing>(), AnyMockUtil.anyObject<Uri>())
-            ).thenReturn(initData.savedDrawingPath)
+            ).thenReturn(initData.saveDrawingResult)
             Mockito.`when`(drawingDataRepositoryMock.saveNewDrawing(
                 AnyMockUtil.anyObject<DataDrawing>(), Mockito.anyString())
-            ).thenReturn(initData.savedDrawingPath)
+            ).thenReturn(initData.saveDrawingResult)
         }
 
         return EditorUseCase(errorDataRepositoryMock, drawingDataRepositoryMock)
@@ -43,12 +43,15 @@ class EditorUseCaseTest(
 
     @Test
     fun saveDrawingWithExistingFileTest() = runTest {
-        val mockedUri = UriMockUtil.getMockedUri()
         val savedDrawing = DrawingGeneratorUtil
             .generateDrawingByVerticesFaces(vertices = arrayOf(), faces = arrayOf())
 
         val savedDrawingFilePath = String()
-        val initData = EditorUseCaseInitData(savedDrawingFilePath)
+        val mockedUri = UriMockUtil.getMockedUri()
+
+        val saveDrawingResult = com.qubacy.moveanddraw.data.drawing.repository.result.save._common
+            .SaveDrawingResult(savedDrawingFilePath, mockedUri)
+        val initData = EditorUseCaseInitData(saveDrawingResult)
 
         initUseCase(initData = initData)
 
@@ -59,18 +62,23 @@ class EditorUseCaseTest(
             val result = awaitItem()!!
 
             Assert.assertEquals(SaveDrawingResult::class, result::class)
-            Assert.assertEquals(savedDrawingFilePath, (result as SaveDrawingResult).filePath)
+            Assert.assertEquals(saveDrawingResult.filePath, (result as SaveDrawingResult).filePath)
         }
     }
 
     @Test
     fun saveNewDrawingTest() = runTest {
         val drawingFilename = String()
+
         val savedDrawing = DrawingGeneratorUtil
             .generateDrawingByVerticesFaces(vertices = arrayOf(), faces = arrayOf())
 
         val savedDrawingFilePath = String()
-        val initData = EditorUseCaseInitData(savedDrawingFilePath)
+        val mockedUri = UriMockUtil.getMockedUri()
+
+        val saveDrawingResult = com.qubacy.moveanddraw.data.drawing.repository.result.save._common
+            .SaveDrawingResult(savedDrawingFilePath, mockedUri)
+        val initData = EditorUseCaseInitData(saveDrawingResult)
 
         initUseCase(initData = initData)
 

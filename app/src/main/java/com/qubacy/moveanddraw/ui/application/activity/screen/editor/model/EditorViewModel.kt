@@ -72,7 +72,7 @@ open class EditorViewModel @Inject constructor(
     }
 
     fun checkNewFileFilenameValidity(filename: String): Boolean {
-        return Regex("^.+$").matches(filename)
+        return Regex("^\\S+$").matches(filename)
     }
 
     fun checkDrawingValidity(drawing: Drawing): Boolean {

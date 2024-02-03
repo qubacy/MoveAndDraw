@@ -181,10 +181,11 @@ class EditorViewModelTest(
                 )
             )
         )
+
         val savedDrawingFilepath = "path"
 
         val initData = EditorUseCaseMockInitData(
-            saveDrawingResult = SaveDrawingResult(savedDrawingFilepath)
+            saveDrawingResult = SaveDrawingResult(drawing, savedDrawingFilepath)
         )
 
         initViewModel(useCaseMockInitData = initData)
@@ -223,6 +224,88 @@ class EditorViewModelTest(
             val operation = uiState.pendingOperations.take()!! as DrawingSavedUiOperation
 
             Assert.assertEquals(testData.savedDrawingFilepath, operation.filePath)
+        }
+    }
+
+    data class CheckNewFileFilenameValidityTestCase(
+        val filename: String,
+        val isValid: Boolean
+    )
+
+    @Test
+    fun checkNewFileFilenameValidityTest() {
+        val testCases = arrayOf(
+            CheckNewFileFilenameValidityTestCase("", false),
+            CheckNewFileFilenameValidityTestCase(" ", false),
+            CheckNewFileFilenameValidityTestCase("something", true)
+        )
+
+        initViewModel()
+
+        for (testCase in testCases) {
+            val gottenValidity = mViewModel.checkNewFileFilenameValidity(testCase.filename)
+
+            Assert.assertEquals(testCase.isValid, gottenValidity)
+        }
+    }
+
+    data class CheckDrawingValidityTestTestCase(
+        val drawing: Drawing,
+        val isValid: Boolean
+    )
+
+    @Test
+    fun checkDrawingValidityTest() {
+        val testCases = arrayOf(
+            CheckDrawingValidityTestTestCase(
+                DrawingGeneratorUtil.generateDrawingByVerticesFaces(
+                    vertices = arrayOf(
+                        Triple(0f, 0f, 0f),
+                        Triple(0f, 1f, 0f),
+                        Triple(1f, 1f, 0f)
+                    ),
+                    faces = arrayOf()
+                ),
+                false
+            ),
+            CheckDrawingValidityTestTestCase(
+                DrawingGeneratorUtil.generateDrawingByVerticesFaces(
+                    vertices = arrayOf(),
+                    faces = arrayOf(
+                        arrayOf(
+                            Triple(0, null, null),
+                            Triple(1, null, null),
+                            Triple(2, null, null)
+                        )
+                    )
+                ),
+                false
+            ),
+            CheckDrawingValidityTestTestCase(
+                DrawingGeneratorUtil.generateDrawingByVerticesFaces(
+                    vertices = arrayOf(
+                        Triple(0f, 0f, 0f),
+                        Triple(0f, 1f, 0f),
+                        Triple(1f, 1f, 0f)
+                    ),
+                    faces = arrayOf(
+                        arrayOf(
+                            Triple(0, null, null),
+                            Triple(1, null, null),
+                            Triple(2, null, null)
+                        )
+                    )
+                ),
+                true
+            )
+        )
+
+        initViewModel()
+
+        for (testCase in testCases) {
+            val gottenValidity = mViewModel.checkDrawingValidity(testCase.drawing)
+
+            Assert.assertEquals(testCase.isValid, gottenValidity)
         }
     }
 }

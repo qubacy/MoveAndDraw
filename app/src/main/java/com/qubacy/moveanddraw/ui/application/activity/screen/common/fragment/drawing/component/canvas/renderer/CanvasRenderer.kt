@@ -36,6 +36,8 @@ open class CanvasRenderer(
 
         const val MIN_SCALE_FACTOR = 0.25f
         const val MAX_SCALE_FACTOR = 100f
+
+        const val VERTICAL_CAMERA_WAY_LIMIT_COEF = 0.8
     }
 
     protected val mProjectionMatrix = FloatArray(16)
@@ -217,15 +219,17 @@ open class CanvasRenderer(
             maxDistance / sphereRadius
     }
 
-    protected fun getVerticalCameraWayLength(): Float {
-        return (0.8 * PI * mSphereRadius / 2).toFloat()
+    fun getVerticalCameraWayLength(): Float {
+        return (VERTICAL_CAMERA_WAY_LIMIT_COEF * PI * mSphereRadius / 2).toFloat()
     }
 
-    protected fun getHorizontalCameraWayLength(): Float {
+    fun getHorizontalCameraWayLength(): Float {
         return (2 * PI * mCameraRadius).toFloat()
     }
 
-    private fun getTranslatedCameraLocation(dx: Float, dy: Float): FloatArray {
+
+    // todo: think of mCameraRadius. shouldn't it be preserved as well?
+    fun getTranslatedCameraLocation(dx: Float, dy: Float): FloatArray {
         val preparedDX = dx * -1 * mFigureVolumeCoef * (1 / mCameraData.scaleFactor)
         val preparedDY = dy * 1 * mFigureVolumeCoef * (1 / mCameraData.scaleFactor)
 
@@ -249,14 +253,18 @@ open class CanvasRenderer(
 
         } else {
             val cameraWayLength = getVerticalCameraWayLength()
-            val cameraMadeWayNormalized = preparedDY + mCameraData.madeWayVertical
-
-            if (abs(cameraMadeWayNormalized) >= cameraWayLength) return mCameraData.position
+            val cameraMadeWay = preparedDY + mCameraData.madeWayVertical
+            val cameraMadeWayNormalized =
+                if (cameraMadeWay > cameraWayLength) cameraWayLength
+                else if (cameraMadeWay < -cameraWayLength) -cameraWayLength
+                else cameraMadeWay
 
             val madeWayAngleVertical = cameraMadeWayNormalized / mSphereRadius
 
             newZ = mViewCenterLocation[2] + mSphereRadius * sin(madeWayAngleVertical)
-            val newCameraRadius = sqrt(mSphereRadius * mSphereRadius - newZ * newZ)
+
+            val cameraHeight = newZ - mViewCenterLocation[2]
+            val newCameraRadius = sqrt(mSphereRadius * mSphereRadius - cameraHeight * cameraHeight)
 
             mCameraData.apply {
                 setMadeWayHorizontal(madeWayHorizontal * (newCameraRadius / mCameraRadius))
@@ -283,8 +291,6 @@ open class CanvasRenderer(
 
         if (newScaleFactor !in MIN_SCALE_FACTOR..MAX_SCALE_FACTOR) return
 
-        Log.d(TAG, "handleScale(): newScaleFactor = $newScaleFactor; scaleFactor = $gottenScaleFactor;")
-
         mCameraData.setScaleFactor(newScaleFactor)
 
         setPerspective()
@@ -292,8 +298,6 @@ open class CanvasRenderer(
 
     protected fun setPerspective() {
         mCameraData.apply { setFOV(CameraContext.DEFAULT_CAMERA_FOV / scaleFactor) }
-
-        Log.d(TAG, "setPerspective(): mCameraData.fov = ${mCameraData.fov}; mCameraData.scaleFactor = ${mCameraData.scaleFactor}")
 
         Matrix.perspectiveM(
             mProjectionMatrix, 0,

@@ -37,14 +37,9 @@ open class LocalDrawingDataSource @Inject constructor(
 
             return mDrawingParser.parseStream(stream)
 
-        } catch (e: Exception) {
-            e.printStackTrace()
-
-            throw e
-
-        } finally {
-            stream?.close()
         }
+        catch (e: Exception) { throw e }
+        finally { stream?.close() }
     }
 
     private fun openContentStream(drawingUri: Uri): OutputStream {
@@ -73,14 +68,9 @@ open class LocalDrawingDataSource @Inject constructor(
 
             return filePath
 
-        } catch (e: Exception) {
-            e.printStackTrace()
-
-            throw e
-
-        } finally {
-            stream?.close()
         }
+        catch (e: Exception) { throw e }
+        finally { stream?.close() }
     }
 
     open fun saveNewFile(drawing: DataDrawing, filename: String): SaveNewFileResult {
@@ -103,14 +93,9 @@ open class LocalDrawingDataSource @Inject constructor(
 
             return SaveNewFileResult(drawingFile.absolutePath, contentUri)
 
-        } catch (e: Exception) {
-            e.printStackTrace()
-
-            throw e
-
-        } finally {
-            fileStream?.close()
         }
+        catch (e: Exception) { throw e }
+        finally { fileStream?.close() }
     }
 
     fun getDrawingFileNameByUri(drawingUri: Uri): String {
