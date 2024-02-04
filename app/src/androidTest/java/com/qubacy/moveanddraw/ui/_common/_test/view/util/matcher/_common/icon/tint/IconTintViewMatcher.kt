@@ -1,4 +1,4 @@
-package com.qubacy.moveanddraw.ui._common._test.view.util.matcher.icon.tint
+package com.qubacy.moveanddraw.ui._common._test.view.util.matcher._common.icon.tint
 
 import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.VectorDrawable
