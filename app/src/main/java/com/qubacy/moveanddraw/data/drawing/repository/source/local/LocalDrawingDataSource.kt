@@ -50,6 +50,10 @@ open class LocalDrawingDataSource @Inject constructor(
         return FileOutputStream(drawingUri.path, false)
     }
 
+    fun getFilesDir(): File {
+        return context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)!!
+    }
+
     open fun saveChanges(drawing: DataDrawing, drawingUri: Uri): String {
         var stream: OutputStream? = null
 
@@ -64,9 +68,9 @@ open class LocalDrawingDataSource @Inject constructor(
 
             stream.write(serializedDrawing)
 
-            val filePath = File(drawingUri.path!!).absolutePath
+            val drawingFile = File(getFilesDir(), context.getFileNameByUri(drawingUri))
 
-            return filePath
+            return drawingFile.absolutePath
 
         }
         catch (e: Exception) { throw e }
@@ -77,7 +81,7 @@ open class LocalDrawingDataSource @Inject constructor(
         var fileStream: FileOutputStream? = null
 
         try {
-            val filesDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)!!
+            val filesDir = getFilesDir()
             val drawingFile = File(filesDir.path + "/" + filename)
 
             drawingFile.createNewFile()

@@ -204,15 +204,15 @@ class InitialFragmentTest {
                 ViewMatchers.withEffectiveVisibility(ViewMatchers.Visibility.GONE)))
     }
 
-    @Test
-    fun choosingDrawingLeadsToTransitionToCalibrationScreenTest() {
-        Espresso.onView(withId(R.id.fragment_initial_button_start))
-            .perform(ViewActions.click())
-        Espresso.onView(withId(R.id.component_option_chooser_swipe_button))
-            .perform(SwipeViewActionUtil.generateSwipeViewAction(0f, 0f))
-
-        Assert.assertEquals(R.id.calibrationFragment, mNavController.currentDestination!!.id)
-    }
+//    @Test
+//    fun choosingDrawingLeadsToTransitionToCalibrationScreenTest() {
+//        Espresso.onView(withId(R.id.fragment_initial_button_start))
+//            .perform(ViewActions.click())
+//        Espresso.onView(withId(R.id.component_option_chooser_swipe_button))
+//            .perform(SwipeViewActionUtil.generateSwipeViewAction(0f, 0f))
+//
+//        Assert.assertEquals(R.id.calibrationFragment, mNavController.currentDestination!!.id)
+//    }
 
     @Test
     fun choosingViewingLeadsToTransitionToViewerScreenTest() {

@@ -6,6 +6,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.qubacy.moveanddraw.data.drawing.model.DataDrawing
 import com.qubacy.moveanddraw.data.drawing.model._test.util.DataDrawingGeneratorUtil
+import com.qubacy.moveanddraw.data.drawing.repository.source.local.result.SaveNewFileResult
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Assert
 import org.junit.Before
@@ -28,16 +29,13 @@ class LocalDrawingDataSourceTest {
         return File(fileAbsolutePath).toUri()
     }
 
-    /**
-     * Returns ABSOLUTE PATH & Uri
-     */
-    private fun saveNewFile(drawing: DataDrawing, filename: String): Pair<String, Uri> {
-        val savedFileAbsPath = mLocalDrawingDataSource.context.filesDir.absolutePath + "/$filename"
-        val gottenSavedFileAbsPath = mLocalDrawingDataSource.saveNewFile(drawing, filename)
+    private fun saveNewFile(drawing: DataDrawing, filename: String): SaveNewFileResult {
+        val savedFileAbsPath = mLocalDrawingDataSource.getFilesDir().absolutePath + "/$filename"
+        val gottenSavedFileResult = mLocalDrawingDataSource.saveNewFile(drawing, filename)
 
-        Assert.assertEquals(savedFileAbsPath, gottenSavedFileAbsPath)
+        Assert.assertEquals(savedFileAbsPath, gottenSavedFileResult.filePath)
 
-        return Pair(gottenSavedFileAbsPath, fileAbsolutePathToUri(gottenSavedFileAbsPath))
+        return gottenSavedFileResult
     }
 
     @Test
@@ -45,7 +43,7 @@ class LocalDrawingDataSourceTest {
         val drawingToSave = DataDrawingGeneratorUtil.generateSquareDataDrawing()
         val filename = "test.obj"
 
-        val savedFileUri = saveNewFile(drawingToSave, filename).second
+        val savedFileUri = saveNewFile(drawingToSave, filename).uri
 
         val gottenDrawing = mLocalDrawingDataSource.load(savedFileUri)
 
@@ -57,7 +55,7 @@ class LocalDrawingDataSourceTest {
         val drawingToSave = DataDrawingGeneratorUtil.generateSquareDataDrawing()
         val filename = "test.obj"
 
-        val savedFileUri = saveNewFile(drawingToSave, filename)
+        val savedFileResult = saveNewFile(drawingToSave, filename)
 
         val modifiedDrawing = DataDrawingGeneratorUtil.generateDataDrawingWithVerticesAndFaces(
             drawingToSave.vertexArray,
@@ -65,9 +63,9 @@ class LocalDrawingDataSourceTest {
         )
 
         val savedWithChangesAbsPath =
-            mLocalDrawingDataSource.saveChanges(modifiedDrawing, savedFileUri.second)
+            mLocalDrawingDataSource.saveChanges(modifiedDrawing, savedFileResult.uri)
 
-        Assert.assertEquals(savedFileUri.first, savedWithChangesAbsPath)
+        Assert.assertEquals(savedFileResult.filePath, savedWithChangesAbsPath)
 
         val savedWithChangesFileUri = fileAbsolutePathToUri(savedWithChangesAbsPath)
 
