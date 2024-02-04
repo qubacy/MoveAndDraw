@@ -1,4 +1,4 @@
-package com.qubacy.moveanddraw.ui._common._test.view.util.matcher._common.icon.tint
+package com.qubacy.moveanddraw.ui._common._test.view.util.matcher.menu.icon.tint
 
 import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.VectorDrawable
@@ -8,7 +8,7 @@ import androidx.appcompat.view.menu.ActionMenuItemView
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description
 
-class IconTintViewMatcher(
+class MenuItemIconTintViewMatcher(
     @ColorInt val iconTint: Int
 ) : BaseMatcher<View>() {
     override fun describeTo(description: Description?) { }

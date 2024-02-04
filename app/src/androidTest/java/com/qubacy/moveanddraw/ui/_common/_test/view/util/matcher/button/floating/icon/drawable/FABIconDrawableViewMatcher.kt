@@ -1,9 +1,9 @@
-package com.qubacy.moveanddraw.ui._common._test.view.util.matcher.button.floating.icon
+package com.qubacy.moveanddraw.ui._common._test.view.util.matcher.button.floating.icon.drawable
 
+import android.graphics.Bitmap
 import android.view.View
 import android.widget.ImageButton
 import androidx.annotation.ColorInt
-import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.core.graphics.drawable.toBitmap
 import androidx.test.platform.app.InstrumentationRegistry
@@ -11,8 +11,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description
 
-
-class IconDrawableViewMatcher(
+class FABIconDrawableViewMatcher(
     @DrawableRes val drawableResId: Int,
     @ColorInt val iconTint: Int
 ) : BaseMatcher<View>() {
@@ -31,7 +30,8 @@ class IconDrawableViewMatcher(
             }
 
         val gottenBitmap = item.drawable.toBitmap()
-        val expectedBitmap = expectedDrawable.toBitmap()
+        val expectedBitmap = Bitmap.createScaledBitmap(
+            expectedDrawable.toBitmap(), gottenBitmap.width, gottenBitmap.height, false)
 
         return gottenBitmap.sameAs(expectedBitmap)
     }
