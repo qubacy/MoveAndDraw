@@ -1,6 +1,8 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.editor.model
 
 import android.content.Context
+import androidx.lifecycle.AbstractSavedStateViewModelFactory
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.qubacy.moveanddraw._common.util.struct.takequeue._common.TakeQueue
@@ -15,8 +17,8 @@ import com.qubacy.moveanddraw.domain.editor.result.RemoveLastFaceFromDrawingResu
 import com.qubacy.moveanddraw.domain.editor.result.SaveDrawingResult
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.Dot2D
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.DrawingViewModel
-import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas._common.EditorCanvasContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.data.face.FaceSketch
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.EditorUiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.operation.face.added.NewFaceAddedToDrawingUiOperation
@@ -32,31 +34,40 @@ import javax.inject.Qualifier
 
 @HiltViewModel
 open class EditorViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val mEditorUseCase: EditorUseCase
-) : DrawingViewModel<EditorUiState>(mEditorUseCase) {
+) : DrawingViewModel<EditorUiState>(savedStateHandle, mEditorUseCase) {
     companion object {
         const val TAG = "EDITOR_VIEW_MODEL"
-    }
 
-    private var mEditorMode: EditorCanvasContext.Mode? = null
-    val editorMode get() = mEditorMode
+        const val FACE_SKETCH_DOT_BUFFER_KEY = "faceSketchDotBuffer"
+        const val IS_SHARING_PENDING_KEY = "isSharingPending"
+    }
 
     private var mFaceSketchDotBuffer: List<Dot2D>? = null
     val faceSketchDotBuffer get() = mFaceSketchDotBuffer
 
-    private var mIsSharingPending: Boolean = false
-    val isSharingPending get() = mIsSharingPending
-
-    fun setIsSharingPending(isSharingPending: Boolean) {
-        mIsSharingPending = isSharingPending
+    init {
+        mSavedStateHandle.get<FloatArray>(FACE_SKETCH_DOT_BUFFER_KEY)?.also {
+            mFaceSketchDotBuffer = GLContext.floatArrayToDot2DList(it)
+        }
     }
 
-    fun setEditorMode(editorMode: EditorCanvasContext.Mode) {
-        mEditorMode = editorMode
+    fun getIsSharingPending(): Boolean {
+        return mSavedStateHandle[IS_SHARING_PENDING_KEY] ?: false
+    }
+
+    fun setIsSharingPending(isSharingPending: Boolean) {
+        mSavedStateHandle[IS_SHARING_PENDING_KEY] = isSharingPending
     }
 
     fun setFaceSketchDotBuffer(faceSketchDotBuffer: List<Dot2D>) {
         mFaceSketchDotBuffer = faceSketchDotBuffer
+
+        val preparedFaceSketchDotBuffer =
+            faceSketchDotBuffer.flatMap { it.toList() }.toFloatArray()
+
+        mSavedStateHandle[FACE_SKETCH_DOT_BUFFER_KEY] = preparedFaceSketchDotBuffer
     }
 
     override fun generateDrawingUiState(
@@ -140,12 +151,16 @@ open class EditorViewModel @Inject constructor(
 
 class EditorViewModelFactory(
     private val mEditorUseCase: EditorUseCase
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+) : AbstractSavedStateViewModelFactory() {
+    override fun <T : ViewModel> create(
+        key: String,
+        modelClass: Class<T>,
+        handle: SavedStateHandle
+    ): T {
         if (!modelClass.isAssignableFrom(EditorViewModel::class.java))
             throw IllegalArgumentException()
 
-        return EditorViewModel(mEditorUseCase) as T
+        return EditorViewModel(handle, mEditorUseCase) as T
     }
 }
 

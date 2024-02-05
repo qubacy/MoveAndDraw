@@ -6,6 +6,7 @@ import com.qubacy.moveanddraw.domain._common.usecase._common.result.error.ErrorR
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +19,12 @@ abstract class UseCase(
 ) {
     protected val mResultFlow: MutableStateFlow<Result?> = MutableStateFlow(null)
     val resultFlow: StateFlow<Result?> = mResultFlow
+
+    fun resetFlow() {
+        mCoroutineScope.launch(mCoroutineDispatcher) {
+            mResultFlow.emit(null)
+        }
+    }
 
     fun setCoroutineScope(coroutineScope: CoroutineScope) {
         mCoroutineScope = coroutineScope

@@ -1,7 +1,7 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model
 
 import android.net.Uri
-import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import com.qubacy.moveanddraw._common.util.struct.takequeue._common.TakeQueue
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.domain._common.usecase._common.result._common.Result
@@ -11,11 +11,10 @@ import com.qubacy.moveanddraw.domain._common.usecase.drawing.result.LoadDrawingR
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation.error.ShowErrorUiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model.business.BusinessViewModel
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.camera._common.CameraData
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.settings._common.DrawingSettings
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.DrawingUiState
 
 abstract class DrawingViewModel<UiStateType : DrawingUiState>(
+    protected val mSavedStateHandle: SavedStateHandle,
     protected val mDrawingUseCase: DrawingUseCase
 ) : BusinessViewModel<UiStateType>(mDrawingUseCase) {
     enum class DrawingFileExtension(
@@ -28,22 +27,6 @@ abstract class DrawingViewModel<UiStateType : DrawingUiState>(
         const val TAG = "DRAWING_VIEW_MODEL"
 
         const val DRAWING_MIME_TYPE = "model/obj"
-    }
-
-    protected var mLastCameraData: CameraData? = null
-    val lastCameraData get() = mLastCameraData
-
-    private var mDrawingSettings: DrawingSettings? = null
-    val drawingSettings get() = mDrawingSettings
-
-    fun setDrawingSettings(drawingSettings: DrawingSettings) {
-        mDrawingSettings = drawingSettings
-    }
-
-    fun setLastCameraData(cameraData: CameraData) {
-        Log.d(TAG, "setLastCameraData(): cameraData.pos = ${cameraData.position.joinToString()}")
-
-        mLastCameraData = cameraData
     }
 
     fun isDrawingFileExtensionValid(ext: String): Boolean {
@@ -73,6 +56,13 @@ abstract class DrawingViewModel<UiStateType : DrawingUiState>(
             isLoading = false,
             pendingOperations = TakeQueue(ShowErrorUiOperation(errorResult.error))
         )
+    }
+
+    // todo: it should be common for both Drawing & Init view models:
+    override fun resetUiState() {
+        super.resetUiState()
+
+        mDrawingUseCase.resetFlow()
     }
 
     abstract fun generateDrawingUiState(

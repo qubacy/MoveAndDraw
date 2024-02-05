@@ -62,6 +62,12 @@ abstract class BaseFragment<
         }
     }
 
+    override fun onStop() {
+        mModel.resetUiState()
+
+        super.onStop()
+    }
+
     protected open fun processUiState(uiState: UiStateType) = runBlocking {
         setUiElementsState(uiState)
 

@@ -1,6 +1,8 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model
 
 import android.content.Context
+import androidx.lifecycle.AbstractSavedStateViewModelFactory
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.qubacy.moveanddraw._common.util.struct.takequeue._common.TakeQueue
@@ -23,8 +25,9 @@ import javax.inject.Qualifier
 
 @HiltViewModel
 open class ViewerViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val mViewerUseCase: ViewerUseCase
-) : DrawingViewModel<ViewerUiState>(mViewerUseCase) {
+) : DrawingViewModel<ViewerUiState>(savedStateHandle, mViewerUseCase) {
     override fun generateDrawingUiState(
         drawing: Drawing?,
         isLoading: Boolean,
@@ -43,12 +46,16 @@ open class ViewerViewModel @Inject constructor(
 
 class ViewerViewModelFactory(
     private val mViewerUseCase: ViewerUseCase
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+) : AbstractSavedStateViewModelFactory() {
+    override fun <T : ViewModel> create(
+        key: String,
+        modelClass: Class<T>,
+        handle: SavedStateHandle
+    ): T {
         if (!modelClass.isAssignableFrom(ViewerViewModel::class.java))
             throw IllegalArgumentException()
 
-        return ViewerViewModel(mViewerUseCase) as T
+        return ViewerViewModel(handle, mViewerUseCase) as T
     }
 }
 

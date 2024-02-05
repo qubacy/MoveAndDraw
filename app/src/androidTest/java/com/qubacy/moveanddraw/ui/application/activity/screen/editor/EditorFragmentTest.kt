@@ -31,7 +31,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.lang.reflect.Field
 
-
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 @UninstallModules(EditorViewModelFactoryModule::class)

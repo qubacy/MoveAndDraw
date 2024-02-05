@@ -9,4 +9,10 @@ abstract class BaseViewModel<UiStateType : UiState>(
 ) : ViewModel() {
     protected abstract val mUiState: MutableLiveData<UiStateType?>
     val uiState: LiveData<UiStateType?> get() = mUiState
+
+    /**
+     * Meant to be called after Fragment recovering in order to get rid of UI operation duplication
+     * or something like that;
+     */
+    open fun resetUiState() {  }
 }

@@ -42,9 +42,10 @@ class EditorCanvasView(
     }
 
     fun setFaceSketchDotBuffer(
-        faceSketchDotBuffer: List<Dot2D>
+        faceSketchDotBuffer: List<Dot2D>,
+        isInitializing: Boolean = false
     ) = mLifecycleScope?.launch (Dispatchers.IO) {
-        mRenderer.setFaceSketchDotBuffer(faceSketchDotBuffer)
+        mRenderer.setFaceSketchDotBuffer(faceSketchDotBuffer, isInitializing)
         requestRender()
     }
 

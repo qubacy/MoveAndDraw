@@ -91,26 +91,37 @@ class EditorCanvasRenderer(
     }
 
     suspend fun setFaceSketchDotBuffer(
-        faceSketchDots: List<Dot2D>
+        faceSketchDots: List<Dot2D>,
+        isInitializing: Boolean = false
     ) {
         Log.d(TAG, "setFaceSketchDotBuffer(): faceSketchDots = ${faceSketchDots.joinToString()};")
 
-        mInitializerMutex.withLock {
-            mInitializer.postponeSketchDotList(faceSketchDots)
+        if (!isInitializing) {
+            mInitializerMutex.withLock {
+                mInitializer.postponeSketchDotList(faceSketchDots)
 
-            if (mInitializer.currentStep != EditorRendererStepInitializer.EditorStep.SKETCH)
-                return
+                if (mInitializer.currentStep != EditorRendererStepInitializer.EditorStep.SKETCH)
+                    return
 
-            mFaceSketchMutex.withLock() { onSketchStepInitializing() }
+                mFaceSketchMutex.withLock() { onSketchStepInitializing() }
+            }
+        } else {
+            mFaceSketchDotBuffer.clear() // todo: rethink this;
+
+            changeFaceSketchDotBuffer(faceSketchDots)
         }
     }
 
     private fun onSketchStepInitializing() {
         Log.d(TAG, "onSketchStepInitializing(): entering..")
 
-        mFaceSketchDotBuffer.addAll(mInitializer.sketch!!)
+        changeFaceSketchDotBuffer(mInitializer.sketch!!)
 
         mInitializer.nextStep()
+    }
+
+    private fun changeFaceSketchDotBuffer(faceSketchDots: List<Dot2D>) {
+        mFaceSketchDotBuffer.addAll(faceSketchDots)
     }
 
     suspend fun saveAndGetFaceSketch(): FaceSketch? {

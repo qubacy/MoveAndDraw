@@ -2,6 +2,7 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.dr
 
 import android.Manifest
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -21,6 +22,7 @@ import com.qubacy.moveanddraw.ui.application.activity.file.picker.GetFileUriCall
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.base.BaseFragment
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.camera._common.CameraData
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.mapper.DrawingGLDrawingMapperImpl
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.settings._common.DrawingSettings
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.view.CanvasView
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.DrawingViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.DrawingUiState
@@ -36,11 +38,41 @@ abstract class DrawingFragment<
 ) : BaseFragment<DrawingUiStateType, DrawingViewModelType>(), GetFileUriCallback {
     companion object {
         const val TAG = "DRAWING_FRAGMENT"
+
+        const val LAST_CAMERA_DATA_KEY = "lastCameraData"
+        const val DRAWING_SETTINGS_KEY = "drawingSettings"
     }
 
     protected lateinit var mCanvasView: CanvasViewType
     protected lateinit var mTopMenuBar: Toolbar
     protected lateinit var mProgressIndicator: LinearProgressIndicator
+
+    protected var mLastCameraData: CameraData? = null
+    private var mDrawingSettings: DrawingSettings? = null
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        outState.putParcelable(LAST_CAMERA_DATA_KEY, mLastCameraData)
+        outState.putParcelable(DRAWING_SETTINGS_KEY, mDrawingSettings)
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+
+        if (savedInstanceState == null) return
+
+        mLastCameraData =
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)
+                savedInstanceState.getParcelable<CameraData>(LAST_CAMERA_DATA_KEY)
+            else
+                savedInstanceState.getParcelable(LAST_CAMERA_DATA_KEY, CameraData::class.java)
+        mDrawingSettings =
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)
+                savedInstanceState.getParcelable<DrawingSettings>(DRAWING_SETTINGS_KEY)
+            else
+                savedInstanceState.getParcelable(DRAWING_SETTINGS_KEY, DrawingSettings::class.java)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         Log.d(TAG, "onViewCreated(): entering..")
@@ -62,23 +94,15 @@ abstract class DrawingFragment<
     override fun onResume() {
         super.onResume()
 
-        mModel.lastCameraData?.apply {
-            Log.d(TAG, "onResume(): cameraData.pos = ${position.joinToString()}")
-
-            mCanvasView.setCameraData(this@apply)
-        }
-        mModel.drawingSettings?.apply {
-            mCanvasView.setDrawingSettings(this@apply)
-        }
+        mLastCameraData?.also { mCanvasView.setCameraData(it) }
+        mDrawingSettings?.also { setDrawingSettings(it) }
     }
 
     override fun onPause() {
         Log.d(TAG, "onPause(): entering..")
 
-        if (mModel.uiState.value?.drawing != null)
-            mModel.setLastCameraData(mCanvasView.getCameraData())
-
-        mModel.setDrawingSettings(mCanvasView.getDrawingSettings())
+        mLastCameraData = mCanvasView.getCameraData()
+        mDrawingSettings = mCanvasView.getDrawingSettings()
 
         mCanvasView.prepareForPreservation()
 
@@ -95,6 +119,10 @@ abstract class DrawingFragment<
         Log.d(TAG, "onDestroy(): entering..")
 
         super.onDestroy()
+    }
+
+    protected open fun setDrawingSettings(drawingSettings: DrawingSettings) {
+        mCanvasView.setDrawingSettings(drawingSettings)
     }
 
     protected fun setCameraData(cameraData: CameraData) {

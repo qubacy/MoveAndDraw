@@ -1,5 +1,6 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.editor
 
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -22,12 +23,14 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.transition.MaterialSharedAxis
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw._common.error.ErrorEnum
+import com.qubacy.moveanddraw._common.util.color.ColorUtil
 import com.qubacy.moveanddraw.databinding.FragmentEditorBinding
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.transition.DefaultSharedAxisTransitionGenerator
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.DrawingFragment
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.settings._common.DrawingSettings
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas._common.EditorCanvasContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.view.EditorCanvasView
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.EditorViewModel
@@ -51,6 +54,8 @@ class EditorFragment(
 {
     companion object {
         const val TAG = "EDITOR_FRAGMENT"
+
+        const val EDITOR_MODE_KEY = "editorMode"
     }
 
     @Inject
@@ -62,6 +67,8 @@ class EditorFragment(
     )
 
     private lateinit var mBinding: FragmentEditorBinding
+
+    private var mEditorMode: EditorCanvasContext.Mode? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,6 +83,23 @@ class EditorFragment(
             MaterialSharedAxis.Z,
             false
         )
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        outState.putShort(EDITOR_MODE_KEY, mCanvasView.getEditorMode().id) // todo: is it ok?
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+
+        if (savedInstanceState == null) return
+
+        val editorModeId = savedInstanceState.getShort(EDITOR_MODE_KEY)
+        val editorMode = EditorCanvasContext.Mode.getModeById(editorModeId)
+
+        setEditorMode(editorMode)
     }
 
     override fun onCreateView(
@@ -103,17 +127,37 @@ class EditorFragment(
     }
 
     override fun onPause() {
-        mModel.setEditorMode(mCanvasView.getEditorMode())
+        //mModel.setEditorMode(mCanvasView.getEditorMode())
         mModel.setFaceSketchDotBuffer(mCanvasView.getFaceSketchDotBuffer())
 
         super.onPause()
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onResume() {
+        super.onResume()
 
-        mModel.editorMode?.also { mCanvasView.setEditorMode(it, true) }
-        mModel.faceSketchDotBuffer?.also { mCanvasView.setFaceSketchDotBuffer(it) }
+        mEditorMode?.also { mCanvasView.setEditorMode(it, true) }
+        mModel.faceSketchDotBuffer?.also { mCanvasView.setFaceSketchDotBuffer(it, true) }
+    }
+
+    override fun onDestroy() {
+        Log.d(TAG, "onDestroy()")
+
+        super.onDestroy()
+    }
+
+    override fun setDrawingSettings(drawingSettings: DrawingSettings) {
+        super.setDrawingSettings(drawingSettings)
+
+        val colorInt = ColorUtil.toRGBA(
+            drawingSettings.modelColor[0],
+            drawingSettings.modelColor[1],
+            drawingSettings.modelColor[2],
+            drawingSettings.modelColor[3]
+        )
+
+        changePreviewColor(colorInt)
+        setDrawingModeActionAppearanceByDrawingMode(drawingSettings.drawingMode)
     }
 
     override fun setUiElementsState(uiState: EditorUiState) {
@@ -139,7 +183,7 @@ class EditorFragment(
     private fun onDrawingSaved(operation: DrawingSavedUiOperation) {
         onMessageOccurred(R.string.fragment_editor_message_saved_image)
 
-        if (mModel.isSharingPending) onSharingDrawingSaved()
+        if (mModel.getIsSharingPending()) onSharingDrawingSaved()
     }
 
     private fun onSharingDrawingSaved() {
@@ -184,6 +228,8 @@ class EditorFragment(
     }
 
     private fun setEditorMode(editorMode: EditorCanvasContext.Mode) {
+        mEditorMode = editorMode
+
         when (editorMode) {
             EditorCanvasContext.Mode.VIEWING -> {
                 setBottomMenuMainGroupVisibility(true)
