@@ -69,4 +69,8 @@ open class RendererStepInitializer(
     fun isAtLeast(step: Step): Boolean {
         return (mCurrentStep.id >= step.id)
     }
+
+    fun isStepPassed(step: Step): Boolean {
+        return (mCurrentStep.id > step.id)
+    }
 }

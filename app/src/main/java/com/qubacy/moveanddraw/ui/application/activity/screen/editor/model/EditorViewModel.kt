@@ -117,7 +117,7 @@ open class EditorViewModel @Inject constructor(
                 processAddNewFaceToDrawingResult(result as AddNewFaceToDrawingResult)
             SaveDrawingResult::class ->
                 processSaveDrawingResult(result as SaveDrawingResult)
-            else -> null
+            else -> throw IllegalArgumentException()
         }
     }
 

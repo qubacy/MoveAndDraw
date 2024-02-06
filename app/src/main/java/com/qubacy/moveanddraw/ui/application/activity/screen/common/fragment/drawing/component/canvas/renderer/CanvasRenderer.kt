@@ -322,11 +322,16 @@ open class CanvasRenderer(
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
+        Log.d(TAG, "onSurfaceCreated(): entering..")
+
         GLES20.glClearColor(mBackgroundColor[0], mBackgroundColor[1], mBackgroundColor[2], mBackgroundColor[3])
 
-        mFigure?.init()
+        runBlocking {
+            if (mFigure?.isInitialized == false) mFigure?.init()
 
-        runBlocking { setDefaultCameraLocation() }
+            if (!mInitializer.isStepPassed(RendererStepInitializer.StandardStep.CAMERA))
+                setDefaultCameraLocation()
+        }
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {

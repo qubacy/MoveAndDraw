@@ -33,7 +33,7 @@ open class ViewerViewModel @Inject constructor(
         isLoading: Boolean,
         pendingOperations: TakeQueue<UiOperation>
     ): ViewerUiState {
-        return ViewerUiState(drawing, isLoading, pendingOperations)
+        return ViewerUiState(isLoading, drawing, pendingOperations)
     }
 
     override fun getUiStateWithUiOperation(uiOperation: UiOperation): ViewerUiState {

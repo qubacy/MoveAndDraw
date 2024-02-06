@@ -1,6 +1,7 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.initial.model
 
 import android.content.Context
+import androidx.lifecycle.SavedStateHandle
 import com.qubacy.moveanddraw._common.util.struct.takequeue._common.TakeQueue
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
 import com.qubacy.moveanddraw.data.preview.repository.PreviewDataRepository
@@ -21,8 +22,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 open class InitialViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val mInitialUseCase: InitialUseCase
-) : BusinessViewModel<InitialUiState>(mInitialUseCase) {
+) : BusinessViewModel<InitialUiState>(savedStateHandle, mInitialUseCase) {
     open fun getExampleDrawingPreviews() {
         mInitialUseCase.getExamplePreviews()
     }

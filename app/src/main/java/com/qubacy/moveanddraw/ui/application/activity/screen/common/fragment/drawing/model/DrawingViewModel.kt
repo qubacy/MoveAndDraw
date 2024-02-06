@@ -14,9 +14,9 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._co
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.DrawingUiState
 
 abstract class DrawingViewModel<UiStateType : DrawingUiState>(
-    protected val mSavedStateHandle: SavedStateHandle,
+    savedStateHandle: SavedStateHandle,
     protected val mDrawingUseCase: DrawingUseCase
-) : BusinessViewModel<UiStateType>(mDrawingUseCase) {
+) : BusinessViewModel<UiStateType>(savedStateHandle, mDrawingUseCase) {
     enum class DrawingFileExtension(
         val ext: String
     ) {
@@ -42,7 +42,7 @@ abstract class DrawingViewModel<UiStateType : DrawingUiState>(
     override fun processResult(result: Result): UiStateType? {
         return when (result::class) {
             LoadDrawingResult::class -> { processLoadDrawingResult(result as LoadDrawingResult) }
-            else -> null
+            else -> throw IllegalArgumentException()
         }
     }
 

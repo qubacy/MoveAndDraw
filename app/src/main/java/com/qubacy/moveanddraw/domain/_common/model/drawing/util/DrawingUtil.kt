@@ -11,6 +11,10 @@ fun FloatArray.toVertexTripleArray(): Array<Triple<Float, Float, Float>> {
     return vertexTripleList.toTypedArray()
 }
 
+fun Array<Triple<Float, Float, Float>>.toFloatArray(): FloatArray {
+    return flatMap { it.toList() }.toFloatArray()
+}
+
 object DrawingUtil {
     /**
      * Returns a filtered VERTEX TRIPLE ARRAY & FACES;

@@ -2,6 +2,7 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._c
 
 import android.content.Context
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
@@ -18,28 +19,40 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ActivityRetainedComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 
 abstract class BusinessViewModel<UiStateType : UiState>(
+    protected val mSavedStateHandle: SavedStateHandle,
     private val mUseCase: UseCase
 ) : BaseViewModel<UiStateType>() {
+    companion object {
+        const val UI_STATE_KEY = "uiState"
+    }
+
     /**
      * This field is formed according to the results of a business logic working;
      */
-    val uiStateFlow = mUseCase.resultFlow.map { updateUiStateWithResult(it) }
-    override val mUiState = uiStateFlow.asLiveData() as MutableLiveData<UiStateType?>
+    val uiStateFlow = mUseCase.resultFlow.filterNotNull().map { updateUiStateWithResult(it) }
+    final override val mUiState = uiStateFlow.asLiveData() as MutableLiveData<UiStateType?>
 
     init {
         mUseCase.setCoroutineScope(viewModelScope)
+
+        mUiState.value = mSavedStateHandle.get<UiStateType?>(UI_STATE_KEY)
+    }
+
+    override fun onCleared() {
+        mSavedStateHandle[UI_STATE_KEY] = mUiState.value
+
+        super.onCleared()
     }
 
     open fun retrieveError(errorId: Long) {
         mUseCase.retrieveError(errorId)
     }
 
-    protected fun updateUiStateWithResult(result: Result?): UiStateType? {
-        if (result == null) return null
-
+    protected fun updateUiStateWithResult(result: Result): UiStateType? {
         return when (result::class) {
             ErrorResult::class -> processErrorResult(result as ErrorResult)
             else -> processResult(result)

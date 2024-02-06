@@ -194,14 +194,6 @@ class EditorFragment(
         mModel.setIsSharingPending(false)
     }
 
-    override fun setCanvasDrawing(drawing: Drawing) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            Log.d(DrawingFragment.TAG, "setCanvasDrawing(): entering..")
-
-            mCanvasView.setFigure(drawing)
-        }
-    }
-
     private fun onMainActionClicked() {
         when (mCanvasView.getEditorMode()) {
             EditorCanvasContext.Mode.VIEWING -> onAddFaceClicked()
