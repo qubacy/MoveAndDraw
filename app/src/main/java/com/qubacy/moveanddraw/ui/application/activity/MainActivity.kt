@@ -11,7 +11,7 @@ import com.qubacy.moveanddraw.ui.application.activity.file.picker.GetFileUriCall
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+open class MainActivity : AppCompatActivity() {
     companion object {
         const val DEFAULT_MIME_TYPE = "*/*"
     }
@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         mChooseLocalFileLauncher = registerForActivityResult(contract) { onLocalFileChosen(it) }
     }
 
-    fun chooseLocalFile(mimeType: String = DEFAULT_MIME_TYPE, callback: GetFileUriCallback) {
+    open fun chooseLocalFile(mimeType: String = DEFAULT_MIME_TYPE, callback: GetFileUriCallback) {
         mChooseLocalFileCallback = callback
 
         mChooseLocalFileLauncher.launch(mimeType)
@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         mChooseLocalFileCallback?.onFileUriGotten(fileUri)
     }
 
-    fun shareLocalFile(uri: Uri, mimeType: String) {
+    open fun shareLocalFile(uri: Uri, mimeType: String) {
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = mimeType
 

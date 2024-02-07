@@ -1,6 +1,7 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.editor.model
 
 import android.net.Uri
+import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.qubacy.moveanddraw._common._test.data.InitData
 import com.qubacy.moveanddraw._common._test.util.mock.AnyMockUtil
@@ -63,8 +64,11 @@ class EditorViewModelTest(
         return editorUseCaseMock
     }
 
-    override fun createViewModel(useCaseMock: EditorUseCase): EditorViewModel {
-        return EditorViewModel(useCaseMock)
+    override fun createViewModel(
+        savedStateHandleMock: SavedStateHandle,
+        useCaseMock: EditorUseCase
+    ): EditorViewModel {
+        return EditorViewModel(savedStateHandleMock, useCaseMock)
     }
 
     @Test
@@ -105,8 +109,6 @@ class EditorViewModelTest(
         initViewModel(useCaseMockInitData = initData)
 
         mViewModel.uiStateFlow.test {
-            skipItems(1)
-
             mViewModel.saveFaceSketch(faceSketch)
 
             val uiState = awaitItem()!!
@@ -145,8 +147,6 @@ class EditorViewModelTest(
         initViewModel(useCaseMockInitData = initData)
 
         mViewModel.uiStateFlow.test {
-            skipItems(1)
-
             mViewModel.removeLastFace(drawing)
 
             val uiState = awaitItem()!!
@@ -165,7 +165,7 @@ class EditorViewModelTest(
         drawingUri: Uri? = null
     ): SaveCurrentDrawingTestInitData {
         val drawing = DrawingGeneratorUtil.generateDrawingByVerticesFaces(
-            mockedUri = drawingUri,
+            uri = drawingUri,
             vertices = arrayOf(
                 Triple(0f, 0f, 0f),
                 Triple(0f, 1f, 0f),
@@ -199,8 +199,6 @@ class EditorViewModelTest(
         val testData = initSaveCurrentDrawingTestData(drawingFilename = drawingFilename)
 
         mViewModel.uiStateFlow.test {
-            skipItems(1)
-
             mViewModel.saveCurrentDrawingToNewFile(testData.drawing, drawingFilename)
 
             val uiState = awaitItem()!!
@@ -216,8 +214,6 @@ class EditorViewModelTest(
         val testData = initSaveCurrentDrawingTestData(drawingUri = drawingUri)
 
         mViewModel.uiStateFlow.test {
-            skipItems(1)
-
             mViewModel.saveCurrentDrawingChanges(testData.drawing)
 
             val uiState = awaitItem()!!

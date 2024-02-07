@@ -1,13 +1,18 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model
 
 import android.content.Context
+import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.qubacy.moveanddraw.data.drawing.repository.DrawingDataRepository
 import com.qubacy.moveanddraw.data.drawing.repository.source.local.LocalDrawingDataSource
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
 import com.qubacy.moveanddraw.domain.viewer.ViewerUseCase
+import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.model.business.FakeBusinessViewModelModule
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.UiState
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model.business.BusinessViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.state.ViewerUiState
 import dagger.Module
 import dagger.Provides
@@ -23,14 +28,14 @@ import org.mockito.Mockito
 )
 object FakeViewerViewModelModule {
     class FakeViewerViewModelFactory(
-    ) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            val viewModelMock = Mockito.mock(ViewerViewModel::class.java)
 
-            Mockito.`when`(viewModelMock.uiState)
-                .thenReturn(MutableLiveData<ViewerUiState>())
-
-            return viewModelMock as T
+    ) : FakeBusinessViewModelModule.BusinessViewModelFactory<ViewerUiState>() {
+        override fun <T : ViewModel> create(
+            key: String,
+            modelClass: Class<T>,
+            handle: SavedStateHandle
+        ): T {
+            return super.create(key, modelClass, handle)
         }
     }
 

@@ -1,5 +1,6 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.initial.model
 
+import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.qubacy.moveanddraw._common._test.data.InitData
 import com.qubacy.moveanddraw._common.error.Error
@@ -43,8 +44,11 @@ class InitialViewModelTest :
         return Mockito.mock(InitialUseCase::class.java)
     }
 
-    override fun createViewModel(useCaseMock: InitialUseCase): InitialViewModel {
-        return InitialViewModel(useCaseMock)
+    override fun createViewModel(
+        savedStateHandleMock: SavedStateHandle,
+        useCaseMock: InitialUseCase
+    ): InitialViewModel {
+        return InitialViewModel(savedStateHandleMock, useCaseMock)
     }
 
     @Before
@@ -59,8 +63,6 @@ class InitialViewModelTest :
         initViewModel(useCaseMockInitData = InitialUseCaseMockInitData(exampleDrawingPreviewUris))
 
         mViewModel.uiStateFlow.test {
-            skipItems(1)
-
             mViewModel.getExampleDrawingPreviews()
 
             val uiState = awaitItem()!!

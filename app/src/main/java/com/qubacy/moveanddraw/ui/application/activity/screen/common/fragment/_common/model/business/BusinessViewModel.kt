@@ -34,7 +34,7 @@ abstract class BusinessViewModel<UiStateType : UiState>(
      * This field is formed according to the results of a business logic working;
      */
     val uiStateFlow = mUseCase.resultFlow.filterNotNull().map { updateUiStateWithResult(it) }
-    final override val mUiState = uiStateFlow.asLiveData() as MutableLiveData<UiStateType?>
+    override val mUiState = uiStateFlow.asLiveData() as MutableLiveData<UiStateType?>
 
     init {
         mUseCase.setCoroutineScope(viewModelScope)

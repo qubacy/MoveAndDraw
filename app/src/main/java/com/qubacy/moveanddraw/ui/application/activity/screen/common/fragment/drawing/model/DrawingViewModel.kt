@@ -42,7 +42,7 @@ abstract class DrawingViewModel<UiStateType : DrawingUiState>(
     override fun processResult(result: Result): UiStateType? {
         return when (result::class) {
             LoadDrawingResult::class -> { processLoadDrawingResult(result as LoadDrawingResult) }
-            else -> throw IllegalArgumentException()
+            else -> null
         }
     }
 

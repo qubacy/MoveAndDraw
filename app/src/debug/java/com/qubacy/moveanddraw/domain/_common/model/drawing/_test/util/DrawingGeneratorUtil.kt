@@ -5,12 +5,12 @@ import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 
 object DrawingGeneratorUtil {
     fun generateDrawingByVerticesFaces(
-        mockedUri: Uri? = null,
+        uri: Uri? = null,
         vertices: Array<Triple<Float, Float, Float>>,
         faces: Array<Array<Triple<Short, Short?, Short?>>>
     ): Drawing {
         return Drawing(
-            mockedUri,
+            uri,
             vertices,
             floatArrayOf(),
             floatArrayOf(),

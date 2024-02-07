@@ -1,14 +1,20 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common
 
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ApplicationProvider
+import com.qubacy.moveanddraw._common.error.Error
+import com.qubacy.moveanddraw._common.util.struct.takequeue._common.TakeQueue
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.UiState
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation.error.ShowErrorUiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model.business.BusinessViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.base.BaseFragment
 import dagger.hilt.android.testing.HiltAndroidRule
 import org.junit.Before
 import org.junit.Rule
+import org.mockito.Mockito
 import java.lang.reflect.Field
 
 abstract class StatefulFragmentTest<
@@ -17,6 +23,10 @@ abstract class StatefulFragmentTest<
         FragmentType : BaseFragment<UiStateType, ViewModelType>>(
 
 ) {
+    companion object {
+        val TEST_ERROR = Error(0, "test message!", false)
+    }
+
     @get:Rule
     var hiltRule = HiltAndroidRule(this)
 
@@ -24,6 +34,7 @@ abstract class StatefulFragmentTest<
 
     protected lateinit var mModel: ViewModelType
     protected lateinit var mUiState: MutableLiveData<UiStateType>
+    protected lateinit var mSavedStateHandle: SavedStateHandle
 
     protected lateinit var mNavController: TestNavHostController
 
@@ -46,5 +57,17 @@ abstract class StatefulFragmentTest<
 
     protected open fun mockViewModel() {
         mUiState = mModel.uiState as MutableLiveData<UiStateType>
+    }
+
+    abstract fun generateUiStateWithUiOperation(operation: UiOperation): UiStateType
+
+    protected open fun mockRetrieveError() {
+        Mockito.`when`(mModel.retrieveError(Mockito.anyLong()))
+            .thenAnswer {
+                mUiState.value = generateUiStateWithUiOperation(
+                    ShowErrorUiOperation(TEST_ERROR))
+
+                Unit
+            }
     }
 }

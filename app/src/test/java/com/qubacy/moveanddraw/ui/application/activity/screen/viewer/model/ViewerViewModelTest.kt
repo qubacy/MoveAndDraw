@@ -1,5 +1,6 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model
 
+import androidx.lifecycle.SavedStateHandle
 import com.qubacy.moveanddraw._common._test.data.InitData
 import com.qubacy.moveanddraw.domain.viewer.ViewerUseCase
 import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment.drawing.model.DrawingViewModelTest
@@ -13,7 +14,10 @@ class ViewerViewModelTest(
         return Mockito.mock(ViewerUseCase::class.java)
     }
 
-    override fun createViewModel(useCaseMock: ViewerUseCase): ViewerViewModel {
-        return ViewerViewModel(useCaseMock)
+    override fun createViewModel(
+        savedStateHandle: SavedStateHandle,
+        useCaseMock: ViewerUseCase
+    ): ViewerViewModel {
+        return ViewerViewModel(savedStateHandle, useCaseMock)
     }
 }

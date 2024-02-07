@@ -13,6 +13,8 @@
         <item>Go viewing</item>
     </string-array>
 
+    <string name="component_dialog_filename_input_header_text">New file</string>
+    <string name="component_dialog_filename_input_description_text">Provide a new drawing file name</string>s
     <string name="component_dialog_filename_input_button_positive_caption">Confirm</string>
     <string name="component_dialog_filename_input_button_negative_caption">Cancel</string>
 

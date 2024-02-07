@@ -1,6 +1,7 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.model._common
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.qubacy.moveanddraw._common._test.data.InitData
 import com.qubacy.moveanddraw._common.error.Error
@@ -37,7 +38,10 @@ abstract class BusinessViewModelTest<
     protected lateinit var mViewModel: ViewModelType
 
     protected abstract fun mockUseCase(initData: InitData? = null): UseCaseType
-    protected abstract fun createViewModel(useCaseMock: UseCaseType): ViewModelType
+    protected abstract fun createViewModel(
+        savedStateHandleMock: SavedStateHandle,
+        useCaseMock: UseCaseType
+    ): ViewModelType
 
     @Before
     open fun setup() {
@@ -52,6 +56,8 @@ abstract class BusinessViewModelTest<
         mResultFlow = MutableStateFlow(null)
         mUseCaseMock = mockUseCase(useCaseMockInitData)
 
+        val savedStateHandleMock = Mockito.mock(SavedStateHandle::class.java)
+
         Mockito.`when`(mUseCaseMock.resultFlow).thenReturn(mResultFlow)
         Mockito.`when`(mUseCaseMock.retrieveError(Mockito.anyLong()))
             .thenAnswer {
@@ -60,7 +66,7 @@ abstract class BusinessViewModelTest<
                 }
             }
 
-        mViewModel = createViewModel(mUseCaseMock)
+        mViewModel = createViewModel(savedStateHandleMock, mUseCaseMock)
     }
 
     @Test
@@ -70,8 +76,6 @@ abstract class BusinessViewModelTest<
         initViewModel(error)
 
         mViewModel.uiStateFlow.test {
-            skipItems(1)
-
             mViewModel.retrieveError(error.id)
 
             val uiState = awaitItem()!!

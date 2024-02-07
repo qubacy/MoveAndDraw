@@ -1,10 +1,11 @@
 package com.qubacy.moveanddraw.ui.application.activity
 
-import androidx.appcompat.app.AppCompatActivity
+import android.net.Uri
+import com.qubacy.moveanddraw.ui.application.activity.file.picker.GetFileUriCallback
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class HiltTestActivity : AppCompatActivity() {
-
-
+class HiltTestActivity : MainActivity() {
+    override fun shareLocalFile(uri: Uri, mimeType: String) { }
+    override fun chooseLocalFile(mimeType: String, callback: GetFileUriCallback) { }
 }

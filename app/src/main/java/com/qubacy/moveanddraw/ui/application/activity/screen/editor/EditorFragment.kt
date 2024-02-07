@@ -1,6 +1,5 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.editor
 
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater

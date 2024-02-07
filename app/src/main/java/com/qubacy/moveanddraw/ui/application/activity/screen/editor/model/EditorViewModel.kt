@@ -90,7 +90,7 @@ open class EditorViewModel @Inject constructor(
         return (drawing.vertexArray.isNotEmpty() && drawing.faceArray.isNotEmpty())
     }
 
-    fun saveCurrentDrawingToNewFile(drawing: Drawing, filename: String) {
+    open fun saveCurrentDrawingToNewFile(drawing: Drawing, filename: String) {
         mUiState.value = generateDrawingUiState(drawing = drawing, isLoading = true)
 
         // todo: only .obj for now:
@@ -99,7 +99,7 @@ open class EditorViewModel @Inject constructor(
         mEditorUseCase.saveDrawing(drawing, filename = filenameWithExtension)
     }
 
-    fun saveCurrentDrawingChanges(drawing: Drawing) {
+    open fun saveCurrentDrawingChanges(drawing: Drawing) {
         mUiState.value = generateDrawingUiState(drawing = drawing, isLoading = true)
 
         mEditorUseCase.saveDrawing(drawing, drawingUri = drawing.uri)

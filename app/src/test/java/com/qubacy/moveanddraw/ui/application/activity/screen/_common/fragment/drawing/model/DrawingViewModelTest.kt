@@ -65,8 +65,6 @@ abstract class DrawingViewModelTest<
         initViewModel(useCaseMockInitData = DrawingMockUseCaseInitData(loadedDrawing))
 
         mViewModel.uiStateFlow.test {
-            skipItems(1)
-
             mViewModel.loadDrawing(drawingToLoadUri)
 
             val drawingState = awaitItem()!!

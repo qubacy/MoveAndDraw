@@ -1,5 +1,6 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.editor
 
+import android.net.Uri
 import android.util.TypedValue
 import androidx.annotation.AttrRes
 import androidx.lifecycle.ViewModelLazy
@@ -7,6 +8,7 @@ import androidx.navigation.Navigation
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.assertion.ViewAssertions
+import androidx.test.espresso.matcher.RootMatchers.withDecorView
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
@@ -14,21 +16,29 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw._common._test.util.launcher.launchFragmentInHiltContainer
+import com.qubacy.moveanddraw._common._test.util.mock.AnyMockUtil.anyObject
+import com.qubacy.moveanddraw._common.error.Error
+import com.qubacy.moveanddraw._common.util.struct.takequeue._common.TakeQueue
+import com.qubacy.moveanddraw.domain._common.model.drawing._test.util.DrawingGeneratorUtil
 import com.qubacy.moveanddraw.ui._common._test.view.util.action.wait.WaitViewAction
 import com.qubacy.moveanddraw.ui._common._test.view.util.matcher.menu.icon.tint.MenuItemIconTintViewMatcher
 import com.qubacy.moveanddraw.ui._common._test.view.util.matcher.button.floating.icon.drawable.FABIconDrawableViewMatcher
 import com.qubacy.moveanddraw.ui._common._test.view.util.matcher.menu.icon.drawable.MenuItemIconDrawableViewMatcher
+import com.qubacy.moveanddraw.ui._common._test.view.util.matcher.toast.root.ToastRootMatcher
 import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.StatefulFragmentTest
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation.error.ShowErrorUiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.EditorViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.EditorViewModelFactoryModule
-import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.FakeEditorViewModelModule
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.EditorUiState
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.operation.saved.DrawingSavedUiOperation
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito
 import java.lang.reflect.Field
 
 @HiltAndroidTest
@@ -58,6 +68,10 @@ class EditorFragmentTest(
     @Before
     override fun setup() {
         super.setup()
+    }
+
+    override fun generateUiStateWithUiOperation(operation: UiOperation): EditorUiState {
+        return EditorUiState(pendingOperations = TakeQueue(operation))
     }
 
     @Test
@@ -93,20 +107,165 @@ class EditorFragmentTest(
     // todo: reimplement in End-to-End testing:
     @Test
     fun clickingShareWithoutSettingDrawingLeadsToShowingErrorTest() {
+        mockRetrieveError()
+
         Espresso.onView(withId(R.id.drawing_top_bar_share))
+            .perform(WaitViewAction(1000), ViewActions.click())
+        Espresso.onView(withText(TEST_ERROR.message))
+            .check(ViewAssertions.matches(isDisplayed()))
+    }
+
+    @Test
+    fun clickingShareWithNewDrawingSetLeadsToSavingNewFileTest() {
+        val filename = "something"
+        val filepath = String()
+
+        mockSaveNewDrawing(filepath = filepath)
+
+        val state = EditorUiState(
+            drawing = DrawingGeneratorUtil.generateCubeDrawing()
+        )
+
+        setState(state)
+
+        Espresso.onView(withId(R.id.drawing_top_bar_share))
+            .perform(WaitViewAction(1000), ViewActions.click())
+        Espresso.onView(withText(R.string.component_dialog_filename_input_header_text))
+            .check(ViewAssertions.matches(isDisplayed()))
+
+        Espresso.onView(withId(R.id.component_dialog_filename_text_field))
+            .perform(ViewActions.typeText(filename))
+        Espresso.onView(withText(R.string.component_dialog_filename_input_button_positive_caption))
             .perform(ViewActions.click())
-        Espresso.onView(withText(FakeEditorViewModelModule.TEST_ERROR.message))
+
+        Espresso.onView(withText(R.string.fragment_editor_message_saved_image))
+            .inRoot(withDecorView(ToastRootMatcher(mFragment.requireActivity())))
+            .check(ViewAssertions.matches(isDisplayed()))
+    }
+
+    @Test
+    fun clickingShareWithExistingDrawingSetLeadsToSavingChangesFileTest() {
+        val filepath = String()
+        val uri = Uri.parse("")
+
+        mockSaveCurrentDrawingChanges(filepath = filepath)
+
+        val state = EditorUiState(
+            drawing = DrawingGeneratorUtil.generateCubeDrawing(uri)
+        )
+
+        setState(state)
+
+        Espresso.onView(withId(R.id.drawing_top_bar_share))
+            .perform(WaitViewAction(1000), ViewActions.click())
+        Espresso.onView(withText(R.string.fragment_editor_message_saved_image))
+            .inRoot(withDecorView(ToastRootMatcher(mFragment.requireActivity())))
             .check(ViewAssertions.matches(isDisplayed()))
     }
 
     // todo: reimplement in End-to-End testing:
     @Test
     fun clickingSaveWithoutSettingDrawingLeadsToShowingErrorTest() {
+        mockRetrieveError()
+
         Espresso.onView(withId(R.id.editor_top_bar_save))
-            .perform(ViewActions.click())
-        Espresso.onView(withText(FakeEditorViewModelModule.TEST_ERROR.message))
+            .perform(WaitViewAction(1000), ViewActions.click())
+        Espresso.onView(withText(TEST_ERROR.message))
             .check(ViewAssertions.matches(isDisplayed()))
     }
+
+    private fun mockSaveCurrentDrawingChanges(
+        filepath: String? = null,
+        error: Error? = null
+    ) {
+        Mockito.`when`(mModel.saveCurrentDrawingChanges(anyObject()))
+            .thenAnswer {
+                val newOperation =
+                    if (filepath != null) DrawingSavedUiOperation(filepath)
+                    else ShowErrorUiOperation(error!!)
+
+                mUiState.value = EditorUiState(
+                    drawing = mUiState.value?.drawing,
+                    pendingOperations = TakeQueue(newOperation)
+                )
+
+                Unit
+            }
+    }
+
+    @Test
+    fun clickingSaveWithExistingDrawingSetLeadsToShowingSuccessfulMessageTest() {
+        val filepath = String()
+        val fileUri = Uri.parse("file:///com.something")
+
+        mockSaveCurrentDrawingChanges(filepath = filepath)
+
+        val state = EditorUiState(
+            drawing = DrawingGeneratorUtil.generateCubeDrawing(fileUri)
+        )
+
+        setState(state)
+
+        Espresso.onView(withId(R.id.editor_top_bar_save))
+            .perform(WaitViewAction(1000), ViewActions.click())
+        Espresso.onView(withText(R.string.fragment_editor_message_saved_image))
+            .inRoot(withDecorView(ToastRootMatcher(mFragment.requireActivity())))
+            .check(ViewAssertions.matches(isDisplayed()))
+    }
+
+    private fun mockSaveNewDrawing(
+        filepath: String? = null,
+        uri: Uri = Uri.parse(""),
+        error: Error? = null
+    ) {
+        Mockito.`when`(mModel.saveCurrentDrawingToNewFile(anyObject(), Mockito.anyString()))
+            .thenAnswer {
+                val newOperation =
+                    if (filepath != null) DrawingSavedUiOperation(filepath)
+                    else ShowErrorUiOperation(error!!)
+
+                val prevDrawing = mUiState.value?.drawing!!
+
+                mUiState.value = EditorUiState(
+                    drawing = DrawingGeneratorUtil.generateDrawingByVerticesFaces(
+                        uri, prevDrawing.vertexArray, prevDrawing.faceArray
+                    ),
+                    pendingOperations = TakeQueue(newOperation)
+                )
+
+                Unit
+            }
+    }
+
+    @Test
+    fun clickingSaveWithNewDrawingSetLeadsToShowingFilenameInputDialogThenShowingSuccessMessageTest() {
+        val filename = "something"
+        val filepath = String()
+
+        mockSaveNewDrawing(filepath = filepath)
+
+        val state = EditorUiState(
+            drawing = DrawingGeneratorUtil.generateCubeDrawing()
+        )
+
+        setState(state)
+
+        Espresso.onView(withId(R.id.editor_top_bar_save))
+            .perform(WaitViewAction(1000), ViewActions.click())
+        Espresso.onView(withText(R.string.component_dialog_filename_input_header_text))
+            .check(ViewAssertions.matches(isDisplayed()))
+
+        Espresso.onView(withId(R.id.component_dialog_filename_text_field))
+            .perform(ViewActions.typeText(filename))
+        Espresso.onView(withText(R.string.component_dialog_filename_input_button_positive_caption))
+            .perform(ViewActions.click())
+
+        Espresso.onView(withText(R.string.fragment_editor_message_saved_image))
+            .inRoot(withDecorView(ToastRootMatcher(mFragment.requireActivity())))
+            .check(ViewAssertions.matches(isDisplayed()))
+    }
+
+
 
     // Note: there's no need to do it using a color picking dialog;
     @Test

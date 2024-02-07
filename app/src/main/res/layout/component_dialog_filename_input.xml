@@ -10,14 +10,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?attr/textAppearanceHeadlineSmall"
-        android:text="New file"/>
+        android:text="@string/component_dialog_filename_input_header_text"/>
 
     <com.google.android.material.textview.MaterialTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/default_component_margin"
         android:textAppearance="?attr/textAppearanceBodyMedium"
-        android:text="Provide a new drawing file name"/>
+        android:text="@string/component_dialog_filename_input_description_text"/>
 
 
     <com.google.android.material.textfield.TextInputLayout
