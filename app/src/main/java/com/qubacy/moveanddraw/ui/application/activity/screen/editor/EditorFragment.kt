@@ -126,7 +126,6 @@ class EditorFragment(
     }
 
     override fun onPause() {
-        //mModel.setEditorMode(mCanvasView.getEditorMode())
         mModel.setFaceSketchDotBuffer(mCanvasView.getFaceSketchDotBuffer())
 
         super.onPause()
