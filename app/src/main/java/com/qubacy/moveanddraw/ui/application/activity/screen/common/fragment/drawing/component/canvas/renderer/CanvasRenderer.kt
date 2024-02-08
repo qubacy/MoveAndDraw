@@ -58,7 +58,6 @@ open class CanvasRenderer(
         0f,
         CameraContext.DEFAULT_CAMERA_NEAR
     )
-    val cameraData: CameraData get() = mCameraData
 
     @Volatile
     protected var mViewportRatio = 1f
@@ -84,27 +83,29 @@ open class CanvasRenderer(
     protected open val mInitializer: RendererStepInitializer = RendererStepInitializer()
     protected val mInitializerMutex = Mutex(false)
 
+    fun getCameraData(): CameraData? {
+        if (mFigure == null) return null
+
+        return mCameraData.copy()
+    }
+
     fun resetInitializer() {
         mInitializer.reset()
     }
 
-    suspend fun setCameraData(cameraData: CameraData, isInitializing: Boolean = false) {
-        if (!isInitializing) {
-            mInitializerMutex.withLock {
-                Log.d(
-                    TAG,
-                    "setCameraData(): entering.. cameraData.pos = ${cameraData.position.joinToString()}"
-                )
+    suspend fun setCameraData(cameraData: CameraData) {
+        mInitializerMutex.withLock {
+            Log.d(
+                TAG,
+                "setCameraData(): entering.. cameraData.pos = ${cameraData.position.joinToString()}"
+            )
 
-                mInitializer.postponeCamera(cameraData)
+            mInitializer.postponeCamera(cameraData)
 
-                if (mInitializer.currentStep != RendererStepInitializer.StandardStep.CAMERA)
-                    return
+            if (mInitializer.currentStep != RendererStepInitializer.StandardStep.CAMERA)
+                return
 
-                onCameraStepInitializing()
-            }
-        } else {
-            setCameraData(cameraData)
+            onCameraStepInitializing()
         }
     }
 
@@ -147,12 +148,12 @@ open class CanvasRenderer(
     protected open fun onCameraStepInitializing() {
         Log.d(TAG, "onCameraStepInitializing(): entering..")
 
-        setCameraData(mInitializer.camera!!)
+        changeCameraData(mInitializer.camera!!)
 
         mInitializer.nextStep()
     }
 
-    private fun setCameraData(cameraData: CameraData) {
+    private fun changeCameraData(cameraData: CameraData) {
         mCameraData.setData(cameraData)
         setPerspective()
     }

@@ -178,15 +178,15 @@ open class CanvasView(
         requestRender()
     }
 
-    fun getCameraData(): CameraData {
-        return mRenderer.cameraData.copy()
+    fun getCameraData(): CameraData? {
+        return mRenderer.getCameraData()
     }
 
-    fun setCameraData(cameraData: CameraData, isInitializing: Boolean = false) {
+    fun setCameraData(cameraData: CameraData) {
         mLifecycleScope?.launch(Dispatchers.IO) {
-            Log.d(TAG, "setCameraData(): entering.. cameraData.pos = ${cameraData.position.joinToString()}")
+            Log.d(TAG, "setCameraData(): entering.. cameraData.pos = ${cameraData.position?.joinToString()}")
 
-            mRenderer.setCameraData(cameraData, isInitializing)
+            mRenderer.setCameraData(cameraData)
             requestRender()
         }
     }

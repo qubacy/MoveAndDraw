@@ -94,7 +94,7 @@ abstract class DrawingFragment<
     override fun onResume() {
         super.onResume()
 
-        mLastCameraData?.also { mCanvasView.setCameraData(it, true) }
+        mLastCameraData?.also { mCanvasView.setCameraData(it) }
         mDrawingSettings?.also { setDrawingSettings(it) }
     }
 
