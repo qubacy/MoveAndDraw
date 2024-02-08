@@ -7,7 +7,7 @@ data class DataDrawing(
     val vertexArray: FloatArray,
     val normalArray: FloatArray,
     val textureArray: FloatArray,
-    val faceArray: Array<Array<Triple<Short, Short?, Short?>>>
+    val faceArray: Array<Array<Triple<Int, Int?, Int?>>>
 ) {
     companion object {
         const val VERTEX_COORD_COUNT = 3

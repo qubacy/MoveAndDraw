@@ -21,27 +21,27 @@ object DrawingUtil {
      */
     fun filterVertexArrayWithFaces(
         vertexTripleArray: Array<Triple<Float, Float, Float>>,
-        faces: Array<Array<Triple<Short, Short?, Short?>>>
-    ): Pair<Array<Triple<Float, Float, Float>>, Array<Array<Triple<Short, Short?, Short?>>>> {
+        faces: Array<Array<Triple<Int, Int?, Int?>>>
+    ): Pair<Array<Triple<Float, Float, Float>>, Array<Array<Triple<Int, Int?, Int?>>>> {
         val usedVertices = faces.flatMap { it.map { index -> index.first } }.toSet()
 
         val resultVertexTripleList = mutableListOf<Triple<Float, Float, Float>>()
-        val vertexOffsetList = mutableListOf<Short>()
+        val vertexOffsetList = mutableListOf<Int>()
 
         for (i in vertexTripleArray.indices) {
-            if (usedVertices.contains(i.toShort())) {
+            if (usedVertices.contains(i)) {
                 resultVertexTripleList.add(vertexTripleArray[i])
 
                 continue
             }
 
-            vertexOffsetList.add(i.toShort())
+            vertexOffsetList.add(i)
         }
 
-        val updatedFaces = mutableListOf<Array<Triple<Short, Short?, Short?>>>()
+        val updatedFaces = mutableListOf<Array<Triple<Int, Int?, Int?>>>()
 
         for (face in faces) {
-            val updatedFace = mutableListOf<Triple<Short, Short?, Short?>>()
+            val updatedFace = mutableListOf<Triple<Int, Int?, Int?>>()
 
             for (vertex in face) {
                 var offset = 0
@@ -53,7 +53,7 @@ object DrawingUtil {
                 }
 
                 updatedFace.add(
-                    Triple((vertex.first - offset).toShort(), vertex.second, vertex.third)
+                    Triple((vertex.first - offset), vertex.second, vertex.third)
                 )
             }
 

@@ -7,7 +7,7 @@ import com.qubacy.moveanddraw.data.drawing.model.DataDrawing
 import com.qubacy.moveanddraw.domain._common.model.drawing.util.toFloatArray
 import com.qubacy.moveanddraw.domain._common.model.drawing.util.toVertexTripleArray
 
-fun Parcel.writeFaceArray(faceArray: Array<Array<Triple<Short, Short?, Short?>>>) {
+fun Parcel.writeFaceArray(faceArray: Array<Array<Triple<Int, Int?, Int?>>>) {
     writeInt(faceArray.size)
 
     for (face in faceArray) {
@@ -15,24 +15,26 @@ fun Parcel.writeFaceArray(faceArray: Array<Array<Triple<Short, Short?, Short?>>>
 
         for (faceVertex in face) {
             val flatNormalizedVertex = faceVertex.toList().map {
-                it ?: DrawingContext.NULL_FACE_VERTEX_PART_VALUE.toShort()
-            }
+                it ?: DrawingContext.NULL_FACE_VERTEX_PART_VALUE
+            }.toIntArray()
 
-            writeInt(faceVertex.first.toInt())
-            writeInt(faceVertex.second?.toInt() ?: DrawingContext.NULL_FACE_VERTEX_PART_VALUE)
-            writeInt(faceVertex.third?.toInt() ?: DrawingContext.NULL_FACE_VERTEX_PART_VALUE)
+            writeIntArray(flatNormalizedVertex)
+
+//            writeInt(faceVertex.first)
+//            writeInt(faceVertex.second ?: DrawingContext.NULL_FACE_VERTEX_PART_VALUE)
+//            writeInt(faceVertex.third ?: DrawingContext.NULL_FACE_VERTEX_PART_VALUE)
         }
     }
 }
 
-fun Parcel.readFaceArray(): Array<Array<Triple<Short, Short?, Short?>>> {
-    val faceList: MutableList<Array<Triple<Short, Short?, Short?>>> = mutableListOf()
+fun Parcel.readFaceArray(): Array<Array<Triple<Int, Int?, Int?>>> {
+    val faceList: MutableList<Array<Triple<Int, Int?, Int?>>> = mutableListOf()
 
     val faceListSize = readInt()
 
     for (i in 0 until faceListSize) {
         val faceVertexListSize = readInt()
-        val faceVertexList = mutableListOf<Triple<Short, Short?, Short?>>()
+        val faceVertexList = mutableListOf<Triple<Int, Int?, Int?>>()
 
         for (j in 0 until faceVertexListSize) {
             val faceVertexArray = IntArray(3)
@@ -40,9 +42,9 @@ fun Parcel.readFaceArray(): Array<Array<Triple<Short, Short?, Short?>>> {
             readIntArray(faceVertexArray)
 
             val normalizedFaceVertexArray = faceVertexArray.map {
-                if (it == DrawingContext.NULL_FACE_VERTEX_PART_VALUE) null else it.toShort()
+                if (it == DrawingContext.NULL_FACE_VERTEX_PART_VALUE) null else it
             }
-            val faceVertex = Triple<Short, Short?, Short?>(
+            val faceVertex = Triple<Int, Int?, Int?>(
                 normalizedFaceVertexArray[0]!!,
                 normalizedFaceVertexArray[1],
                 normalizedFaceVertexArray[2]
@@ -62,7 +64,7 @@ data class Drawing(
     val vertexArray: Array<Triple<Float, Float, Float>>,
     val normalArray: FloatArray,
     val textureArray: FloatArray,
-    val faceArray: Array<Array<Triple<Short, Short?, Short?>>>
+    val faceArray: Array<Array<Triple<Int, Int?, Int?>>>
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readParcelable(Uri::class.java.classLoader),

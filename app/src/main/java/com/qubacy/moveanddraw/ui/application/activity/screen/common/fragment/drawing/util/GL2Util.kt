@@ -1,7 +1,6 @@
 package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.util
 
 import android.opengl.GLES20
-import android.util.Log
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.DrawingContext
 import kotlin.math.sqrt
 
@@ -15,10 +14,10 @@ object GL2Util {
         }
     }
 
-    fun polygonToTriangles(polygonVertexIdArray: ShortArray): List<Short> {
+    fun polygonToTriangles(polygonVertexIdArray: IntArray): List<Int> {
         if (polygonVertexIdArray.size == 3) return polygonVertexIdArray.toList()
 
-        val trianglesVertices = mutableListOf<Short>()
+        val trianglesVertices = mutableListOf<Int>()
 
         for (i in 1 until polygonVertexIdArray.size - 1) {
             val curTriangleVertices = listOf(

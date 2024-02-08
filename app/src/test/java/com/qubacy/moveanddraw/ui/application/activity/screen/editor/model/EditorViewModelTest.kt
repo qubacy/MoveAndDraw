@@ -46,7 +46,7 @@ class EditorViewModelTest(
             Mockito.`when`(editorUseCaseMock.addNewFaceToDrawing(
                 AnyMockUtil.anyObject<Drawing>(),
                 AnyMockUtil.anyObject<Array<Triple<Float, Float, Float>>>(),
-                AnyMockUtil.anyObject<Array<Triple<Short, Short?, Short?>>>()
+                AnyMockUtil.anyObject<Array<Triple<Int, Int?, Int?>>>()
             )).thenAnswer {
                 mainCoroutineRule.launch {
                     mResultFlow.emit(initData.addNewFaceToDrawingResult)
@@ -97,7 +97,7 @@ class EditorViewModelTest(
             vertices = drawing.vertexArray.plus(faceSketch.vertexArray),
             faces = drawing.faceArray.plus(
                 faceSketch.face.map {
-                    Triple((it.first + drawing.vertexArray.size).toShort(), it.second, it.third)
+                    Triple((it.first + drawing.vertexArray.size), it.second, it.third)
                 }.toTypedArray()
             )
         )

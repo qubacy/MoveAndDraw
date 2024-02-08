@@ -5,7 +5,7 @@ import com.qubacy.moveanddraw.data.drawing.model.DataDrawing
 object DataDrawingGeneratorUtil {
     fun generateDataDrawingWithVerticesAndFaces(
         vertexArray: FloatArray,
-        faceArray: Array<Array<Triple<Short, Short?, Short?>>>
+        faceArray: Array<Array<Triple<Int, Int?, Int?>>>
     ): DataDrawing {
         return DataDrawing(
             vertexArray,

@@ -9,9 +9,9 @@ import org.junit.Test
 class DrawingUtilTest {
     private data class FilterVertexArrayWithFacesTestCase(
         val drawing: Drawing,
-        val narrowedFaces: Array<Array<Triple<Short, Short?, Short?>>>,
+        val narrowedFaces: Array<Array<Triple<Int, Int?, Int?>>>,
         val finalVertices: Array<Triple<Float, Float, Float>>,
-        val finalFaces: Array<Array<Triple<Short, Short?, Short?>>>
+        val finalFaces: Array<Array<Triple<Int, Int?, Int?>>>
     )
 
     @Before

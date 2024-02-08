@@ -9,11 +9,11 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.nio.FloatBuffer
-import java.nio.ShortBuffer
+import java.nio.IntBuffer
 
 open class GLDrawing (
     vertexArray: FloatArray,
-    vertexDrawingOrder: ShortArray? = null,
+    vertexDrawingOrder: IntArray? = null,
     drawingMode: GLContext.DrawingMode = GLContext.DrawingMode.FILLED,
     color: FloatArray = floatArrayOf(1f, 1f, 1f, 1f)
 ) {
@@ -48,12 +48,12 @@ open class GLDrawing (
     @Volatile
     protected var mVertexBuffer: FloatBuffer = vertexArray.toNativeBuffer()
     @Volatile
-    protected var mVertexDrawingOrderBuffer: ShortBuffer? = vertexDrawingOrder?.toNativeBuffer()
+    protected var mVertexDrawingOrderBuffer: IntBuffer? = vertexDrawingOrder?.toNativeBuffer()
 
     @Volatile
     private var mVertexArray: FloatArray = vertexArray
     @Volatile
-    private var mVertexDrawingOrder: ShortArray? = vertexDrawingOrder
+    private var mVertexDrawingOrder: IntArray? = vertexDrawingOrder
 
     val vertexArray get() = mVertexArray
     val vertexDrawingOrder get() = mVertexDrawingOrder
@@ -92,7 +92,7 @@ open class GLDrawing (
 
     suspend fun setVertices(
         vertexArray: FloatArray,
-        vertexDrawingOrder: ShortArray? = null
+        vertexDrawingOrder: IntArray? = null
     ) = mMutex.withLock {
         mVertexArray = vertexArray
         mVertexDrawingOrder = vertexDrawingOrder
@@ -162,7 +162,7 @@ open class GLDrawing (
         if (mVertexDrawingOrderBuffer != null)
             GLES20.glDrawElements(
                 glMode, mVertexDrawingOrder!!.size,
-                GLES20.GL_UNSIGNED_SHORT, mVertexDrawingOrderBuffer)
+                GLES20.GL_UNSIGNED_INT, mVertexDrawingOrderBuffer)
         else
             GLES20.glDrawArrays(glMode, 0, mVertexCount)
     }

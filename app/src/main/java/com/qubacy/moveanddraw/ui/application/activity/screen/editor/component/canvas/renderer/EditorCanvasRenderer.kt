@@ -40,7 +40,7 @@ class EditorCanvasRenderer(
     val faceSketchDotBuffer: List<Dot2D> get() = mFaceSketchDotBuffer
 
     private var mLastFaceSketchVertexArray: FloatArray = floatArrayOf()
-    private var mLastFaceSketchDrawingOrder: ShortArray = shortArrayOf()
+    private var mLastFaceSketchDrawingOrder: IntArray = intArrayOf()
 
     private var mEditorRendererMode: EditorCanvasContext.Mode = EditorCanvasContext.Mode.VIEWING
     val editorRendererMode get() = mEditorRendererMode
@@ -140,7 +140,7 @@ class EditorCanvasRenderer(
                 val finalDrawingOrderArray =
                     if (editedFigure.vertexDrawingOrder != null) {
                         editedFigure.vertexDrawingOrder!!.plus(mLastFaceSketchDrawingOrder
-                            .map { (it + vertexShift).toShort() })
+                            .map { (it + vertexShift) })
                     } else {
                         mLastFaceSketchDrawingOrder
                     }
@@ -161,10 +161,10 @@ class EditorCanvasRenderer(
         mFaceSketchDotBuffer.clear()
 
         mLastFaceSketchVertexArray = floatArrayOf()
-        mLastFaceSketchDrawingOrder = shortArrayOf()
+        mLastFaceSketchDrawingOrder = intArrayOf()
     }
 
-    private fun generateFigure(vertexArray: FloatArray, drawingOrderArray: ShortArray): GLDrawing {
+    private fun generateFigure(vertexArray: FloatArray, drawingOrderArray: IntArray): GLDrawing {
         return GLDrawing(vertexArray, drawingOrderArray)
     }
 
@@ -176,7 +176,7 @@ class EditorCanvasRenderer(
 
             val vertexTripleArray = mLastFaceSketchVertexArray.toVertexTripleArray()
             val face = mLastFaceSketchDrawingOrder
-                .map { Triple<Short, Short?, Short?>(it, null, null) }.toTypedArray()
+                .map { Triple<Int, Int?, Int?>(it, null, null) }.toTypedArray()
 
             faceSketch = FaceSketch(vertexTripleArray, face)
         }
@@ -264,7 +264,7 @@ class EditorCanvasRenderer(
     private fun generateHelpingPlaneGLDrawing(): GLDrawing {
         return GLDrawing(
             floatArrayOf(0f, 0f, 0f, 0f, 1f, 0f, 1f, 1f, 0f, 1f, 0f, 0f),
-            shortArrayOf(0, 1, 2, 0, 2, 3),
+            intArrayOf(0, 1, 2, 0, 2, 3),
             GLContext.DrawingMode.FILLED,
             HELPING_PLANE_DRAWING_COLOR
         )
@@ -273,7 +273,7 @@ class EditorCanvasRenderer(
     private fun generateFaceSketchDrawing(): GLDrawing {
         return GLDrawing(
             floatArrayOf(),
-            shortArrayOf(),
+            intArrayOf(),
             GLContext.DrawingMode.SKETCH,
             FACE_SKETCH_DRAWING_COLOR
         )
@@ -385,11 +385,11 @@ class EditorCanvasRenderer(
 
     private fun getFaceSketchDrawingOrderByVertices(
         faceSketchVertices: FloatArray
-    ): ShortArray {
+    ): IntArray {
         val vertexIdArray = IntRange(
             0,
             faceSketchVertices.size / DrawingContext.COORDS_PER_VERTEX - 1
-        ).map { it.toShort() }.toShortArray()
+        ).toList().toIntArray()
 
         val vertexCount = vertexIdArray.size
 
@@ -397,6 +397,6 @@ class EditorCanvasRenderer(
 
         val drawingOrder = GL2Util.polygonToTriangles(vertexIdArray)
 
-        return drawingOrder.toShortArray()
+        return drawingOrder.toIntArray()
     }
 }

@@ -7,32 +7,32 @@ import kotlin.math.abs
 
 class GL2UtilTest {
     private class PolygonToTrianglesTestCase(
-        val polygonVertexIdArray: ShortArray,
-        val resultTrianglesVertices: ShortArray
+        val polygonVertexIdArray: IntArray,
+        val resultTrianglesVertices: IntArray
     )
 
     @Test
     fun polygonToTrianglesTest() {
         val testCases = arrayOf(
             PolygonToTrianglesTestCase(
-                shortArrayOf(0, 1, 2),
-                shortArrayOf(0, 1, 2)
+                intArrayOf(0, 1, 2),
+                intArrayOf(0, 1, 2)
             ),
             PolygonToTrianglesTestCase(
-                shortArrayOf(0, 1, 2, 3),
-                shortArrayOf(0, 1, 2, 0, 2, 3)
+                intArrayOf(0, 1, 2, 3),
+                intArrayOf(0, 1, 2, 0, 2, 3)
             ),
             PolygonToTrianglesTestCase(
-                shortArrayOf(0, 1, 2, 3, 4),
-                shortArrayOf(0, 1, 2, 0, 2, 3, 0, 3, 4)
+                intArrayOf(0, 1, 2, 3, 4),
+                intArrayOf(0, 1, 2, 0, 2, 3, 0, 3, 4)
             ),
             PolygonToTrianglesTestCase(
-                shortArrayOf(0, 1, 2, 3, 4, 5, 6),
-                shortArrayOf(0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 5, 0, 5, 6)
+                intArrayOf(0, 1, 2, 3, 4, 5, 6),
+                intArrayOf(0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 5, 0, 5, 6)
             ),
             PolygonToTrianglesTestCase(
-                shortArrayOf(0, 5, 10, 2),
-                shortArrayOf(0, 5, 10, 0, 10, 2)
+                intArrayOf(0, 5, 10, 2),
+                intArrayOf(0, 5, 10, 0, 10, 2)
             ),
         )
 
@@ -40,7 +40,7 @@ class GL2UtilTest {
             val gottenTrianglesVertices = GL2Util.polygonToTriangles(testCase.polygonVertexIdArray)
 
             Assert.assertArrayEquals(
-                testCase.resultTrianglesVertices, gottenTrianglesVertices.toShortArray())
+                testCase.resultTrianglesVertices, gottenTrianglesVertices.toIntArray())
         }
     }
 

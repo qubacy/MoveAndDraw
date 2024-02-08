@@ -73,13 +73,13 @@ class EditorUseCase @Inject constructor(
     open fun addNewFaceToDrawing(
         drawing: Drawing? = null,
         faceVertexTripleArray: Array<Triple<Float, Float, Float>>,
-        face: Array<Triple<Short, Short?, Short?>>
+        face: Array<Triple<Int, Int?, Int?>>
     ) {
         mCoroutineScope.launch(mCoroutineDispatcher) {
             val vertexIndexShift = drawing?.vertexArray?.size
             val shiftedFace =
                 if (vertexIndexShift != null) face.map {
-                    Triple((it.first + vertexIndexShift).toShort(), it.second, it.third)
+                    Triple((it.first + vertexIndexShift), it.second, it.third)
                 }.toTypedArray()
                 else face
 

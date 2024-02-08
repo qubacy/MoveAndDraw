@@ -164,7 +164,7 @@ class EditorUseCaseTest(
             Triple(1f, 1f, 1f),
             Triple(1f, 0f, 1f)
         )
-        val newFace = arrayOf<Triple<Short, Short?, Short?>>(
+        val newFace = arrayOf<Triple<Int, Int?, Int?>>(
             Triple(0, null, null),
             Triple(1, null, null),
             Triple(2, null, null),
@@ -175,7 +175,7 @@ class EditorUseCaseTest(
             vertices = drawing.vertexArray.plus(newFaceVertexTripleArray),
             faces = drawing.faceArray.plus(
                 newFace.map {
-                    Triple((it.first + drawing.vertexArray.size).toShort(), it.second, it.third)
+                    Triple((it.first + drawing.vertexArray.size), it.second, it.third)
                 }.toTypedArray()
             )
         )

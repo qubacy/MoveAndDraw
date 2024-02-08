@@ -26,7 +26,7 @@ class OBJDrawingSerializer : DrawingSerializer {
         return serializedVerticesBuilder.toString()
     }
 
-    private fun serializeFaces(faceArray: Array<Array<Triple<Short, Short?, Short?>>>): String {
+    private fun serializeFaces(faceArray: Array<Array<Triple<Int, Int?, Int?>>>): String {
         val serializedFacesBuilder = StringBuilder()
 
         for (i in faceArray.indices) {

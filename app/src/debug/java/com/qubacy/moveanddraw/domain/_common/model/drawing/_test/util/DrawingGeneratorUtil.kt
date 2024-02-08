@@ -7,7 +7,7 @@ object DrawingGeneratorUtil {
     fun generateDrawingByVerticesFaces(
         uri: Uri? = null,
         vertices: Array<Triple<Float, Float, Float>>,
-        faces: Array<Array<Triple<Short, Short?, Short?>>>
+        faces: Array<Array<Triple<Int, Int?, Int?>>>
     ): Drawing {
         return Drawing(
             uri,

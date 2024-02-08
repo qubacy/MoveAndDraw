@@ -82,7 +82,7 @@ class DrawingGLDrawingMapperImplTest {
                     squareDrawing.vertexArray.flatMap { listOf(it.first, it.second, it.third) }
                         .toFloatArray(),
                     squareDrawing.faceArray.flatMap { it.map { vertex -> vertex.first } }
-                        .toShortArray()
+                        .toIntArray()
                 )
             ),
             Pair(
@@ -91,7 +91,7 @@ class DrawingGLDrawingMapperImplTest {
                     cubeDrawing.vertexArray.flatMap { listOf(it.first, it.second, it.third) }
                         .toFloatArray(),
                     cubeDrawing.faceArray.flatMap { it.map { vertex -> vertex.first } }
-                        .toShortArray()
+                        .toIntArray()
                 )
             ),
             Pair(
@@ -99,7 +99,7 @@ class DrawingGLDrawingMapperImplTest {
                 GLDrawing(
                     cubeSquarePolygonDrawing.vertexArray.flatMap { listOf(it.first, it.second, it.third) }
                         .toFloatArray(),
-                    shortArrayOf(
+                    intArrayOf(
                         cubeSquarePolygonDrawing.faceArray[0][0].first, cubeSquarePolygonDrawing.faceArray[0][1].first, cubeSquarePolygonDrawing.faceArray[0][2].first,
                         cubeSquarePolygonDrawing.faceArray[0][0].first, cubeSquarePolygonDrawing.faceArray[0][2].first, cubeSquarePolygonDrawing.faceArray[0][3].first,
                         cubeSquarePolygonDrawing.faceArray[1][0].first, cubeSquarePolygonDrawing.faceArray[1][1].first, cubeSquarePolygonDrawing.faceArray[1][2].first,

@@ -5,14 +5,14 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.dra
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.util.GL2Util
 
 class DrawingGLDrawingMapperImpl : DrawingGLDrawingMapper {
-    private fun mapFace(face: Array<Triple<Short, Short?, Short?>>): List<Short> {
-        val faceVertexIdArray = face.map { it.first }.toShortArray()
+    private fun mapFace(face: Array<Triple<Int, Int?, Int?>>): List<Int> {
+        val faceVertexIdArray = face.map { it.first }.toIntArray()
 
         return GL2Util.polygonToTriangles(faceVertexIdArray)
     }
 
     override fun map(drawing: Drawing): GLDrawing {
-        val vertexDrawingOrder = mutableListOf<Short>()
+        val vertexDrawingOrder = mutableListOf<Int>()
 
         for (face in drawing.faceArray) {
             val curPolygon = mapFace(face)
@@ -22,7 +22,7 @@ class DrawingGLDrawingMapperImpl : DrawingGLDrawingMapper {
 
         return GLDrawing(
             drawing.vertexArray.flatMap { it.toList() }.toFloatArray(),
-            vertexDrawingOrder.toShortArray()
+            vertexDrawingOrder.toIntArray()
         )
     }
 }

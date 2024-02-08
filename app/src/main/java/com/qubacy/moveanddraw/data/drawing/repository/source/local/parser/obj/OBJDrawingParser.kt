@@ -14,7 +14,7 @@ class OBJDrawingParser : DrawingParser {
         val finalVertices = mutableListOf<Float>()
         val finalNormals = mutableListOf<Float>()
         val finalTextures = mutableListOf<Float>()
-        val finalFaces = mutableListOf<Array<Triple<Short, Short?, Short?>>>()
+        val finalFaces = mutableListOf<Array<Triple<Int, Int?, Int?>>>()
 
         readVectors(reader, finalVertices, finalNormals, finalTextures, finalFaces)
 
@@ -35,7 +35,7 @@ class OBJDrawingParser : DrawingParser {
         finalVertices: MutableList<Float>,
         finalNormals: MutableList<Float>,
         finalTextures: MutableList<Float>,
-        facesList: MutableList<Array<Triple<Short, Short?, Short?>>>
+        facesList: MutableList<Array<Triple<Int, Int?, Int?>>>
     ) {
         var line: String? = null
 
@@ -63,17 +63,17 @@ class OBJDrawingParser : DrawingParser {
                     finalTextures.add(tokens[2].toFloat())
                 }
                 OBJContext.FACE_TOKEN -> {
-                    val curFaceList = mutableListOf<Triple<Short, Short?, Short?>>()
+                    val curFaceList = mutableListOf<Triple<Int, Int?, Int?>>()
 
                     for (i in 1 until tokens.size) {
                         val vun = tokens[i].split(OBJContext.PARTS_SPLITTER)
 
-                        val vertexIndex = vun[0].toShort().minus(1).toShort()
+                        val vertexIndex = vun[0].toInt().minus(1)
                         val textureIndex =
-                            if (vun.size > 1) vun[1].toShortOrNull()?.minus(1)?.toShort()
+                            if (vun.size > 1) vun[1].toIntOrNull()?.minus(1)
                             else null
                         val normalIndex =
-                            if (vun.size > 2) vun[2].toShortOrNull()?.minus(1)?.toShort()
+                            if (vun.size > 2) vun[2].toIntOrNull()?.minus(1)
                             else null
 
                         val point = Triple(vertexIndex, textureIndex, normalIndex)
