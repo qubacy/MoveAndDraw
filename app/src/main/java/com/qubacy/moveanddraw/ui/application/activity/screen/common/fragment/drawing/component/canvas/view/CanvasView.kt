@@ -102,7 +102,7 @@ open class CanvasView(
      * It's in charge for resetting a RendererInitializer instance;
      */
     fun prepareForPreservation() {
-        mRenderer.resetInitializer()
+        //mRenderer.resetInitializer()
     }
 
     fun setLifecycleOwner(lifecycle: Lifecycle) {
@@ -182,11 +182,13 @@ open class CanvasView(
         return mRenderer.cameraData.copy()
     }
 
-    fun setCameraData(cameraData: CameraData) = mLifecycleScope?.launch(Dispatchers.IO) {
-        Log.d(TAG, "setCameraData(): entering.. cameraData.pos = ${cameraData.position.joinToString()}")
+    fun setCameraData(cameraData: CameraData, isInitializing: Boolean = false) {
+        mLifecycleScope?.launch(Dispatchers.IO) {
+            Log.d(TAG, "setCameraData(): entering.. cameraData.pos = ${cameraData.position.joinToString()}")
 
-        mRenderer.setCameraData(cameraData)
-        requestRender()
+            mRenderer.setCameraData(cameraData, isInitializing)
+            requestRender()
+        }
     }
 
     override fun onTouchEvent(e: MotionEvent): Boolean {

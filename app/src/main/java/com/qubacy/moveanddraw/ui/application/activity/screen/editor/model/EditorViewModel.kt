@@ -76,7 +76,7 @@ open class EditorViewModel @Inject constructor(
         pendingOperations: TakeQueue<UiOperation>
     ): EditorUiState {
         return EditorUiState(
-            drawing = drawing ?: mUiState.value?.drawing,
+            drawing = drawing, //?: mUiState.value?.drawing,
             isLoading = isLoading,
             pendingOperations = pendingOperations
         )
@@ -141,11 +141,10 @@ open class EditorViewModel @Inject constructor(
         mEditorUseCase.removeLastFaceFromDrawing(drawing)
     }
 
-    fun saveFaceSketch(faceSketch: FaceSketch) {
+    fun saveFaceSketch(drawing: Drawing?, faceSketch: FaceSketch) {
         mUiState.value = generateDrawingUiState(isLoading = true)
 
-        mEditorUseCase.addNewFaceToDrawing(
-            mUiState.value!!.drawing, faceSketch.vertexArray, faceSketch.face)
+        mEditorUseCase.addNewFaceToDrawing(drawing, faceSketch.vertexArray, faceSketch.face)
     }
 }
 

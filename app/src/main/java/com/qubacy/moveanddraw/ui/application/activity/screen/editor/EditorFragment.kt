@@ -213,7 +213,9 @@ class EditorFragment(
         }
 
         launch(Dispatchers.Main) {
-            mModel.saveFaceSketch(faceSketch)
+            val drawing = mModel.uiState.value!!.drawing
+
+            mModel.saveFaceSketch(drawing, faceSketch)
         }
     }
 

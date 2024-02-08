@@ -59,10 +59,10 @@ class EditorCanvasRenderer(
         editorRendererMode: EditorCanvasContext.Mode,
         isInitializing: Boolean = false
     ) {
-        Log.d(TAG, "setEditorRendererMode(): editorRendererMode = $editorRendererMode;")
-
         if (isInitializing) {
             mInitializerMutex.withLock {
+                Log.d(TAG, "setEditorRendererMode(): editorRendererMode = $editorRendererMode;")
+
                 mInitializer.postponeEditorMode(editorRendererMode)
 
                 if (mInitializer.currentStep != EditorRendererStepInitializer.EditorStep.EDITOR_MODE)
@@ -94,10 +94,10 @@ class EditorCanvasRenderer(
         faceSketchDots: List<Dot2D>,
         isInitializing: Boolean = false
     ) {
-        Log.d(TAG, "setFaceSketchDotBuffer(): faceSketchDots = ${faceSketchDots.joinToString()};")
-
         if (!isInitializing) {
             mInitializerMutex.withLock {
+                Log.d(TAG, "setFaceSketchDotBuffer(): faceSketchDots = ${faceSketchDots.joinToString()};")
+
                 mInitializer.postponeSketchDotList(faceSketchDots)
 
                 if (mInitializer.currentStep != EditorRendererStepInitializer.EditorStep.SKETCH)

@@ -88,16 +88,23 @@ open class CanvasRenderer(
         mInitializer.reset()
     }
 
-    suspend fun setCameraData(cameraData: CameraData) {
-        Log.d(TAG, "setCameraData(): entering.. cameraData.pos = ${cameraData.position.joinToString()}")
+    suspend fun setCameraData(cameraData: CameraData, isInitializing: Boolean = false) {
+        if (!isInitializing) {
+            mInitializerMutex.withLock {
+                Log.d(
+                    TAG,
+                    "setCameraData(): entering.. cameraData.pos = ${cameraData.position.joinToString()}"
+                )
 
-        mInitializerMutex.withLock {
-            mInitializer.postponeCamera(cameraData)
+                mInitializer.postponeCamera(cameraData)
 
-            if (mInitializer.currentStep != RendererStepInitializer.StandardStep.CAMERA)
-                return
+                if (mInitializer.currentStep != RendererStepInitializer.StandardStep.CAMERA)
+                    return
 
-            onCameraStepInitializing()
+                onCameraStepInitializing()
+            }
+        } else {
+            setCameraData(cameraData)
         }
     }
 
@@ -140,12 +147,19 @@ open class CanvasRenderer(
     protected open fun onCameraStepInitializing() {
         Log.d(TAG, "onCameraStepInitializing(): entering..")
 
-        mCameraData.setData(mInitializer.camera!!)
-        setPerspective()
+        setCameraData(mInitializer.camera!!)
 
         mInitializer.nextStep()
     }
 
+    private fun setCameraData(cameraData: CameraData) {
+        mCameraData.setData(cameraData)
+        setPerspective()
+    }
+
+    /**
+     * Executing under mInitializerMutex;
+     */
     protected fun onFigureStepInitializing() {
         Log.d(TAG, "onFigureStepInitializing(): entering..")
 
@@ -157,9 +171,12 @@ open class CanvasRenderer(
     }
 
     suspend fun setFigure(figure: GLDrawing) {
-        Log.d(TAG, "setFigure(): entering..")
-
         mInitializerMutex.withLock {
+            Log.d(TAG,
+                "setFigure(): figure.vertexArray.size = ${figure.vertexArray.size};" +
+                " mInitializer.currentStep = ${mInitializer.currentStep};"
+            )
+
             if (mInitializer.currentStep != RendererStepInitializer.StandardStep.FIGURE)
                 mInitializer.reset()
 

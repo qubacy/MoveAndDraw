@@ -76,12 +76,11 @@ class EditorUseCase @Inject constructor(
         face: Array<Triple<Int, Int?, Int?>>
     ) {
         mCoroutineScope.launch(mCoroutineDispatcher) {
-            val vertexIndexShift = drawing?.vertexArray?.size
+            val vertexIndexShift = drawing?.vertexArray?.size ?: 0
             val shiftedFace =
-                if (vertexIndexShift != null) face.map {
+                face.map {
                     Triple((it.first + vertexIndexShift), it.second, it.third)
                 }.toTypedArray()
-                else face
 
             val finalVertexArray = drawing?.vertexArray?.plus(faceVertexTripleArray)
                 ?: faceVertexTripleArray

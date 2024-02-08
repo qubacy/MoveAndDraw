@@ -94,7 +94,7 @@ abstract class DrawingFragment<
     override fun onResume() {
         super.onResume()
 
-        mLastCameraData?.also { mCanvasView.setCameraData(it) }
+        mLastCameraData?.also { mCanvasView.setCameraData(it, true) }
         mDrawingSettings?.also { setDrawingSettings(it) }
     }
 
@@ -184,6 +184,8 @@ abstract class DrawingFragment<
     }
 
     protected fun setProgressIndicatorEnabled(isEnabled: Boolean) {
+        Log.d(TAG, "setProgressIndicatorEnabled(): isEnabled = $isEnabled;")
+
         mProgressIndicator.visibility = if (isEnabled) View.VISIBLE else View.GONE
     }
 
