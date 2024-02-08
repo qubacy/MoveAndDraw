@@ -8,9 +8,7 @@ import com.google.android.material.textview.MaterialTextView
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.component.button.draggable.view.DraggableButton
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.component.button.draggable.view.OnSwipeMoveCallback
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.view.CanvasView
 import com.qubacy.moveanddraw.ui.application.activity.screen.initial.component.chooser.view.OptionChooserComponentCallback.SwipeOption
-import kotlinx.coroutines.runBlocking
 import kotlin.math.abs
 
 class OptionChooserComponent(

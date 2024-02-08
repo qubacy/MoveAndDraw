@@ -166,7 +166,7 @@ abstract class DrawingFragment<
     }
 
     override fun setUiElementsState(uiState: DrawingUiStateType) {
-        Log.d(TAG, "setUiElementsState(): entering..")
+        Log.d(TAG, "setUiElementsState(): uiState.isLoading = ${uiState.isLoading};")
 
         setTopBarMenuEnabled(!uiState.isLoading)
         setProgressIndicatorEnabled(uiState.isLoading)

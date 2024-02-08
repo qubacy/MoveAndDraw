@@ -53,6 +53,7 @@ class InitialFragmentTest {
 
         launchFragmentInHiltContainer<InitialFragment> {
             mNavController.setGraph(R.navigation.nav_graph)
+
             Navigation.setViewNavController(requireView(), mNavController)
 
             mFragment = this as InitialFragment
@@ -173,10 +174,12 @@ class InitialFragmentTest {
         val rightPathEdgeLength = screenWidth - dragButtonX
         val leftPathEdgeLength = screenWidth - rightPathEdgeLength  + dragButton.measuredWidth / 2f
 
-        val rightOptionPathActivationLength = rightPathEdgeLength *
-                OptionChooserComponent.DEFAULT_SWIPE_ACTIVATION_PERCENT
-        val leftOptionPathActivationLength = leftPathEdgeLength *
-                OptionChooserComponent.DEFAULT_SWIPE_ACTIVATION_PERCENT
+        val swipeActivationPercent = mFragment.requireView()
+            .findViewById<OptionChooserComponent>(R.id.fragment_initial_option_chooser)
+            .componentOptionChooserSwipeActivationPercent
+
+        val rightOptionPathActivationLength = rightPathEdgeLength * swipeActivationPercent
+        val leftOptionPathActivationLength = leftPathEdgeLength * swipeActivationPercent
 
         Espresso.onView(withId(R.id.component_option_chooser_swipe_button))
             .perform(
@@ -215,5 +218,16 @@ class InitialFragmentTest {
             .perform(SwipeViewActionUtil.generateSwipeViewAction(endX, 0f))
 
         Assert.assertEquals(R.id.viewerFragment, mNavController.currentDestination!!.id)
+    }
+
+    @Test
+    fun choosingEditingLeadsToTransitionToEditingScreenTest() {
+        Espresso.onView(withId(R.id.fragment_initial_button_start))
+            .perform(ViewActions.click())
+
+        Espresso.onView(withId(R.id.component_option_chooser_swipe_button))
+            .perform(SwipeViewActionUtil.generateSwipeViewAction(0f, 0f))
+
+        Assert.assertEquals(R.id.editorFragment, mNavController.currentDestination!!.id)
     }
 }

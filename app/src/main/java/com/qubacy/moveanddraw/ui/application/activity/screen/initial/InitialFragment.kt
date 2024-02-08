@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
+import androidx.navigation.Navigation
 import com.google.android.material.carousel.CarouselLayoutManager
 import com.google.android.material.carousel.HeroCarouselStrategy
 import com.google.android.material.transition.MaterialSharedAxis
@@ -154,11 +154,13 @@ class InitialFragment(
     }
 
     private fun goToViewer() {
-        findNavController().navigate(R.id.action_initialFragment_to_viewerFragment)
+        Navigation.findNavController(requireView())
+            .navigate(R.id.action_initialFragment_to_viewerFragment)
     }
 
     private fun goToEditor() {
-        findNavController().navigate(R.id.action_initialFragment_to_editorFragment)
+        Navigation.findNavController(requireView())
+            .navigate(R.id.action_initialFragment_to_editorFragment)
     }
 
     override fun onScrimClicked() {
