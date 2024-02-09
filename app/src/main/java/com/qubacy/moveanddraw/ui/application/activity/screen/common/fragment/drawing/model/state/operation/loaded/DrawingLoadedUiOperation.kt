@@ -1,11 +1,10 @@
-package com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.operation.saved
+package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.operation.loaded
 
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.operation._common.SetDrawingUiOperation
 
-class DrawingSavedUiOperation(
-    drawing: Drawing,
-    val filePath: String
+class DrawingLoadedUiOperation(
+    drawing: Drawing
 ) : SetDrawingUiOperation(drawing) {
 
 }

@@ -99,6 +99,8 @@ open class CanvasRenderer(
                 TAG,
                 "setCameraData(): entering.. cameraData.pos = ${cameraData.position.joinToString()}"
             )
+            Log.d(TAG, "setCameraData(): mInitializer.currentStep = ${mInitializer.currentStep};")
+
 
             mInitializer.postponeCamera(cameraData)
 
@@ -177,6 +179,7 @@ open class CanvasRenderer(
                 "setFigure(): figure.vertexArray.size = ${figure.vertexArray.size};" +
                 " mInitializer.currentStep = ${mInitializer.currentStep};"
             )
+            Log.d(TAG, "setFigure(): mInitializer.currentStep = ${figure.vertexArray.size};")
 
             if (mInitializer.currentStep != RendererStepInitializer.StandardStep.FIGURE)
                 mInitializer.reset()
@@ -192,9 +195,9 @@ open class CanvasRenderer(
 
         prepareForFigure(figure)
 
-        mCameraData.setMadeWayHorizontal(0f)
-        mCameraData.setMadeWayVertical(0f)
-        mCameraData.setScaleFactor(1f)
+        mCameraData.setMadeWayHorizontal(CameraContext.DEFAULT_MADE_WAY)
+        mCameraData.setMadeWayVertical(CameraContext.DEFAULT_MADE_WAY)
+        mCameraData.setScaleFactor(CameraContext.DEFAULT_SCALE)
 
         setDefaultCameraLocation()
         setPerspective()
@@ -244,7 +247,6 @@ open class CanvasRenderer(
     fun getHorizontalCameraWayLength(): Float {
         return (2 * PI * mCameraRadius).toFloat()
     }
-
 
     // todo: think of mCameraRadius. shouldn't it be preserved as well?
     fun getTranslatedCameraLocation(dx: Float, dy: Float): FloatArray {
@@ -307,7 +309,9 @@ open class CanvasRenderer(
     open fun handleScale(gottenScaleFactor: Float) {
         val newScaleFactor = mCameraData.scaleFactor * gottenScaleFactor
 
-        if (newScaleFactor !in MIN_SCALE_FACTOR..MAX_SCALE_FACTOR) return
+        Log.d(TAG, "handleScale(): newScaleFactor = $newScaleFactor;")
+
+        if (!CameraContext.checkScaleFactorValidity(newScaleFactor)) return
 
         mCameraData.setScaleFactor(newScaleFactor)
 
@@ -315,8 +319,6 @@ open class CanvasRenderer(
     }
 
     protected fun setPerspective() {
-        mCameraData.apply { setFOV(CameraContext.DEFAULT_CAMERA_FOV / scaleFactor) }
-
         Matrix.perspectiveM(
             mProjectionMatrix, 0,
             mCameraData.fov,

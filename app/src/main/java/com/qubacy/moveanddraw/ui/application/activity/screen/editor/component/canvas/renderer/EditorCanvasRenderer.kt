@@ -62,6 +62,10 @@ class EditorCanvasRenderer(
         if (isInitializing) {
             mInitializerMutex.withLock {
                 Log.d(TAG, "setEditorRendererMode(): editorRendererMode = $editorRendererMode;")
+                Log.d(
+                    TAG,
+                    "setEditorRendererMode(): mInitializer.currentStep = ${mInitializer.currentStep};"
+                )
 
                 mInitializer.postponeEditorMode(editorRendererMode)
 
@@ -70,7 +74,6 @@ class EditorCanvasRenderer(
 
                 onEditorModeInitializing()
             }
-
         } else {
             changeEditorMode(editorRendererMode)
         }
@@ -80,6 +83,10 @@ class EditorCanvasRenderer(
         Log.d(TAG, "onEditorModeInitializing(): entering..")
 
         changeEditorMode(mInitializer.editorMode!!)
+
+        mInitializer.nextStep()
+
+        if (mInitializer.sketch != null) onSketchStepInitializing()
     }
 
     private fun changeEditorMode(editorMode: EditorCanvasContext.Mode) {
@@ -91,24 +98,18 @@ class EditorCanvasRenderer(
     }
 
     suspend fun setFaceSketchDotBuffer(
-        faceSketchDots: List<Dot2D>,
-        isInitializing: Boolean = false
+        faceSketchDots: List<Dot2D>
     ) {
-        if (!isInitializing) {
-            mInitializerMutex.withLock {
-                Log.d(TAG, "setFaceSketchDotBuffer(): faceSketchDots = ${faceSketchDots.joinToString()};")
+        mInitializerMutex.withLock {
+            Log.d(TAG, "setFaceSketchDotBuffer(): faceSketchDots = ${faceSketchDots.joinToString()};")
+            Log.d(TAG, "setFaceSketchDotBuffer(): mInitializer.currentStep = ${mInitializer.currentStep}")
 
-                mInitializer.postponeSketchDotList(faceSketchDots)
+            mInitializer.postponeSketchDotList(faceSketchDots)
 
-                if (mInitializer.currentStep != EditorRendererStepInitializer.EditorStep.SKETCH)
-                    return
+            if (mInitializer.currentStep != EditorRendererStepInitializer.EditorStep.SKETCH)
+                return
 
-                mFaceSketchMutex.withLock() { onSketchStepInitializing() }
-            }
-        } else {
-            mFaceSketchDotBuffer.clear() // todo: rethink this;
-
-            changeFaceSketchDotBuffer(faceSketchDots)
+            mFaceSketchMutex.withLock() { onSketchStepInitializing() }
         }
     }
 
@@ -121,7 +122,14 @@ class EditorCanvasRenderer(
     }
 
     private fun changeFaceSketchDotBuffer(faceSketchDots: List<Dot2D>) {
+        mFaceSketchDotBuffer.clear()
         mFaceSketchDotBuffer.addAll(faceSketchDots)
+    }
+
+    override fun onCameraStepInitializing() {
+        super.onCameraStepInitializing()
+
+        if (mInitializer.editorMode != null) onEditorModeInitializing()
     }
 
     suspend fun saveAndGetFaceSketch(): FaceSketch? {
@@ -158,6 +166,8 @@ class EditorCanvasRenderer(
     }
 
     private fun resetFaceSketchData() {
+        Log.d(TAG, "resetFaceSketchData(): mFaceSketchDotBuffer = ${mFaceSketchDotBuffer.joinToString()}")
+
         mFaceSketchDotBuffer.clear()
 
         mLastFaceSketchVertexArray = floatArrayOf()
@@ -183,14 +193,6 @@ class EditorCanvasRenderer(
 
         return faceSketch
     }
-
-//    fun setMode(mode: EditorRendererMode) {
-//        mEditorRendererMode = mode
-//
-//        setHelpingPlaneVisibilityByMode(mode)
-//        changeCameraNearByMode(mode)
-//        mFaceSketchDotBuffer.clear()
-//    }
 
     private fun changeCameraNearByMode(mode: EditorCanvasContext.Mode) {
         val cameraNear = when (mode) {

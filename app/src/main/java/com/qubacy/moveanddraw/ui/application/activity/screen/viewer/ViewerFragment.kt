@@ -15,6 +15,7 @@ import com.qubacy.moveanddraw.databinding.FragmentViewerBinding
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.transition.DefaultSharedAxisTransitionGenerator
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.DrawingFragment
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.view.CanvasView
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.operation.loaded.DrawingLoadedUiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.ViewerViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.ViewerViewModelFactoryQualifier
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.state.ViewerUiState
@@ -78,7 +79,7 @@ class ViewerFragment(
     }
 
     override fun onShareMenuItemClicked() {
-        val drawingUri = mModel.uiState.value?.drawing?.uri
+        val drawingUri = mModel.drawing?.uri//mModel.uiState.value?.drawing?.uri
 
         if (drawingUri == null)
             return mModel.retrieveError(ErrorEnum.NO_FILE_LOADED.id)
@@ -88,8 +89,12 @@ class ViewerFragment(
 
     override fun setUiElementsState(uiState: ViewerUiState) {
         super.setUiElementsState(uiState)
+    }
 
-        if (uiState.drawing != null) setEntryMessageEnabled(false)
+    override fun processDrawingLoadedOperation(uiOperation: DrawingLoadedUiOperation) {
+        super.processDrawingLoadedOperation(uiOperation)
+
+        setEntryMessageEnabled(false)
     }
 
     private fun setEntryMessageEnabled(isEnabled: Boolean) {

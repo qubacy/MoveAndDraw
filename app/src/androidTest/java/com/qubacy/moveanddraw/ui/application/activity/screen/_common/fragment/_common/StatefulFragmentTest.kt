@@ -20,7 +20,8 @@ import java.lang.reflect.Field
 abstract class StatefulFragmentTest<
         UiStateType : UiState,
         ViewModelType : BusinessViewModel<UiStateType>,
-        FragmentType : BaseFragment<UiStateType, ViewModelType>>(
+        FragmentType : BaseFragment<UiStateType, ViewModelType>
+>(
 
 ) {
     companion object {

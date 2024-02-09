@@ -17,8 +17,10 @@ import com.qubacy.moveanddraw._common.util.struct.takequeue._common.TakeQueue
 import com.qubacy.moveanddraw.domain._common.model.drawing._test.util.DrawingGeneratorUtil
 import com.qubacy.moveanddraw.ui._common._test.view.util.action.wait.WaitViewAction
 import com.qubacy.moveanddraw.ui._common._test.view.util.matcher.button.navigation.NavigationButtonViewMatcher
-import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.StatefulFragmentTest
+import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment.drawing.DrawingFragmentTest
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.view.CanvasView
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.operation.loaded.DrawingLoadedUiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.ViewerViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.ViewerViewModelFactoryModule
 import com.qubacy.moveanddraw.ui.application.activity.screen.viewer.model.state.ViewerUiState
@@ -36,7 +38,7 @@ import java.lang.reflect.Field
 @UninstallModules(ViewerViewModelFactoryModule::class)
 class ViewerFragmentTest(
 
-) : StatefulFragmentTest<ViewerUiState, ViewerViewModel, ViewerFragment>() {
+) : DrawingFragmentTest<ViewerUiState, ViewerViewModel, CanvasView, ViewerFragment>() {
     override fun retrieveModelFieldReflection(): Field {
         return ViewerFragment::class.java
             .getDeclaredField("mModel\$delegate")
@@ -104,12 +106,10 @@ class ViewerFragmentTest(
         Espresso.onView(withId(R.id.fragment_viewer_progress_indicator))
             .check(ViewAssertions.matches(isDisplayed()))
 
-        val drawingUiState = ViewerUiState(
-            isLoading = false,
-            drawing = DrawingGeneratorUtil.generateSquareDrawing()
-        )
+        val drawing = DrawingGeneratorUtil.generateSquareDrawing()
+        val state = generateUiStateWithUiOperation(DrawingLoadedUiOperation(drawing))
 
-        setState(drawingUiState)
+        setState(state)
 
         Espresso.onView(withId(R.id.fragment_viewer_progress_indicator))
             .check(ViewAssertions.matches(

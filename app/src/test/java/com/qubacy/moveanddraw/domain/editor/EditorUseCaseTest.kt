@@ -11,9 +11,9 @@ import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
 import com.qubacy.moveanddraw.domain._common.model.drawing._test.util.DrawingGeneratorUtil
 import com.qubacy.moveanddraw.domain._common.usecase.drawing.DrawingUseCaseTest
 import com.qubacy.moveanddraw.domain.editor._test.data.EditorUseCaseInitData
-import com.qubacy.moveanddraw.domain.editor.result.AddNewFaceToDrawingResult
-import com.qubacy.moveanddraw.domain.editor.result.RemoveLastFaceFromDrawingResult
-import com.qubacy.moveanddraw.domain.editor.result.SaveDrawingResult
+import com.qubacy.moveanddraw.domain.editor.result.face.add.AddNewFaceToDrawingResult
+import com.qubacy.moveanddraw.domain.editor.result.face.remove.RemoveLastFaceFromDrawingResult
+import com.qubacy.moveanddraw.domain.editor.result.save.SaveDrawingResult
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Test

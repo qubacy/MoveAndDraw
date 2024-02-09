@@ -8,11 +8,12 @@ import com.qubacy.moveanddraw._common._test.util.mock.UriMockUtil
 import com.qubacy.moveanddraw._common._test.util.rule.MainCoroutineRule
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.domain._common.usecase.drawing.DrawingUseCase
-import com.qubacy.moveanddraw.domain._common.usecase.drawing.result.LoadDrawingResult
+import com.qubacy.moveanddraw.domain._common.usecase.drawing.result.load.LoadDrawingResult
 import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.model._common.BusinessViewModelTest
 import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment.drawing.model._test.data.DrawingMockUseCaseInitData
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.DrawingViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.DrawingUiState
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.operation.loaded.DrawingLoadedUiOperation
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -68,8 +69,10 @@ abstract class DrawingViewModelTest<
             mViewModel.loadDrawing(drawingToLoadUri)
 
             val drawingState = awaitItem()!!
+            val operation = drawingState.pendingOperations.take()!!
 
-            Assert.assertEquals(loadedDrawing, drawingState.drawing)
+            Assert.assertEquals(DrawingLoadedUiOperation::class, operation::class)
+            Assert.assertEquals(loadedDrawing, (operation as DrawingLoadedUiOperation).drawing)
         }
     }
 }

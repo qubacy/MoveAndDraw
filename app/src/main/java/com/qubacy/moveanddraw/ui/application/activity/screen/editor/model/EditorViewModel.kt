@@ -10,15 +10,16 @@ import com.qubacy.moveanddraw.data.drawing.repository.DrawingDataRepository
 import com.qubacy.moveanddraw.data.drawing.repository.source.local.LocalDrawingDataSource
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
-import com.qubacy.moveanddraw.domain._common.usecase._common.result._common.Result
+import com.qubacy.moveanddraw.domain._common.usecase.drawing.result._common.SetDrawingResult
 import com.qubacy.moveanddraw.domain.editor.EditorUseCase
-import com.qubacy.moveanddraw.domain.editor.result.AddNewFaceToDrawingResult
-import com.qubacy.moveanddraw.domain.editor.result.RemoveLastFaceFromDrawingResult
-import com.qubacy.moveanddraw.domain.editor.result.SaveDrawingResult
+import com.qubacy.moveanddraw.domain.editor.result.face.add.AddNewFaceToDrawingResult
+import com.qubacy.moveanddraw.domain.editor.result.face.remove.RemoveLastFaceFromDrawingResult
+import com.qubacy.moveanddraw.domain.editor.result.save.SaveDrawingResult
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.Dot2D
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.DrawingViewModel
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.operation._common.SetDrawingUiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.data.face.FaceSketch
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.EditorUiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.operation.face.added.NewFaceAddedToDrawingUiOperation
@@ -70,18 +71,6 @@ open class EditorViewModel @Inject constructor(
         mSavedStateHandle[FACE_SKETCH_DOT_BUFFER_KEY] = preparedFaceSketchDotBuffer
     }
 
-    override fun generateDrawingUiState(
-        drawing: Drawing?,
-        isLoading: Boolean,
-        pendingOperations: TakeQueue<UiOperation>
-    ): EditorUiState {
-        return EditorUiState(
-            drawing = drawing, //?: mUiState.value?.drawing,
-            isLoading = isLoading,
-            pendingOperations = pendingOperations
-        )
-    }
-
     fun checkNewFileFilenameValidity(filename: String): Boolean {
         return Regex("^\\S+$").matches(filename)
     }
@@ -91,7 +80,7 @@ open class EditorViewModel @Inject constructor(
     }
 
     open fun saveCurrentDrawingToNewFile(drawing: Drawing, filename: String) {
-        mUiState.value = generateDrawingUiState(drawing = drawing, isLoading = true)
+        mUiState.value = generateDrawingUiState(isLoading = true)
 
         // todo: only .obj for now:
         val filenameWithExtension = filename + '.' + DrawingFileExtension.OBJ.ext
@@ -100,13 +89,13 @@ open class EditorViewModel @Inject constructor(
     }
 
     open fun saveCurrentDrawingChanges(drawing: Drawing) {
-        mUiState.value = generateDrawingUiState(drawing = drawing, isLoading = true)
+        mUiState.value = generateDrawingUiState(isLoading = true)
 
         mEditorUseCase.saveDrawing(drawing, drawingUri = drawing.uri)
     }
 
-    override fun processResult(result: Result): EditorUiState? {
-        val state = super.processResult(result)
+    override fun processSetDrawingResult(result: SetDrawingResult): EditorUiState? {
+        val state = super.processSetDrawingResult(result)
 
         if (state != null) return state
 
@@ -121,18 +110,32 @@ open class EditorViewModel @Inject constructor(
         }
     }
 
+    override fun generateDrawingUiState(
+        isLoading: Boolean,
+        pendingOperations: TakeQueue<UiOperation>
+    ): EditorUiState {
+        return EditorUiState(isLoading, pendingOperations)
+    }
+
     private fun processRemoveLastFaceResult(result: RemoveLastFaceFromDrawingResult): EditorUiState {
-        return generateDrawingUiState(drawing = result.drawing, isLoading = false)
+        return generateDrawingUiState(
+            isLoading = false,
+            pendingOperations = TakeQueue(SetDrawingUiOperation(result.drawing))
+        )
     }
 
     private fun processAddNewFaceToDrawingResult(result: AddNewFaceToDrawingResult): EditorUiState {
-        return generateDrawingUiState(drawing = result.drawing, isLoading = false,
-            pendingOperations = TakeQueue(NewFaceAddedToDrawingUiOperation()))
+        return generateDrawingUiState(
+            isLoading = false,
+            pendingOperations = TakeQueue(NewFaceAddedToDrawingUiOperation(result.drawing))
+        )
     }
 
     private fun processSaveDrawingResult(result: SaveDrawingResult): EditorUiState {
-        return generateDrawingUiState(drawing = result.drawing, isLoading = false,
-            pendingOperations = TakeQueue(DrawingSavedUiOperation(result.filePath)))
+        return generateDrawingUiState(
+            isLoading = false,
+            pendingOperations = TakeQueue(DrawingSavedUiOperation(result.drawing, result.filePath))
+        )
     }
 
     fun removeLastFace(drawing: Drawing) {

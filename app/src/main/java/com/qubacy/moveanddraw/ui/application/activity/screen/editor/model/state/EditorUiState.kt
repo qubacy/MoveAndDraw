@@ -3,7 +3,6 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state
 import android.os.Parcel
 import android.os.Parcelable
 import com.qubacy.moveanddraw._common.util.struct.takequeue._common.TakeQueue
-import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.DrawingUiState
 
@@ -14,9 +13,9 @@ class EditorUiState : DrawingUiState {
 
     constructor(
         isLoading: Boolean = false,
-        drawing: Drawing? = null,
+        //drawing: Drawing? = null,
         pendingOperations: TakeQueue<UiOperation> = TakeQueue()
-    ) : super(isLoading, drawing, pendingOperations) {
+    ) : super(isLoading, pendingOperations) {
 
     }
 

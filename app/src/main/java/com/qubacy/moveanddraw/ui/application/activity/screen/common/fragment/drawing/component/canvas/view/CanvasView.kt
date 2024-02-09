@@ -102,7 +102,7 @@ open class CanvasView(
      * It's in charge for resetting a RendererInitializer instance;
      */
     fun prepareForPreservation() {
-        //mRenderer.resetInitializer()
+        mRenderer.resetInitializer()
     }
 
     fun setLifecycleOwner(lifecycle: Lifecycle) {

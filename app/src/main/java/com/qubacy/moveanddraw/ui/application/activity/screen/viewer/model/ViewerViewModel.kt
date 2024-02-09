@@ -9,7 +9,6 @@ import com.qubacy.moveanddraw._common.util.struct.takequeue._common.TakeQueue
 import com.qubacy.moveanddraw.data.drawing.repository.DrawingDataRepository
 import com.qubacy.moveanddraw.data.drawing.repository.source.local.LocalDrawingDataSource
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
-import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.domain.viewer.ViewerUseCase
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.DrawingViewModel
@@ -29,16 +28,16 @@ open class ViewerViewModel @Inject constructor(
     private val mViewerUseCase: ViewerUseCase
 ) : DrawingViewModel<ViewerUiState>(savedStateHandle, mViewerUseCase) {
     override fun generateDrawingUiState(
-        drawing: Drawing?,
+        //drawing: Drawing?,
         isLoading: Boolean,
         pendingOperations: TakeQueue<UiOperation>
     ): ViewerUiState {
-        return ViewerUiState(isLoading, drawing, pendingOperations)
+        return ViewerUiState(isLoading, pendingOperations)
     }
 
     override fun getUiStateWithUiOperation(uiOperation: UiOperation): ViewerUiState {
         return ViewerUiState(
-            drawing = mUiState.value?.drawing,
+            //drawing = mUiState.value?.drawing,
             pendingOperations = TakeQueue(uiOperation)
         )
     }

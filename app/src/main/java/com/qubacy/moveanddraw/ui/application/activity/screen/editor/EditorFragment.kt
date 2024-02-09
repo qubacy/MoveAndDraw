@@ -25,11 +25,11 @@ import com.qubacy.moveanddraw._common.error.ErrorEnum
 import com.qubacy.moveanddraw._common.util.color.ColorUtil
 import com.qubacy.moveanddraw.databinding.FragmentEditorBinding
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.transition.DefaultSharedAxisTransitionGenerator
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.DrawingFragment
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.settings._common.DrawingSettings
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.operation._common.SetDrawingUiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas._common.EditorCanvasContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.view.EditorCanvasView
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.EditorViewModel
@@ -135,7 +135,11 @@ class EditorFragment(
         super.onResume()
 
         mEditorMode?.also { mCanvasView.setEditorMode(it, true) }
-        mModel.faceSketchDotBuffer?.also { mCanvasView.setFaceSketchDotBuffer(it, true) }
+        mModel.faceSketchDotBuffer?.also {
+            Log.d(TAG, "onResume(): faceSketchDotBuffer = ${it.joinToString()}")
+
+            mCanvasView.setFaceSketchDotBuffer(it)
+        }
     }
 
     override fun onDestroy() {
@@ -164,14 +168,24 @@ class EditorFragment(
         // ??
     }
 
-    override fun processUiOperation(uiOperation: UiOperation) {
-        super.processUiOperation(uiOperation)
+
+
+    override fun processOtherSetDrawingOperation(uiOperation: SetDrawingUiOperation) {
+        super.processOtherSetDrawingOperation(uiOperation)
 
         when (uiOperation::class) {
-            NewFaceAddedToDrawingUiOperation::class -> onNewFaceSaved()
+            NewFaceAddedToDrawingUiOperation::class ->
+                processNewFaceAddedToDrawingOperation(uiOperation as NewFaceAddedToDrawingUiOperation)
             DrawingSavedUiOperation::class ->
                 onDrawingSaved(uiOperation as DrawingSavedUiOperation)
         }
+    }
+
+    private fun processNewFaceAddedToDrawingOperation(
+        uiOperation: NewFaceAddedToDrawingUiOperation
+    ) {
+        setCurrentDrawing(uiOperation.drawing)
+        onNewFaceSaved()
     }
 
     private fun onNewFaceSaved() {
@@ -185,7 +199,7 @@ class EditorFragment(
     }
 
     private fun onSharingDrawingSaved() {
-        val curDrawing = mModel.uiState.value?.drawing!!
+        val curDrawing = mModel.drawing!!//mModel.uiState.value?.drawing!!
 
         shareDrawingByUri(curDrawing.uri!!)
 
@@ -213,7 +227,7 @@ class EditorFragment(
         }
 
         launch(Dispatchers.Main) {
-            val drawing = mModel.uiState.value!!.drawing
+            val drawing = mModel.drawing//mModel.uiState.value!!.drawing
 
             mModel.saveFaceSketch(drawing, faceSketch)
         }
@@ -231,7 +245,7 @@ class EditorFragment(
             }
         }
 
-        mCanvasView.setEditorMode(editorMode, false)
+        mCanvasView.setEditorMode(editorMode)
         setMainActionAppearanceByBottomMenuMode(editorMode)
     }
 
@@ -283,7 +297,7 @@ class EditorFragment(
     }
 
     private fun onSaveMenuItemClicked() {
-        val curDrawing = mModel.uiState.value?.drawing
+        val curDrawing = mModel.drawing//mModel.uiState.value?.drawing
 
         if (curDrawing == null) {
             mModel.retrieveError(ErrorEnum.NULL_CURRENT_DRAWING.id)
@@ -346,7 +360,7 @@ class EditorFragment(
     }
 
     override fun onShareMenuItemClicked() {
-        val curDrawing = mModel.uiState.value?.drawing
+        val curDrawing = mModel.drawing//mModel.uiState.value?.drawing
 
         if (curDrawing == null) {
             mModel.retrieveError(ErrorEnum.NULL_CURRENT_DRAWING.id)
@@ -453,7 +467,7 @@ class EditorFragment(
     }
 
     private fun onUndoFaceClicked() {
-        val drawing = mModel.uiState.value?.drawing
+        val drawing = mModel.drawing//mModel.uiState.value?.drawing
 
         if (drawing == null) {
             mModel.retrieveError(ErrorEnum.NULL_CURRENT_DRAWING.id)

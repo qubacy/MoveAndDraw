@@ -7,9 +7,9 @@ import com.qubacy.moveanddraw.domain._common.model.drawing._common.DrawingContex
 open class CameraData(
     initPosition: FloatArray = floatArrayOf(0f, 0f, 0f),
     initFOV: Float = CameraContext.DEFAULT_CAMERA_FOV,
-    initScaleFactor: Float = CameraContext.MIN_SCALE,
-    initMadeWayHorizontal: Float = 0f,
-    initMadeWayVertical: Float = 0f,
+    initScaleFactor: Float = CameraContext.DEFAULT_SCALE,
+    initMadeWayHorizontal: Float = CameraContext.DEFAULT_MADE_WAY,
+    initMadeWayVertical: Float = CameraContext.DEFAULT_MADE_WAY,
     initCameraNear: Float = CameraContext.DEFAULT_CAMERA_NEAR
 ) : Parcelable {
     @Volatile

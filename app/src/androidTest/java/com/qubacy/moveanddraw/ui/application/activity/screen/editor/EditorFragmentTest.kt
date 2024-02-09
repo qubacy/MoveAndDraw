@@ -19,15 +19,17 @@ import com.qubacy.moveanddraw._common._test.util.launcher.launchFragmentInHiltCo
 import com.qubacy.moveanddraw._common._test.util.mock.AnyMockUtil.anyObject
 import com.qubacy.moveanddraw._common.error.Error
 import com.qubacy.moveanddraw._common.util.struct.takequeue._common.TakeQueue
+import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.domain._common.model.drawing._test.util.DrawingGeneratorUtil
 import com.qubacy.moveanddraw.ui._common._test.view.util.action.wait.WaitViewAction
 import com.qubacy.moveanddraw.ui._common._test.view.util.matcher.menu.icon.tint.MenuItemIconTintViewMatcher
 import com.qubacy.moveanddraw.ui._common._test.view.util.matcher.button.floating.icon.drawable.FABIconDrawableViewMatcher
 import com.qubacy.moveanddraw.ui._common._test.view.util.matcher.menu.icon.drawable.MenuItemIconDrawableViewMatcher
 import com.qubacy.moveanddraw.ui._common._test.view.util.matcher.toast.root.ToastRootMatcher
-import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment._common.StatefulFragmentTest
+import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment.drawing.DrawingFragmentTest
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation.error.ShowErrorUiOperation
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.view.EditorCanvasView
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.EditorViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.EditorViewModelFactoryModule
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.EditorUiState
@@ -46,8 +48,7 @@ import java.lang.reflect.Field
 @UninstallModules(EditorViewModelFactoryModule::class)
 class EditorFragmentTest(
 
-) : StatefulFragmentTest<EditorUiState, EditorViewModel, EditorFragment>() {
-
+) : DrawingFragmentTest<EditorUiState, EditorViewModel, EditorCanvasView, EditorFragment>() {
 
     override fun retrieveModelFieldReflection(): Field {
         return EditorFragment::class.java
@@ -122,11 +123,9 @@ class EditorFragmentTest(
 
         mockSaveNewDrawing(filepath = filepath)
 
-        val state = EditorUiState(
-            drawing = DrawingGeneratorUtil.generateCubeDrawing()
-        )
+        val drawing = DrawingGeneratorUtil.generateCubeDrawing()
 
-        setState(state)
+        setModelDrawingBySetDrawingStateOperation(drawing)
 
         Espresso.onView(withId(R.id.drawing_top_bar_share))
             .perform(WaitViewAction(1000), ViewActions.click())
@@ -150,11 +149,9 @@ class EditorFragmentTest(
 
         mockSaveCurrentDrawingChanges(filepath = filepath)
 
-        val state = EditorUiState(
-            drawing = DrawingGeneratorUtil.generateCubeDrawing(uri)
-        )
+        val drawing = DrawingGeneratorUtil.generateCubeDrawing(uri)
 
-        setState(state)
+        setModelDrawingBySetDrawingStateOperation(drawing)
 
         Espresso.onView(withId(R.id.drawing_top_bar_share))
             .perform(WaitViewAction(1000), ViewActions.click())
@@ -180,14 +177,16 @@ class EditorFragmentTest(
     ) {
         Mockito.`when`(mModel.saveCurrentDrawingChanges(anyObject()))
             .thenAnswer {
+                val drawing = it.arguments[0] as Drawing
                 val newOperation =
-                    if (filepath != null) DrawingSavedUiOperation(filepath)
+                    if (filepath != null) DrawingSavedUiOperation(drawing, filepath)
                     else ShowErrorUiOperation(error!!)
 
                 mUiState.value = EditorUiState(
-                    drawing = mUiState.value?.drawing,
                     pendingOperations = TakeQueue(newOperation)
                 )
+
+                // todo: setting mDrawing..
 
                 Unit
             }
@@ -200,11 +199,9 @@ class EditorFragmentTest(
 
         mockSaveCurrentDrawingChanges(filepath = filepath)
 
-        val state = EditorUiState(
-            drawing = DrawingGeneratorUtil.generateCubeDrawing(fileUri)
-        )
+        val drawing = DrawingGeneratorUtil.generateCubeDrawing(fileUri)
 
-        setState(state)
+        setModelDrawingBySetDrawingStateOperation(drawing)
 
         Espresso.onView(withId(R.id.editor_top_bar_save))
             .perform(WaitViewAction(1000), ViewActions.click())
@@ -220,16 +217,19 @@ class EditorFragmentTest(
     ) {
         Mockito.`when`(mModel.saveCurrentDrawingToNewFile(anyObject(), Mockito.anyString()))
             .thenAnswer {
+                val drawing = it.arguments[0] as Drawing
                 val newOperation =
-                    if (filepath != null) DrawingSavedUiOperation(filepath)
+                    if (filepath != null) DrawingSavedUiOperation(drawing, filepath)
                     else ShowErrorUiOperation(error!!)
 
-                val prevDrawing = mUiState.value?.drawing!!
+                val prevDrawing = mModel.drawing!!//mUiState.value?.drawing!!
+                val newDrawing = DrawingGeneratorUtil.generateDrawingByVerticesFaces(
+                    uri, prevDrawing.vertexArray, prevDrawing.faceArray
+                )
+
+                setModelDrawing(newDrawing)
 
                 mUiState.value = EditorUiState(
-                    drawing = DrawingGeneratorUtil.generateDrawingByVerticesFaces(
-                        uri, prevDrawing.vertexArray, prevDrawing.faceArray
-                    ),
                     pendingOperations = TakeQueue(newOperation)
                 )
 
@@ -244,11 +244,9 @@ class EditorFragmentTest(
 
         mockSaveNewDrawing(filepath = filepath)
 
-        val state = EditorUiState(
-            drawing = DrawingGeneratorUtil.generateCubeDrawing()
-        )
+        val drawing = DrawingGeneratorUtil.generateCubeDrawing()
 
-        setState(state)
+        setModelDrawingBySetDrawingStateOperation(drawing)
 
         Espresso.onView(withId(R.id.editor_top_bar_save))
             .perform(WaitViewAction(1000), ViewActions.click())

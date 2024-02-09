@@ -19,6 +19,7 @@ import com.qubacy.moveanddraw._common.util.context.getFileNameByUri
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.MainActivity
 import com.qubacy.moveanddraw.ui.application.activity.file.picker.GetFileUriCallback
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.base.BaseFragment
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.camera._common.CameraData
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.mapper.DrawingGLDrawingMapperImpl
@@ -26,6 +27,8 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.dra
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.view.CanvasView
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.DrawingViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.DrawingUiState
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.operation._common.SetDrawingUiOperation
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.operation.loaded.DrawingLoadedUiOperation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -94,7 +97,15 @@ abstract class DrawingFragment<
     override fun onResume() {
         super.onResume()
 
-        mLastCameraData?.also { mCanvasView.setCameraData(it) }
+        lifecycleScope.launch (Dispatchers.IO) {
+            mModel.drawing?.also { mCanvasView.setFigure(it) }
+        }
+
+        mLastCameraData?.also {
+            Log.d(TAG, "onResume(): mLastCameraData.pos = ${mLastCameraData?.position?.joinToString()}")
+
+            mCanvasView.setCameraData(it)
+        }
         mDrawingSettings?.also { setDrawingSettings(it) }
     }
 
@@ -170,10 +181,47 @@ abstract class DrawingFragment<
 
         setTopBarMenuEnabled(!uiState.isLoading)
         setProgressIndicatorEnabled(uiState.isLoading)
-        setCurrentDrawing(uiState.drawing)
     }
 
-    private fun setCurrentDrawing(drawing: Drawing?) {
+    override fun processUiOperation(uiOperation: UiOperation) {
+        if (uiOperation is SetDrawingUiOperation) {
+            processSetDrawingTypeOperation(uiOperation)
+        } else {
+            processOtherOperation(uiOperation)
+        }
+    }
+
+    protected open fun processOtherOperation(uiOperation: UiOperation) {
+
+    }
+
+    protected fun processSetDrawingTypeOperation(uiOperation: SetDrawingUiOperation) {
+        when (uiOperation::class) {
+            SetDrawingUiOperation::class -> {
+                processSetDrawingOperation(uiOperation)
+            }
+            DrawingLoadedUiOperation::class -> {
+                processDrawingLoadedOperation(uiOperation as DrawingLoadedUiOperation)
+            }
+            else -> processOtherSetDrawingOperation(uiOperation)
+        }
+    }
+
+    protected open fun processSetDrawingOperation(uiOperation: SetDrawingUiOperation) {
+        setCurrentDrawing(uiOperation.drawing)
+    }
+
+    protected open fun processDrawingLoadedOperation(uiOperation: DrawingLoadedUiOperation) {
+        processSetDrawingOperation(uiOperation)
+
+        // anything else?
+    }
+
+    protected open fun processOtherSetDrawingOperation(uiOperation: SetDrawingUiOperation) {
+
+    }
+
+    protected fun setCurrentDrawing(drawing: Drawing?) {
         if (drawing == null) return
 
         setCanvasDrawing(drawing)

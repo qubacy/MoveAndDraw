@@ -38,14 +38,15 @@ class EditorCanvasView(
             for (dot in mRenderer.faceSketchDotBuffer) add(dot.copy())
         }
 
+        Log.d(TAG, "faceSketchDotBuffer = ${copyBuffer.joinToString()}")
+
         return copyBuffer
     }
 
     fun setFaceSketchDotBuffer(
-        faceSketchDotBuffer: List<Dot2D>,
-        isInitializing: Boolean = false
+        faceSketchDotBuffer: List<Dot2D>
     ) = mLifecycleScope?.launch (Dispatchers.IO) {
-        mRenderer.setFaceSketchDotBuffer(faceSketchDotBuffer, isInitializing)
+        mRenderer.setFaceSketchDotBuffer(faceSketchDotBuffer)
         requestRender()
     }
 

@@ -9,7 +9,7 @@ import com.qubacy.moveanddraw.data.drawing.model.toDrawing
 import com.qubacy.moveanddraw.data.drawing.repository.DrawingDataRepository
 import com.qubacy.moveanddraw.data.error.repository.ErrorDataRepository
 import com.qubacy.moveanddraw._common._test.data.InitData
-import com.qubacy.moveanddraw.domain._common.usecase.drawing.result.LoadDrawingResult
+import com.qubacy.moveanddraw.domain._common.usecase.drawing.result.load.LoadDrawingResult
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

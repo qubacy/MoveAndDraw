@@ -24,7 +24,7 @@ class MutableCameraData(
         mPosition = position
     }
 
-    fun setFOV(fov: Float) {
+    private fun setFOV(fov: Float) {
         if (fov !in CameraContext.MIN_FOV..CameraContext.MAX_FOV)
             throw IllegalArgumentException()
 
@@ -32,10 +32,18 @@ class MutableCameraData(
     }
 
     fun setScaleFactor(scaleFactor: Float) {
-        if (scaleFactor < CameraContext.MIN_SCALE)
-            throw IllegalArgumentException()
+//        if (scaleFactor < CameraContext.MIN_SCALE)
+//            throw IllegalArgumentException()
+
+        val newFOV = getFOVByScaleFactor(scaleFactor)
+
+        setFOV(newFOV)
 
         mScaleFactor = scaleFactor
+    }
+
+    protected fun getFOVByScaleFactor(scaleFactor: Float): Float {
+        return CameraContext.DEFAULT_CAMERA_FOV / scaleFactor
     }
 
     fun setMadeWayHorizontal(madeWayHorizontal: Float) {

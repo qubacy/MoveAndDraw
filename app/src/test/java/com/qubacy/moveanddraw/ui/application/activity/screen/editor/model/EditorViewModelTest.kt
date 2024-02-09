@@ -9,13 +9,15 @@ import com.qubacy.moveanddraw._common._test.util.mock.UriMockUtil
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.domain._common.model.drawing._test.util.DrawingGeneratorUtil
 import com.qubacy.moveanddraw.domain.editor.EditorUseCase
-import com.qubacy.moveanddraw.domain.editor.result.AddNewFaceToDrawingResult
-import com.qubacy.moveanddraw.domain.editor.result.RemoveLastFaceFromDrawingResult
-import com.qubacy.moveanddraw.domain.editor.result.SaveDrawingResult
+import com.qubacy.moveanddraw.domain.editor.result.face.add.AddNewFaceToDrawingResult
+import com.qubacy.moveanddraw.domain.editor.result.face.remove.RemoveLastFaceFromDrawingResult
+import com.qubacy.moveanddraw.domain.editor.result.save.SaveDrawingResult
 import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment.drawing.model.DrawingViewModelTest
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.operation._common.SetDrawingUiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.data.face.FaceSketch
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model._test.data.EditorUseCaseMockInitData
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.EditorUiState
+import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.operation.face.added.NewFaceAddedToDrawingUiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.operation.saved.DrawingSavedUiOperation
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -109,11 +111,13 @@ class EditorViewModelTest(
         initViewModel(useCaseMockInitData = initData)
 
         mViewModel.uiStateFlow.test {
-            mViewModel.saveFaceSketch(faceSketch)
+            mViewModel.saveFaceSketch(drawing, faceSketch)
 
             val uiState = awaitItem()!!
+            val operation = uiState.pendingOperations.take()!!
 
-            Assert.assertEquals(modifiedDrawing, uiState.drawing)
+            Assert.assertEquals(NewFaceAddedToDrawingUiOperation::class, operation::class)
+            Assert.assertEquals(modifiedDrawing, (operation as NewFaceAddedToDrawingUiOperation).drawing)
         }
     }
 
@@ -150,8 +154,10 @@ class EditorViewModelTest(
             mViewModel.removeLastFace(drawing)
 
             val uiState = awaitItem()!!
+            val operation = uiState.pendingOperations.take()!!
 
-            Assert.assertEquals(modifiedDrawing, uiState.drawing)
+            Assert.assertEquals(SetDrawingUiOperation::class, operation::class)
+            Assert.assertEquals(modifiedDrawing, (operation as SetDrawingUiOperation).drawing)
         }
     }
 

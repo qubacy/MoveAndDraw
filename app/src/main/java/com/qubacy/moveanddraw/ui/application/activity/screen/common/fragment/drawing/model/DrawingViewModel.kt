@@ -7,11 +7,13 @@ import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.domain._common.usecase._common.result._common.Result
 import com.qubacy.moveanddraw.domain._common.usecase._common.result.error.ErrorResult
 import com.qubacy.moveanddraw.domain._common.usecase.drawing.DrawingUseCase
-import com.qubacy.moveanddraw.domain._common.usecase.drawing.result.LoadDrawingResult
+import com.qubacy.moveanddraw.domain._common.usecase.drawing.result._common.SetDrawingResult
+import com.qubacy.moveanddraw.domain._common.usecase.drawing.result.load.LoadDrawingResult
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation.error.ShowErrorUiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model.business.BusinessViewModel
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.DrawingUiState
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.operation.loaded.DrawingLoadedUiOperation
 
 abstract class DrawingViewModel<UiStateType : DrawingUiState>(
     savedStateHandle: SavedStateHandle,
@@ -27,6 +29,15 @@ abstract class DrawingViewModel<UiStateType : DrawingUiState>(
         const val TAG = "DRAWING_VIEW_MODEL"
 
         const val DRAWING_MIME_TYPE = "model/obj"
+
+        const val DRAWING_KEY = "drawing"
+    }
+
+    private var mDrawing: Drawing? = null
+    val drawing get() = mDrawing
+
+    init {
+        mDrawing = mSavedStateHandle[DRAWING_KEY]
     }
 
     fun isDrawingFileExtensionValid(ext: String): Boolean {
@@ -40,6 +51,16 @@ abstract class DrawingViewModel<UiStateType : DrawingUiState>(
     }
 
     override fun processResult(result: Result): UiStateType? {
+        return if (result is SetDrawingResult) {
+//            LoadDrawingResult::class -> { processLoadDrawingResult(result as LoadDrawingResult) }
+            processSetDrawingResult(result)
+        } else null
+    }
+
+    open fun processSetDrawingResult(result: SetDrawingResult): UiStateType? {
+        mDrawing = result.drawing
+        mSavedStateHandle[DRAWING_KEY] = result.drawing // todo: is this OK?
+
         return when (result::class) {
             LoadDrawingResult::class -> { processLoadDrawingResult(result as LoadDrawingResult) }
             else -> null
@@ -47,12 +68,16 @@ abstract class DrawingViewModel<UiStateType : DrawingUiState>(
     }
 
     private fun processLoadDrawingResult(result: LoadDrawingResult): UiStateType {
-        return generateDrawingUiState(drawing = result.drawing, isLoading = false)
+        return generateDrawingUiState(
+            //drawing = result.drawing,
+            isLoading = false,
+            pendingOperations = TakeQueue(DrawingLoadedUiOperation(mDrawing!!))
+        )
     }
 
     override fun processErrorResult(errorResult: ErrorResult): UiStateType {
         return generateDrawingUiState(
-            drawing = mUiState.value?.drawing,
+            //drawing = mUiState.value?.drawing,
             isLoading = false,
             pendingOperations = TakeQueue(ShowErrorUiOperation(errorResult.error))
         )
@@ -66,14 +91,14 @@ abstract class DrawingViewModel<UiStateType : DrawingUiState>(
     }
 
     abstract fun generateDrawingUiState(
-        drawing: Drawing? = null,
+        //drawing: Drawing? = null,
         isLoading: Boolean = false,
         pendingOperations : TakeQueue<UiOperation> = TakeQueue()
     ): UiStateType
 
     override fun getUiStateWithUiOperation(uiOperation: UiOperation): UiStateType {
         return generateDrawingUiState(
-            drawing = mUiState.value?.drawing,
+            //drawing = mUiState.value?.drawing,
             pendingOperations = TakeQueue(uiOperation)
         )
     }
