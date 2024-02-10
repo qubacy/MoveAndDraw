@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw.ui.application.activity.file.picker.GetFileUriCallback
 import dagger.hilt.android.AndroidEntryPoint
@@ -22,6 +23,8 @@ open class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        installSplashScreen()
 
         setContentView(R.layout.activity_main)
         initChooseLocalFileLauncher()

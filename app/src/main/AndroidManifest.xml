@@ -17,7 +17,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MoveAndDraw"
+        android:theme="@style/Theme.AppSplash"
         android:name=".ui.application.MoveAndDrawApplication"
         tools:targetApi="31">
         <activity
