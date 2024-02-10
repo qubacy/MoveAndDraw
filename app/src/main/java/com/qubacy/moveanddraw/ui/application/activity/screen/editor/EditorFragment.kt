@@ -19,13 +19,10 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.transition.MaterialSharedAxis
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw._common.error.ErrorEnum
-import com.qubacy.moveanddraw._common.util.color.ColorUtil
 import com.qubacy.moveanddraw.databinding.FragmentEditorBinding
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.transition.DefaultSharedAxisTransitionGenerator
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.DrawingFragment
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
-import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.settings._common.DrawingSettings
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.operation._common.SetDrawingUiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas._common.EditorCanvasContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.component.canvas.view.EditorCanvasView
@@ -113,7 +110,6 @@ class EditorFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        //mBinding.fragmentEditorBottomBar.setOnMenuItemClickListener(this)
         mBinding.fragmentEditorButtonMainAction.setOnClickListener { onMainActionClicked() }
 
         postponeEnterTransition()
@@ -178,7 +174,7 @@ class EditorFragment(
     }
 
     private fun onSharingDrawingSaved() {
-        val curDrawing = mModel.drawing!!//mModel.uiState.value?.drawing!!
+        val curDrawing = mModel.drawing!!
 
         shareDrawingByUri(curDrawing.uri!!)
 
@@ -350,34 +346,14 @@ class EditorFragment(
         when (menuItem.groupId) {
             R.id.editor_bottom_bar_main_group -> { onMainGroupMenuItemClicked(menuItem) }
             R.id.editor_bottom_bar_face_group -> { onFaceGroupMenuItemClicked(menuItem) }
-            else -> throw IllegalStateException()//onCommonMenuItemClicked(menuItem)
+            else -> throw IllegalStateException()
         }
 
         return true
     }
 
-//    override fun onMenuItemClick(item: MenuItem?): Boolean {
-//        if (item == null) return false
-//
-//        when (item.groupId) {
-//            //R.id.editor_bottom_bar_main_group -> { onMainGroupMenuItemClicked(item) }
-//            R.id.editor_bottom_bar_face_group -> { onFaceGroupMenuItemClicked(item) }
-//            else ->  onCommonMenuItemClicked(item)
-//        }
-//
-//        return true
-//    }
-
-//    private fun onCommonMenuItemClicked(item: MenuItem) {
-//        when (item.itemId) {
-//            R.id.editor_bottom_bar_drawing_mode -> { onDrawingModeClicked() }
-//            else -> throw IllegalStateException()
-//        }
-//    }
-
     private fun onMainGroupMenuItemClicked(item: MenuItem) {
         when (item.itemId) {
-//            R.id.editor_bottom_bar_pick_color -> { onPickColorClicked() }
             R.id.editor_bottom_bar_undo_face -> { onUndoFaceClicked() }
         }
     }

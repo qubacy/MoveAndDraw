@@ -81,7 +81,7 @@ class ViewerFragment(
     }
 
     override fun onShareMenuItemClicked() {
-        val drawingUri = mModel.drawing?.uri//mModel.uiState.value?.drawing?.uri
+        val drawingUri = mModel.drawing?.uri
 
         if (drawingUri == null)
             return mModel.retrieveError(ErrorEnum.NO_FILE_LOADED.id)
