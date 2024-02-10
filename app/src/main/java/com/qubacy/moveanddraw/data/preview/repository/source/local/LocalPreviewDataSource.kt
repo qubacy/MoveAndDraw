@@ -12,12 +12,9 @@ open class LocalPreviewDataSource @Inject constructor(
 ) : DataSource {
     companion object {
         val EXAMPLE_PREVIEW_RESOURCE_ID_LIST = listOf<Int>(
-            R.drawable.example_drawing_1,
-            R.drawable.example_drawing_1,
-            R.drawable.example_drawing_1,
-            R.drawable.example_drawing_1,
-            R.drawable.example_drawing_1,
-            R.drawable.example_drawing_1
+            R.drawable.preview_skull,
+            R.drawable.preview_house,
+            R.drawable.preview_cube
         )
     }
 
