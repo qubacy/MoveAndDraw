@@ -1,16 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <include
+        android:id="@+id/fragment_viewer_canvas"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="fill"
+        layout="@layout/component_canvas"/>
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/fragment_viewer_top_bar_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_gravity="top">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/fragment_viewer_top_bar"
@@ -24,36 +30,21 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <include
-        android:id="@+id/fragment_viewer_canvas"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/fragment_viewer_top_bar_container"
-        app:layout_constraintBottom_toBottomOf="parent"
-        layout="@layout/component_canvas"/>
-
     <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/fragment_viewer_progress_indicator"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/fragment_viewer_top_bar_container"
+        app:layout_anchor="@id/fragment_viewer_top_bar_container"
+        app:layout_anchorGravity="bottom"
         android:indeterminate="true"
         android:visibility="gone"/>
-
-    <FrameLayout
-        android:id="@+id/fragment_viewer_canvas_vertical_center"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="@id/fragment_viewer_canvas"
-        app:layout_constraintBottom_toBottomOf="@id/fragment_viewer_canvas"/>
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/fragment_viewer_entry_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@id/fragment_viewer_canvas_vertical_center"
-        app:layout_constraintStart_toStartOf="@id/fragment_viewer_canvas"
-        app:layout_constraintEnd_toEndOf="@id/fragment_viewer_canvas"
+        app:layout_anchor="@id/fragment_viewer_canvas"
+        app:layout_anchorGravity="center"
         android:layout_marginBottom="@dimen/default_component_margin_half"
         android:textAppearance="?attr/textAppearanceTitleLarge"
         android:text="@string/fragment_viewer_entry_message_text"/>
@@ -62,11 +53,18 @@
         android:id="@+id/fragment_viewer_entry_icon"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        app:layout_constraintTop_toBottomOf="@id/fragment_viewer_canvas_vertical_center"
-        app:layout_constraintStart_toStartOf="@id/fragment_viewer_canvas"
-        app:layout_constraintEnd_toEndOf="@id/fragment_viewer_canvas"
+        android:layout_gravity="bottom|center"
+        app:layout_anchor="@id/fragment_viewer_entry_message"
+        app:layout_anchorGravity="bottom|center"
         android:layout_marginTop="@dimen/default_component_margin_half"
         app:srcCompat="@drawable/ic_cat"
         app:tint="?attr/colorOnSurface"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <com.google.android.material.bottomappbar.BottomAppBar
+        android:id="@+id/fragment_viewer_bottom_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        style="@style/Widget.Material3.BottomAppBar"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

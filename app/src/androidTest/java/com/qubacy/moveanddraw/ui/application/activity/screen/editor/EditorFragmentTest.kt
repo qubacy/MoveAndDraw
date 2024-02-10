@@ -13,7 +13,6 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw._common._test.util.launcher.launchFragmentInHiltContainer
 import com.qubacy.moveanddraw._common._test.util.mock.AnyMockUtil.anyObject
@@ -22,9 +21,7 @@ import com.qubacy.moveanddraw._common.util.struct.takequeue._common.TakeQueue
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.domain._common.model.drawing._test.util.DrawingGeneratorUtil
 import com.qubacy.moveanddraw.ui._common._test.view.util.action.wait.WaitViewAction
-import com.qubacy.moveanddraw.ui._common._test.view.util.matcher.menu.icon.tint.MenuItemIconTintViewMatcher
 import com.qubacy.moveanddraw.ui._common._test.view.util.matcher.button.floating.icon.drawable.FABIconDrawableViewMatcher
-import com.qubacy.moveanddraw.ui._common._test.view.util.matcher.menu.icon.drawable.MenuItemIconDrawableViewMatcher
 import com.qubacy.moveanddraw.ui._common._test.view.util.matcher.toast.root.ToastRootMatcher
 import com.qubacy.moveanddraw.ui.application.activity.screen._common.fragment.drawing.DrawingFragmentTest
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
@@ -76,7 +73,9 @@ class EditorFragmentTest(
     }
 
     @Test
-    fun allComponentsAreDisplayedTest() {
+    override fun allComponentsAreDisplayedTest() {
+        super.allComponentsAreDisplayedTest()
+
         Espresso.onView(withId(R.id.fragment_editor_top_bar))
             .check(ViewAssertions.matches(isDisplayed()))
         Espresso.onView(withId(R.id.fragment_editor_bottom_bar))
@@ -88,19 +87,11 @@ class EditorFragmentTest(
 
         // checking top menu in details:
 
-        Espresso.onView(withId(R.id.drawing_top_bar_share))
-            .check(ViewAssertions.matches(isDisplayed()))
-        Espresso.onView(withId(R.id.drawing_top_bar_load))
-            .check(ViewAssertions.matches(isDisplayed()))
         Espresso.onView(withId(R.id.editor_top_bar_save))
             .check(ViewAssertions.matches(isDisplayed()))
 
         // checking bottom menu in details:
 
-        Espresso.onView(withId(R.id.editor_bottom_bar_pick_color))
-            .check(ViewAssertions.matches(isDisplayed()))
-        Espresso.onView(withId(R.id.editor_bottom_bar_drawing_mode))
-            .check(ViewAssertions.matches(isDisplayed()))
         Espresso.onView(withId(R.id.editor_bottom_bar_undo_face))
             .check(ViewAssertions.matches(isDisplayed()))
     }
@@ -263,24 +254,6 @@ class EditorFragmentTest(
             .check(ViewAssertions.matches(isDisplayed()))
     }
 
-
-
-    // Note: there's no need to do it using a color picking dialog;
-    @Test
-    fun pickingDrawingColorLeadsToPickingColorIconTintChangeTest() {
-        val onColorPickedMethodReflection = EditorFragment::class.java
-            .getDeclaredMethod("onColorPicked", Int::class.java)
-            .apply { isAccessible = true }
-
-        val pickedDrawingColor = InstrumentationRegistry.getInstrumentation()
-            .targetContext.getColor(android.R.color.holo_purple)
-
-        onColorPickedMethodReflection.invoke(mFragment, pickedDrawingColor)
-
-        Espresso.onView(withId(R.id.editor_bottom_bar_pick_color))
-            .check(ViewAssertions.matches(MenuItemIconTintViewMatcher(pickedDrawingColor)))
-    }
-
     private fun getColorByMaterialAttribute(@AttrRes colorAttrResId: Int): Int {
         val typedValue = TypedValue()
 
@@ -302,7 +275,7 @@ class EditorFragmentTest(
         Espresso.onView(withId(R.id.editor_bottom_bar_cancel))
             .check(ViewAssertions.matches(isDisplayed()))
 
-        Espresso.onView(withId(R.id.editor_bottom_bar_pick_color))
+        Espresso.onView(withId(R.id.drawing_bottom_bar_pick_color))
             .check(ViewAssertions.doesNotExist())
         Espresso.onView(withId(R.id.editor_bottom_bar_undo_face))
             .check(ViewAssertions.doesNotExist())
@@ -323,7 +296,7 @@ class EditorFragmentTest(
         Espresso.onView(withId(R.id.editor_bottom_bar_cancel))
             .perform(ViewActions.click())
 
-        Espresso.onView(withId(R.id.editor_bottom_bar_pick_color))
+        Espresso.onView(withId(R.id.drawing_bottom_bar_pick_color))
             .check(ViewAssertions.matches(isDisplayed()))
         Espresso.onView(withId(R.id.editor_bottom_bar_undo_face))
             .check(ViewAssertions.matches(isDisplayed()))
@@ -334,41 +307,6 @@ class EditorFragmentTest(
         Espresso.onView(withId(R.id.fragment_editor_button_main_action))
             .check(ViewAssertions.matches(
                 FABIconDrawableViewMatcher(R.drawable.ic_surface, iconTint)
-            ))
-    }
-
-    @Test
-    fun clickingDrawingModeLeadsToDrawingModeButtonIconChangeTest() {
-        Espresso.onView(withId(R.id.fragment_editor_button_main_action))
-            .perform(ViewActions.click())
-
-        Espresso.onView(withId(R.id.editor_bottom_bar_drawing_mode))
-            .check(ViewAssertions.matches(
-                MenuItemIconDrawableViewMatcher(R.drawable.ic_square)
-            ))
-
-        Espresso.onView(withId(R.id.editor_bottom_bar_drawing_mode))
-            .perform(ViewActions.click())
-
-        Espresso.onView(withId(R.id.editor_bottom_bar_drawing_mode))
-            .check(ViewAssertions.matches(
-                MenuItemIconDrawableViewMatcher(R.drawable.ic_outlined_square)
-            ))
-
-        Espresso.onView(withId(R.id.editor_bottom_bar_drawing_mode))
-            .perform(ViewActions.click())
-
-        Espresso.onView(withId(R.id.editor_bottom_bar_drawing_mode))
-            .check(ViewAssertions.matches(
-                MenuItemIconDrawableViewMatcher(R.drawable.ic_mesh)
-            ))
-
-        Espresso.onView(withId(R.id.editor_bottom_bar_drawing_mode))
-            .perform(ViewActions.click())
-
-        Espresso.onView(withId(R.id.editor_bottom_bar_drawing_mode))
-            .check(ViewAssertions.matches(
-                MenuItemIconDrawableViewMatcher(R.drawable.ic_square)
             ))
     }
 

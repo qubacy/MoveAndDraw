@@ -9,18 +9,23 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import androidx.annotation.ColorInt
 import androidx.appcompat.widget.Toolbar
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw._common.error.ErrorEnum
+import com.qubacy.moveanddraw._common.util.color.ColorUtil
 import com.qubacy.moveanddraw._common.util.context.getFileNameByUri
 import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.MainActivity
 import com.qubacy.moveanddraw.ui.application.activity.file.picker.GetFileUriCallback
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.base.BaseFragment
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas._common.GLContext
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.camera._common.CameraData
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.mapper.DrawingGLDrawingMapperImpl
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.data.settings._common.DrawingSettings
@@ -29,8 +34,11 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.dra
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.DrawingUiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.operation._common.SetDrawingUiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.model.state.operation.loaded.DrawingLoadedUiOperation
+import com.skydoves.colorpickerview.ColorPickerDialog
+import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 abstract class DrawingFragment<
     DrawingUiStateType : DrawingUiState,
@@ -48,6 +56,7 @@ abstract class DrawingFragment<
 
     protected lateinit var mCanvasView: CanvasViewType
     protected lateinit var mTopMenuBar: Toolbar
+    protected lateinit var mBottomMenuBar: Toolbar
     protected lateinit var mProgressIndicator: LinearProgressIndicator
 
     protected var mLastCameraData: CameraData? = null
@@ -83,9 +92,11 @@ abstract class DrawingFragment<
         super.onViewCreated(view, savedInstanceState)
 
         inflateTopAppBarMenu(requireActivity().menuInflater, mTopMenuBar.menu)
+        inflateBottomAppBarMenu(requireActivity().menuInflater, mBottomMenuBar.menu)
 
         mTopMenuBar.setNavigationOnClickListener { onNavigationBackButtonClicked() }
-        mTopMenuBar.setOnMenuItemClickListener { onMenuItemClickListener(it) }
+        mTopMenuBar.setOnMenuItemClickListener { onTopMenuItemClickListener(it) }
+        mBottomMenuBar.setOnMenuItemClickListener { onBottomMenuItemClickListener(it) }
 
         mCanvasView.apply {
             init()
@@ -97,9 +108,7 @@ abstract class DrawingFragment<
     override fun onResume() {
         super.onResume()
 
-        lifecycleScope.launch (Dispatchers.IO) {
-            mModel.drawing?.also { mCanvasView.setFigure(it) }
-        }
+        setCurrentDrawing(mModel.drawing)
 
         mLastCameraData?.also {
             Log.d(TAG, "onResume(): mLastCameraData.pos = ${mLastCameraData?.position?.joinToString()}")
@@ -134,6 +143,16 @@ abstract class DrawingFragment<
 
     protected open fun setDrawingSettings(drawingSettings: DrawingSettings) {
         mCanvasView.setDrawingSettings(drawingSettings)
+
+        val colorInt = ColorUtil.toRGBA(
+            drawingSettings.modelColor[0],
+            drawingSettings.modelColor[1],
+            drawingSettings.modelColor[2],
+            drawingSettings.modelColor[3]
+        )
+
+        changePreviewColor(colorInt)
+        setDrawingModeActionAppearanceByDrawingMode(drawingSettings.drawingMode)
     }
 
     protected fun setCameraData(cameraData: CameraData) {
@@ -144,17 +163,35 @@ abstract class DrawingFragment<
         menuInflater.inflate(R.menu.drawing_top_bar, menu)
     }
 
-    protected fun onMenuItemClickListener(menuItem: MenuItem): Boolean {
+    protected open fun inflateBottomAppBarMenu(menuInflater: MenuInflater, menu: Menu) {
+        menuInflater.inflate(R.menu.drawing_bottom_bar, menu)
+    }
+
+    protected fun onTopMenuItemClickListener(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.drawing_top_bar_share -> { onShareMenuItemClicked() }
             R.id.drawing_top_bar_load -> { onLoadMenuItemClicked() }
-            else -> return processCustomMenuAction(menuItem.itemId)
+            else -> return processCustomTopMenuAction(menuItem.itemId)
         }
 
         return true
     }
 
-    protected open fun processCustomMenuAction(menuItemId: Int): Boolean {
+    protected open fun processCustomTopMenuAction(menuItemId: Int): Boolean {
+        return false
+    }
+
+    protected fun onBottomMenuItemClickListener(menuItem: MenuItem): Boolean {
+        when (menuItem.itemId) {
+            R.id.drawing_bottom_bar_pick_color -> { onPickColorClicked() }
+            R.id.drawing_bottom_bar_drawing_mode -> { onDrawingModeClicked() }
+            else -> return processCustomBottomMenuAction(menuItem)
+        }
+
+        return true
+    }
+
+    protected open fun processCustomBottomMenuAction(menuItem: MenuItem): Boolean {
         return false
     }
 
@@ -221,7 +258,7 @@ abstract class DrawingFragment<
 
     }
 
-    protected fun setCurrentDrawing(drawing: Drawing?) {
+    protected open fun setCurrentDrawing(drawing: Drawing?) {
         if (drawing == null) return
 
         setCanvasDrawing(drawing)
@@ -261,5 +298,71 @@ abstract class DrawingFragment<
             return mModel.retrieveError(ErrorEnum.WRONG_FILE_TYPE.id)
 
         mModel.loadDrawing(fileUri)
+    }
+
+    protected fun onPickColorClicked() {
+        ColorPickerDialog.Builder(requireContext())
+            .setTitle(R.string.component_dialog_color_picker_title)
+            .setPositiveButton(
+                R.string.component_dialog_color_picker_button_positive_caption,
+                ColorEnvelopeListener { envelope, fromUser ->
+                    onColorPicked(envelope.color)
+                })
+            .setNegativeButton(
+                R.string.component_dialog_color_picker_button_negative_caption
+            ) { dialogInterface, i ->
+                dialogInterface.dismiss()
+            }
+            .attachAlphaSlideBar(false)
+            .attachBrightnessSlideBar(true)
+            .setBottomSpace(12)
+            .show()
+    }
+
+    protected fun onColorPicked(@ColorInt color: Int) {
+        applyModelColor(color)
+    }
+
+    protected fun applyModelColor(@ColorInt color: Int) {
+        changePreviewColor(color)
+        changeCanvasModelColor(color)
+    }
+
+    protected fun changePreviewColor(@ColorInt color: Int) {
+        val drawable = mBottomMenuBar.menu.findItem(R.id.drawing_bottom_bar_pick_color)
+            .icon!!
+
+        DrawableCompat.setTint(drawable, color)
+        drawable.invalidateSelf()
+    }
+
+    protected open fun changeCanvasModelColor(@ColorInt color: Int) = runBlocking {
+        mCanvasView.setCanvasModelColor(color)
+    }
+
+    protected fun setDrawingMode(drawingMode: GLContext.DrawingMode) {
+        setDrawingModeActionAppearanceByDrawingMode(drawingMode)
+
+        mCanvasView.setFigureDrawingMode(drawingMode)
+    }
+
+    protected fun setDrawingModeActionAppearanceByDrawingMode(drawingMode: GLContext.DrawingMode) {
+        val drawingModeDrawableId = when (drawingMode) {
+            GLContext.DrawingMode.FILLED -> R.drawable.ic_square
+            GLContext.DrawingMode.SKETCH -> R.drawable.ic_mesh
+            GLContext.DrawingMode.OUTLINED -> R.drawable.ic_outlined_square
+        }
+
+        mBottomMenuBar.menu.findItem(R.id.drawing_bottom_bar_drawing_mode)
+            .setIcon(drawingModeDrawableId)
+    }
+
+    private fun onDrawingModeClicked() {
+        val curDrawingMode = mCanvasView.getDrawingSettings().drawingMode
+
+        val newDrawingModeId = (curDrawingMode.id + 1) % GLContext.DrawingMode.values().size
+        val newDrawingMode = GLContext.DrawingMode.getDrawingModeById(newDrawingModeId)
+
+        setDrawingMode(newDrawingMode)
     }
 }

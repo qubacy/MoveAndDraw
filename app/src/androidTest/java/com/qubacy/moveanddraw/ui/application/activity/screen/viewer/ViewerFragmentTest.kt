@@ -65,7 +65,9 @@ class ViewerFragmentTest(
     }
 
     @Test
-    fun allComponentsAreDisplayedTest() {
+    override fun allComponentsAreDisplayedTest() {
+        super.allComponentsAreDisplayedTest()
+
         Espresso.onView(withId(R.id.fragment_viewer_top_bar))
             .check(ViewAssertions.matches(isDisplayed()))
         Espresso.onView(withId(R.id.fragment_viewer_canvas))

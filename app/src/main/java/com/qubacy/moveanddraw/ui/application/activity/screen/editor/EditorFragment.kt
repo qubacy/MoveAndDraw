@@ -8,11 +8,8 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.Toolbar
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
@@ -37,19 +34,16 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.Editor
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.EditorUiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.operation.face.added.NewFaceAddedToDrawingUiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.editor.model.state.operation.saved.DrawingSavedUiOperation
-import com.skydoves.colorpickerview.ColorPickerDialog
-import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class EditorFragment(
 
-) : DrawingFragment<EditorUiState, EditorViewModel, EditorCanvasView>(),
-    Toolbar.OnMenuItemClickListener
+) : DrawingFragment<EditorUiState, EditorViewModel, EditorCanvasView>()
+    //Toolbar.OnMenuItemClickListener
 {
     companion object {
         const val TAG = "EDITOR_FRAGMENT"
@@ -109,6 +103,7 @@ class EditorFragment(
         mBinding = FragmentEditorBinding.inflate(inflater, container, false)
 
         mTopMenuBar = mBinding.fragmentEditorTopBar
+        mBottomMenuBar = mBinding.fragmentEditorBottomBar
         mCanvasView = mBinding.fragmentEditorCanvas.componentEditorCanvasField
         mProgressIndicator = mBinding.fragmentEditorProgressIndicator
 
@@ -118,7 +113,7 @@ class EditorFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        mBinding.fragmentEditorBottomBar.setOnMenuItemClickListener(this)
+        //mBinding.fragmentEditorBottomBar.setOnMenuItemClickListener(this)
         mBinding.fragmentEditorButtonMainAction.setOnClickListener { onMainActionClicked() }
 
         postponeEnterTransition()
@@ -148,27 +143,11 @@ class EditorFragment(
         super.onDestroy()
     }
 
-    override fun setDrawingSettings(drawingSettings: DrawingSettings) {
-        super.setDrawingSettings(drawingSettings)
-
-        val colorInt = ColorUtil.toRGBA(
-            drawingSettings.modelColor[0],
-            drawingSettings.modelColor[1],
-            drawingSettings.modelColor[2],
-            drawingSettings.modelColor[3]
-        )
-
-        changePreviewColor(colorInt)
-        setDrawingModeActionAppearanceByDrawingMode(drawingSettings.drawingMode)
-    }
-
     override fun setUiElementsState(uiState: EditorUiState) {
         super.setUiElementsState(uiState)
 
         // ??
     }
-
-
 
     override fun processOtherSetDrawingOperation(uiOperation: SetDrawingUiOperation) {
         super.processOtherSetDrawingOperation(uiOperation)
@@ -227,7 +206,7 @@ class EditorFragment(
         }
 
         launch(Dispatchers.Main) {
-            val drawing = mModel.drawing//mModel.uiState.value!!.drawing
+            val drawing = mModel.drawing
 
             mModel.saveFaceSketch(drawing, faceSketch)
         }
@@ -249,26 +228,13 @@ class EditorFragment(
         setMainActionAppearanceByBottomMenuMode(editorMode)
     }
 
-    private fun setDrawingMode(drawingMode: GLContext.DrawingMode) {
-        setDrawingModeActionAppearanceByDrawingMode(drawingMode)
-
-        mCanvasView.setFigureDrawingMode(drawingMode)
-    }
-
-    private fun setDrawingModeActionAppearanceByDrawingMode(drawingMode: GLContext.DrawingMode) {
-        val drawingModeDrawableId = when (drawingMode) {
-            GLContext.DrawingMode.FILLED -> R.drawable.ic_square
-            GLContext.DrawingMode.SKETCH -> R.drawable.ic_mesh
-            GLContext.DrawingMode.OUTLINED -> R.drawable.ic_outlined_square
-        }
-
-        mBinding.fragmentEditorBottomBar.menu
-            .findItem(R.id.editor_bottom_bar_drawing_mode).setIcon(drawingModeDrawableId)
-    }
-
     private fun setBottomMenuMainGroupVisibility(isVisible: Boolean) {
-        mBinding.fragmentEditorBottomBar.menu.setGroupVisible(R.id.editor_bottom_bar_main_group, isVisible)
-        mBinding.fragmentEditorBottomBar.menu.setGroupVisible(R.id.editor_bottom_bar_face_group, !isVisible)
+        mBinding.fragmentEditorBottomBar.menu.findItem(R.id.drawing_bottom_bar_pick_color)
+            .isVisible = isVisible
+        mBinding.fragmentEditorBottomBar.menu.setGroupVisible(
+            R.id.editor_bottom_bar_main_group, isVisible)
+        mBinding.fragmentEditorBottomBar.menu.setGroupVisible(
+            R.id.editor_bottom_bar_face_group, !isVisible)
     }
 
     private fun setMainActionAppearanceByBottomMenuMode(editorMode: EditorCanvasContext.Mode) {
@@ -287,7 +253,13 @@ class EditorFragment(
         menuInflater.inflate(R.menu.editor_top_bar, menu)
     }
 
-    override fun processCustomMenuAction(menuItemId: Int): Boolean {
+    override fun inflateBottomAppBarMenu(menuInflater: MenuInflater, menu: Menu) {
+        super.inflateBottomAppBarMenu(menuInflater, menu)
+
+        menuInflater.inflate(R.menu.editor_bottom_bar, menu)
+    }
+
+    override fun processCustomTopMenuAction(menuItemId: Int): Boolean {
         when (menuItemId) {
             R.id.editor_top_bar_save -> { onSaveMenuItemClicked() }
             else -> return false
@@ -297,7 +269,7 @@ class EditorFragment(
     }
 
     private fun onSaveMenuItemClicked() {
-        val curDrawing = mModel.drawing//mModel.uiState.value?.drawing
+        val curDrawing = mModel.drawing
 
         if (curDrawing == null) {
             mModel.retrieveError(ErrorEnum.NULL_CURRENT_DRAWING.id)
@@ -360,7 +332,7 @@ class EditorFragment(
     }
 
     override fun onShareMenuItemClicked() {
-        val curDrawing = mModel.drawing//mModel.uiState.value?.drawing
+        val curDrawing = mModel.drawing
 
         if (curDrawing == null) {
             mModel.retrieveError(ErrorEnum.NULL_CURRENT_DRAWING.id)
@@ -374,28 +346,38 @@ class EditorFragment(
         mModel.setIsSharingPending(true)
     }
 
-    override fun onMenuItemClick(item: MenuItem?): Boolean {
-        if (item == null) return false
-
-        when (item.groupId) {
-            R.id.editor_bottom_bar_main_group -> { onMainGroupMenuItemClicked(item) }
-            R.id.editor_bottom_bar_face_group -> { onFaceGroupMenuItemClicked(item) }
-            else ->  onCommonMenuItemClicked(item)
+    override fun processCustomBottomMenuAction(menuItem: MenuItem): Boolean {
+        when (menuItem.groupId) {
+            R.id.editor_bottom_bar_main_group -> { onMainGroupMenuItemClicked(menuItem) }
+            R.id.editor_bottom_bar_face_group -> { onFaceGroupMenuItemClicked(menuItem) }
+            else -> throw IllegalStateException()//onCommonMenuItemClicked(menuItem)
         }
 
         return true
     }
 
-    private fun onCommonMenuItemClicked(item: MenuItem) {
-        when (item.itemId) {
-            R.id.editor_bottom_bar_drawing_mode -> { onDrawingModeClicked() }
-            else -> throw IllegalStateException()
-        }
-    }
+//    override fun onMenuItemClick(item: MenuItem?): Boolean {
+//        if (item == null) return false
+//
+//        when (item.groupId) {
+//            //R.id.editor_bottom_bar_main_group -> { onMainGroupMenuItemClicked(item) }
+//            R.id.editor_bottom_bar_face_group -> { onFaceGroupMenuItemClicked(item) }
+//            else ->  onCommonMenuItemClicked(item)
+//        }
+//
+//        return true
+//    }
+
+//    private fun onCommonMenuItemClicked(item: MenuItem) {
+//        when (item.itemId) {
+//            R.id.editor_bottom_bar_drawing_mode -> { onDrawingModeClicked() }
+//            else -> throw IllegalStateException()
+//        }
+//    }
 
     private fun onMainGroupMenuItemClicked(item: MenuItem) {
         when (item.itemId) {
-            R.id.editor_bottom_bar_pick_color -> { onPickColorClicked() }
+//            R.id.editor_bottom_bar_pick_color -> { onPickColorClicked() }
             R.id.editor_bottom_bar_undo_face -> { onUndoFaceClicked() }
         }
     }
@@ -405,15 +387,6 @@ class EditorFragment(
             R.id.editor_bottom_bar_undo_vertex -> { onUndoVertexClicked() }
             R.id.editor_bottom_bar_cancel -> { onCancelClicked() }
         }
-    }
-
-    private fun onDrawingModeClicked() {
-        val curDrawingMode = mCanvasView.getDrawingSettings().drawingMode
-
-        val newDrawingModeId = (curDrawingMode.id + 1) % GLContext.DrawingMode.values().size
-        val newDrawingMode = GLContext.DrawingMode.getDrawingModeById(newDrawingModeId)
-
-        setDrawingMode(newDrawingMode)
     }
 
     private fun onCancelClicked() {
@@ -426,48 +399,8 @@ class EditorFragment(
         }
     }
 
-    private fun onPickColorClicked() {
-        ColorPickerDialog.Builder(requireContext())
-            .setTitle(R.string.component_dialog_color_picker_title)
-            .setPositiveButton(
-                R.string.component_dialog_color_picker_button_positive_caption,
-                ColorEnvelopeListener { envelope, fromUser ->
-                    onColorPicked(envelope.color)
-                })
-            .setNegativeButton(
-                R.string.component_dialog_color_picker_button_negative_caption
-            ) { dialogInterface, i ->
-                dialogInterface.dismiss()
-            }
-            .attachAlphaSlideBar(false)
-            .attachBrightnessSlideBar(true)
-            .setBottomSpace(12)
-            .show()
-    }
-
-    private fun onColorPicked(@ColorInt color: Int) {
-        applyModelColor(color)
-    }
-
-    private fun applyModelColor(@ColorInt color: Int) {
-        changePreviewColor(color)
-        changeCanvasModelColor(color)
-    }
-
-    private fun changePreviewColor(@ColorInt color: Int) {
-        val drawable = mBinding.fragmentEditorBottomBar.menu
-            .findItem(R.id.editor_bottom_bar_pick_color).icon!!
-
-        DrawableCompat.setTint(drawable, color)
-        drawable.invalidateSelf()
-    }
-
-    private fun changeCanvasModelColor(@ColorInt color: Int) = runBlocking {
-        mCanvasView.setCanvasModelColor(color)
-    }
-
     private fun onUndoFaceClicked() {
-        val drawing = mModel.drawing//mModel.uiState.value?.drawing
+        val drawing = mModel.drawing
 
         if (drawing == null) {
             mModel.retrieveError(ErrorEnum.NULL_CURRENT_DRAWING.id)

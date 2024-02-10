@@ -44,8 +44,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        style="@style/Widget.Material3.BottomAppBar"
-        app:menu="@menu/editor_bottom_bar"/>
+        style="@style/Widget.Material3.BottomAppBar"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fragment_editor_button_main_action"

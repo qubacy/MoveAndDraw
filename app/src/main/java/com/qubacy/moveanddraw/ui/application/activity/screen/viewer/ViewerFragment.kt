@@ -12,6 +12,7 @@ import com.google.android.material.transition.MaterialSharedAxis
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw._common.error.ErrorEnum
 import com.qubacy.moveanddraw.databinding.FragmentViewerBinding
+import com.qubacy.moveanddraw.domain._common.model.drawing._common.Drawing
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.transition.DefaultSharedAxisTransitionGenerator
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.DrawingFragment
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.drawing.component.canvas.view.CanvasView
@@ -61,7 +62,8 @@ class ViewerFragment(
         mBinding = FragmentViewerBinding.inflate(inflater, container, false)
 
         mTopMenuBar = mBinding.fragmentViewerTopBar
-        mCanvasView = mBinding.fragmentViewerCanvas.componentCanvasField
+        mBottomMenuBar = mBinding.fragmentViewerBottomBar
+        mCanvasView = mBinding.fragmentViewerCanvas.root
         mProgressIndicator = mBinding.fragmentViewerProgressIndicator
 
         return mBinding.root
@@ -102,5 +104,11 @@ class ViewerFragment(
             if (isEnabled) View.VISIBLE else View.GONE
         mBinding.fragmentViewerEntryIcon.visibility =
             if (isEnabled) View.VISIBLE else View.GONE
+    }
+
+    override fun setCurrentDrawing(drawing: Drawing?) {
+        super.setCurrentDrawing(drawing)
+
+        setEntryMessageEnabled(drawing == null)
     }
 }
