@@ -2,9 +2,13 @@ package com.qubacy.moveanddraw.ui.application.activity
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.ColorInt
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.qubacy.moveanddraw.R
@@ -56,5 +60,22 @@ open class MainActivity : AppCompatActivity() {
         val shareIntent = Intent.createChooser(intent, null)
 
         startActivity(shareIntent)
+    }
+
+    open fun setStatusBarBackgroundColor(@ColorInt color: Int) {
+        window.statusBarColor = color
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    open fun setNavigationBarBackgroundColor(@ColorInt color: Int) {
+        window.navigationBarColor = color
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    open fun setLightSystemBarIconColor() {
+        window.decorView.systemUiVisibility =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            else View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
     }
 }

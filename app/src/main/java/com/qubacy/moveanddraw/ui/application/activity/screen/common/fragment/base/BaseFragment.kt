@@ -2,6 +2,7 @@ package com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment.ba
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -9,6 +10,8 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.AttrRes
+import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -19,6 +22,10 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._co
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.UiState
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation._common.UiOperation
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.model._common.state._common.operation.error.ShowErrorUiOperation
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.util.color.getColorByAttr
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.util.statusbar.setLightSystemBarIconColor
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.util.statusbar.setNavigationBarBackgroundColorByColorInt
+import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.util.statusbar.setStatusBarBackgroundColorByColorInt
 import kotlinx.coroutines.runBlocking
 
 abstract class BaseFragment<
@@ -55,6 +62,9 @@ abstract class BaseFragment<
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            setSystemBarsColor()
+
         mModel.uiState.observe(viewLifecycleOwner) {
             if (it == null) return@observe
 
@@ -66,6 +76,32 @@ abstract class BaseFragment<
         mModel.resetUiState()
 
         super.onStop()
+    }
+
+    protected open fun setSystemBarsColor() {
+        setSystemBarsColorByAttr(com.google.android.material.R.attr.colorSurface)
+    }
+
+    protected fun setSystemBarsColorByAttr(@AttrRes attr: Int) {
+        setStatusBarColorByAttr(attr)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            setNavigationBarColorByAttr(attr)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            setLightSystemBarIconColor()
+    }
+
+    protected fun setStatusBarColorByAttr(@AttrRes attr: Int) {
+        val statusBarBackgroundColor = getColorByAttr(attr)
+
+        setStatusBarBackgroundColorByColorInt(statusBarBackgroundColor)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    protected fun setNavigationBarColorByAttr(@AttrRes attr: Int) {
+        val navigationBarBackgroundColor = getColorByAttr(attr)
+
+        setNavigationBarBackgroundColorByColorInt(navigationBarBackgroundColor)
     }
 
     protected open fun processUiState(uiState: UiStateType) = runBlocking {

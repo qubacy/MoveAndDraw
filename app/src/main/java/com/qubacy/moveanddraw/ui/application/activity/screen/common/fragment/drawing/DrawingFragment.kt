@@ -14,7 +14,6 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.qubacy.moveanddraw.R
 import com.qubacy.moveanddraw._common.error.ErrorEnum
@@ -139,6 +138,10 @@ abstract class DrawingFragment<
         Log.d(TAG, "onDestroy(): entering..")
 
         super.onDestroy()
+    }
+
+    override fun setSystemBarsColor() {
+        setSystemBarsColorByAttr(com.google.android.material.R.attr.colorSurfaceContainer)
     }
 
     protected open fun setDrawingSettings(drawingSettings: DrawingSettings) {
