@@ -14,7 +14,7 @@
   - [III. Making dots on Face Sketch Surface by clicking on that](#iii-making-dots-on-face-sketch-surface-by-clicking-on-that)
   - [IV. Clicking on Save Face Sketch Button](#iv-clicking-on-save-face-sketch-button)
 - [Testing](#testing)
-- [Libraries](#libraries)
+- [Dependencies](#dependencies)
 - [Contributors](#contributors)
 
 ## Description
@@ -58,9 +58,9 @@ Once you've gotten prepared for drawing your first (mb not first) 3-dimensional 
 
 Almost all crucial components of the app have been covered with tests (Unit & Instrumental). The coverage percentage was roughly 60-70% at the time.
 
-## Libraries
+## Dependencies
 
-The following noticeable libraries are in use in the app:
+The following noticeable libraries & frameworks are in use in the app:
 - [ColorPickerView](https://github.com/skydoves/ColorPickerView) (leveraging an utility dialog that allows you to pick a color);
 - [Navigation Framework](https://developer.android.com/guide/navigation) (for handling transitions between fragments & activities);
 - [Dagger Hilt](https://dagger.dev/hilt/) (Dependency Injection framework);
