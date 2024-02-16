@@ -34,9 +34,6 @@ open class CanvasRenderer(
         const val DEFAULT_SPHERE_RADIUS = 1f
         const val DEFAULT_SPHERE_RADIUS_COEF = 3f
 
-        const val MIN_SCALE_FACTOR = 0.25f
-        const val MAX_SCALE_FACTOR = 100f
-
         const val VERTICAL_CAMERA_WAY_LIMIT_COEF = 0.8
     }
 
@@ -68,6 +65,7 @@ open class CanvasRenderer(
     protected var mFigure: GLDrawing? = null
     protected val mFigureMutex = Mutex(false)
 
+    // TODO: mb mBackgroundColor could be moved to mDrawingSettings obj. as a new field;
     @Volatile
     private var mBackgroundColor: FloatArray = floatArrayOf(0.0f, 0.0f, 0.0f, 1.0f)
 
@@ -257,6 +255,7 @@ open class CanvasRenderer(
         var newY = mCameraData.position[1]
         var newZ = mCameraData.position[2]
 
+        // TODO: it'd be better to separate these two cases and compose new methods;
         if (abs(preparedDX) >= abs(preparedDY)) {
             val cameraWayLength = getHorizontalCameraWayLength()
             val cameraMadeWay = (preparedDX + mCameraData.madeWayHorizontal) % cameraWayLength

@@ -39,9 +39,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class EditorFragment(
 
-) : DrawingFragment<EditorUiState, EditorViewModel, EditorCanvasView>()
-    //Toolbar.OnMenuItemClickListener
-{
+) : DrawingFragment<EditorUiState, EditorViewModel, EditorCanvasView>() {
     companion object {
         const val TAG = "EDITOR_FRAGMENT"
 

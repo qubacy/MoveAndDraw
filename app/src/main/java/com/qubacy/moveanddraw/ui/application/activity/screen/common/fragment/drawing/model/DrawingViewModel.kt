@@ -52,7 +52,6 @@ abstract class DrawingViewModel<UiStateType : DrawingUiState>(
 
     override fun processResult(result: Result): UiStateType? {
         return if (result is SetDrawingResult) {
-//            LoadDrawingResult::class -> { processLoadDrawingResult(result as LoadDrawingResult) }
             processSetDrawingResult(result)
         } else null
     }
@@ -69,7 +68,6 @@ abstract class DrawingViewModel<UiStateType : DrawingUiState>(
 
     private fun processLoadDrawingResult(result: LoadDrawingResult): UiStateType {
         return generateDrawingUiState(
-            //drawing = result.drawing,
             isLoading = false,
             pendingOperations = TakeQueue(DrawingLoadedUiOperation(mDrawing!!))
         )
@@ -77,7 +75,6 @@ abstract class DrawingViewModel<UiStateType : DrawingUiState>(
 
     override fun processErrorResult(errorResult: ErrorResult): UiStateType {
         return generateDrawingUiState(
-            //drawing = mUiState.value?.drawing,
             isLoading = false,
             pendingOperations = TakeQueue(ShowErrorUiOperation(errorResult.error))
         )
@@ -91,14 +88,12 @@ abstract class DrawingViewModel<UiStateType : DrawingUiState>(
     }
 
     abstract fun generateDrawingUiState(
-        //drawing: Drawing? = null,
         isLoading: Boolean = false,
         pendingOperations : TakeQueue<UiOperation> = TakeQueue()
     ): UiStateType
 
     override fun getUiStateWithUiOperation(uiOperation: UiOperation): UiStateType {
         return generateDrawingUiState(
-            //drawing = mUiState.value?.drawing,
             pendingOperations = TakeQueue(uiOperation)
         )
     }

@@ -28,6 +28,11 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._co
 import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._common.util.statusbar.setStatusBarBackgroundColorByColorInt
 import kotlinx.coroutines.runBlocking
 
+// TODO: it could be implemented via a base class with some common fields for all
+//  the fragments (mModel, for instance) & 2 other interfaces with their implementations:
+//  StyleableFragment (for style-related stuff) and PermissionFragment. With this concept,
+//  it'd be possible to inherit each of them by demand instead of just sharing it with all
+//  the fragments by default;
 abstract class BaseFragment<
     UiStateType : UiState,
     ViewModelType : BaseViewModel<UiStateType>

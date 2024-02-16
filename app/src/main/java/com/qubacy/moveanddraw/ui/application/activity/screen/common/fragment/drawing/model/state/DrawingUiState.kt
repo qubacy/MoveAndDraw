@@ -7,24 +7,19 @@ import com.qubacy.moveanddraw.ui.application.activity.screen.common.fragment._co
 
 abstract class DrawingUiState(
     val isLoading: Boolean = false,
-    //val drawing: Drawing? = null,
     pendingOperations: TakeQueue<UiOperation> = TakeQueue()
 ) : UiState(pendingOperations) {
     constructor(parcel: Parcel) : this(
-        parcel.readByte().toInt() != 0,
-        //if (parcel.dataAvail() > 0) parcel.readParcelable<Drawing>(Drawing::class.java.classLoader)
-        //else null
+        parcel.readByte().toInt() != 0
     ) {
 
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        //parcel.writeParcelable(drawing, flags)
         parcel.writeByte(if (isLoading) 1 else 0)
     }
 
     override fun describeContents(): Int {
         return 0
     }
-
 }

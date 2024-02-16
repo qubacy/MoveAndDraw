@@ -6,7 +6,6 @@ import com.qubacy.moveanddraw.domain._common.usecase._common.result.error.ErrorR
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,6 +16,9 @@ abstract class UseCase(
     protected var mCoroutineScope: CoroutineScope = GlobalScope,
     protected var mCoroutineDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
+    // TODO: As it's been described in UiState.kt, there's no real need to have a common flow
+    //  for getting results from Domain Layer. Instead, we can just have separate LiveData or
+    //  Flow objects for every request;
     protected val mResultFlow: MutableStateFlow<Result?> = MutableStateFlow(null)
     val resultFlow: StateFlow<Result?> = mResultFlow
 

@@ -32,6 +32,8 @@ class EditorCanvasRenderer(
     }
 
     private val mHelpingPlaneDrawing: GLDrawing = generateHelpingPlaneGLDrawing()
+
+    // TODO: face sketch - related fields could be united in one common class;
     private val mFaceSketchDrawing: GLDrawing = generateFaceSketchDrawing()
     private val mFaceSketchDotBuffer: MutableList<Dot2D> = mutableListOf()
 
@@ -142,6 +144,7 @@ class EditorCanvasRenderer(
             } else {
                 val editedFigure = mFigure
 
+                // TODO: finalDrawingOrderArray forming could be done in a separate method;
                 val finalVertexArray = editedFigure!!.vertexArray.plus(mLastFaceSketchVertexArray)
                 val vertexShift = editedFigure.vertexArray.size / DrawingContext.COORDS_PER_VERTEX
 
@@ -184,6 +187,7 @@ class EditorCanvasRenderer(
         mFaceSketchMutex.withLock {
             if (mLastFaceSketchVertexArray.isEmpty()) return null
 
+            // TODO: faceSketch forming could be done in a separate method;
             val vertexTripleArray = mLastFaceSketchVertexArray.toVertexTripleArray()
             val face = mLastFaceSketchDrawingOrder
                 .map { Triple<Int, Int?, Int?>(it, null, null) }.toTypedArray()
@@ -245,7 +249,7 @@ class EditorCanvasRenderer(
     }
 
     private fun handleHelpingPlaneDistanceChange(distanceFactor: Float) {
-        val newNear = mCameraData.cameraNear * distanceFactor//mCameraNear * distanceFactor
+        val newNear = mCameraData.cameraNear * distanceFactor
         val filteredNewNear =
             if (newNear <= MIN_HELPING_PLANE_DISTANCE) MIN_HELPING_PLANE_DISTANCE
             else if (newNear >= mSphereRadius * 2) mSphereRadius * 2 - HELPING_PLANE_MODEL_GAP
@@ -254,11 +258,10 @@ class EditorCanvasRenderer(
         changeCameraNear(filteredNewNear)
     }
 
-    private fun changeCameraNear(near: Float) {//= mCameraMutex.withLock {
+    private fun changeCameraNear(near: Float) {
         Log.d(TAG, "changeCameraNear(): near = $near")
 
         mCameraData.setCameraNear(near)
-        //mCameraNear = near
 
         setPerspective()
     }
@@ -317,6 +320,7 @@ class EditorCanvasRenderer(
         val projHelpingPlaneVertices = FloatArray(helpingPlaneVertices.size)
 
         for (i in helpingPlaneVertices.indices step DrawingContext.COORDS_PER_VERTEX) {
+            // TODO: the cycle body could be shared in order to follow DRY principle;
             val curVertex = floatArrayOf(
                 helpingPlaneVertices[i], helpingPlaneVertices[i + 1], helpingPlaneVertices[i + 2], 1f
             )
@@ -358,6 +362,7 @@ class EditorCanvasRenderer(
         var curFaceSketchIndex = 0
 
         for (dot in faceSketchDots) {
+            // TODO: the cycle body could be shared in order to follow DRY principle;
             val normalizedVertex = floatArrayOf(
                 dot.first / halfWidth - 1,
                 (2 - dot.second / halfHeight) - 1,
