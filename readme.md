@@ -1,7 +1,7 @@
 # Move & Draw
 ## _Create Your Own Space._
 
-[![Android](./assets/badges/os_android.svg)](https://developer.android.com/develop) [![Kotlin](./assets/badges/lang_kotlin.svg)](https://kotlinlang.org/docs/home.html) [![OpenGL ES](./assets/badges/opengl.svg)](https://registry.khronos.org/OpenGL-Refpages/gl2.1/) [![Google Play](./assets/badges/google_play.svg)]()
+[![Android](./assets/badges/os_android.svg)](https://developer.android.com/develop) [![Kotlin](./assets/badges/lang_kotlin.svg)](https://kotlinlang.org/docs/home.html) [![OpenGL ES](./assets/badges/opengl.svg)](https://registry.khronos.org/OpenGL-Refpages/gl2.1/) [![Google Play](./assets/badges/google_play.svg)](https://play.google.com/store/apps/details?id=com.qubacy.moveanddraw)
 
 ## Table of Contents
 
@@ -32,7 +32,7 @@ Your device has to meet the following requirements:
 
 ## Installation
 
-In order to get an app on your device, one needs to hit the following Google Play link: .
+In order to get an app on your device, one needs to hit the following Google Play link: https://play.google.com/store/apps/details?id=com.qubacy.moveanddraw
 
 ## Instructions
 
